@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.14.2
+
+- Added Copy Markdown to the browser demo for paste-ready queue briefs.
+- Added browser-demo Markdown rendering tests and documentation.
+
 ## 0.14.1
 
 - Added shareable browser demo links with `?repo=owner/repo`.
