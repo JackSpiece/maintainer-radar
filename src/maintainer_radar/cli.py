@@ -7,7 +7,13 @@ import sys
 from typing import Any
 
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
-from .render import render_detail, render_markdown, render_summary_markdown, summarize_report
+from .render import (
+    render_comment_template,
+    render_detail,
+    render_markdown,
+    render_summary_markdown,
+    summarize_report,
+)
 from .scoring import analyze_pr, days_since, parse_github_datetime
 
 ACTION_SLUGS = {
@@ -175,6 +181,11 @@ def build_parser() -> argparse.ArgumentParser:
     add_format_argument(pr, default=argparse.SUPPRESS)
     pr.add_argument("repository", help="Repository in owner/name form.")
     pr.add_argument("number", help="Pull request number.")
+    pr.add_argument(
+        "--comment-template",
+        action="store_true",
+        help="Render a draft maintainer follow-up comment. Does not post it.",
+    )
 
     author = sub.add_parser("author", help="Analyze pull requests by author.")
     add_format_argument(author, default=argparse.SUPPRESS)
@@ -233,7 +244,14 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
-            _emit([analyze_pr(pr)], args.format, detail=True)
+            analysis = analyze_pr(pr)
+            if args.comment_template:
+                if args.format == "json":
+                    print(json.dumps({"comment": render_comment_template(analysis)}, indent=2))
+                else:
+                    print(render_comment_template(analysis), end="")
+            else:
+                _emit([analysis], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
             analyses = filter_analyses(

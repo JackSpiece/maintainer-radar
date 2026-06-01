@@ -51,6 +51,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.min_score, 80)
         self.assertEqual(args.max_risk, 20)
 
+    def test_comment_template_flag_is_available_for_pr_command(self) -> None:
+        args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
+
+        self.assertTrue(args.comment_template)
+
     def test_as_pr_list_accepts_common_shapes(self) -> None:
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])

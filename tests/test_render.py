@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from maintainer_radar.render import (
+    render_comment_template,
     render_detail,
     render_markdown,
     render_summary_markdown,
@@ -76,6 +77,25 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Maintainer Brief", output)
         self.assertIn("### Checks", output)
         self.assertIn("### Flags", output)
+
+    def test_comment_template_is_draft_and_uses_flags(self) -> None:
+        output = render_comment_template(
+            {
+                "action": "needs author follow-up",
+                "reviewability": 42,
+                "flags": [
+                    "CI failing",
+                    "no test plan found",
+                    "code changed without tests",
+                    "maintainer blocker language",
+                ],
+            }
+        )
+
+        self.assertIn("Current triage suggests", output)
+        self.assertIn("Get CI passing", output)
+        self.assertIn("Add a short validation", output)
+        self.assertIn("Generated as a draft", output)
 
 
 if __name__ == "__main__":

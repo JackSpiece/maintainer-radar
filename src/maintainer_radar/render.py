@@ -123,3 +123,45 @@ def render_detail(item: dict[str, Any]) -> str:
         lines.append("- No risk flags detected")
 
     return "\n".join(lines) + "\n"
+
+
+def render_comment_template(item: dict[str, Any]) -> str:
+    action = str(item.get("action") or "needs triage")
+    flags = [str(flag) for flag in item.get("flags") or []]
+    reviewability = item.get("reviewability")
+
+    requests: list[str] = []
+    if any("CI failing" in flag for flag in flags):
+        requests.append("Get CI passing or explain why the failing check is unrelated.")
+    if any("CI pending" in flag for flag in flags):
+        requests.append("Wait for CI to finish before requesting another review.")
+    if any("no test plan" in flag for flag in flags):
+        requests.append("Add a short validation or test plan to the PR body.")
+    if any("code changed without tests" in flag for flag in flags):
+        requests.append("Add regression coverage, or explain why tests are not practical for this change.")
+    if any("maintainer blocker language" in flag for flag in flags):
+        requests.append("Respond to the unresolved maintainer feedback before the next review pass.")
+    if any("large diff" in flag or "very large diff" in flag for flag in flags):
+        requests.append("Consider splitting the PR or explaining why the current scope needs to stay together.")
+    if any(flag.startswith("stale ") or flag.startswith("quiet ") for flag in flags):
+        requests.append("Rebase or leave a short status update so reviewers know the PR is still active.")
+    if not requests:
+        requests.append("Keep CI green and leave any extra context that would make review easier.")
+
+    lines = [
+        "Thanks for the PR.",
+        "",
+        f"Current triage suggests: **{action}**.",
+    ]
+    if reviewability is not None:
+        lines.append(f"Reviewability score: **{reviewability}/100**.")
+    lines.extend(["", "Before the next maintainer pass, please:"])
+    lines.extend(f"- {request}" for request in requests)
+    lines.extend(
+        [
+            "",
+            "_Generated as a draft with Maintainer Radar. Please edit before posting._",
+            "",
+        ]
+    )
+    return "\n".join(lines)

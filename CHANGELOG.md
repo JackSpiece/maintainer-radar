@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Added `pr --comment-template` for draft maintainer follow-up comments.
+
 ## 0.2.3
 
 - Added JSON output documentation for scripts and dashboards.

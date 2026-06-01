@@ -99,6 +99,12 @@ Analyze one PR in detail:
 maintainer-radar pr owner/repo 123
 ```
 
+Draft a maintainer follow-up comment without posting it:
+
+```bash
+maintainer-radar pr owner/repo 123 --comment-template
+```
+
 Track one contributor's open PRs:
 
 ```bash
@@ -142,6 +148,7 @@ Maintainer Radar currently checks:
 - generated file paths and lockfiles
 - maintainer comments that look like blockers
 - failing or pending checks
+- draft follow-up comments for one PR, without posting automatically
 
 The goal is not to replace review. The goal is to route attention.
 
