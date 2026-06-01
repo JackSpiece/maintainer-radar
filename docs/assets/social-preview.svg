@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
   <title id="title">Maintainer Radar social preview</title>
-  <desc id="desc">Local-first PR triage reports for maintainers.</desc>
+  <desc id="desc">GitHub Action and local CLI for read-only PR triage reports.</desc>
   <rect width="1200" height="630" fill="#f7f8fb"/>
   <rect x="56" y="54" width="1088" height="522" rx="24" fill="#ffffff" stroke="#d8dee9" stroke-width="2"/>
   <text x="102" y="136" fill="#172033" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="66" font-weight="800">Maintainer Radar</text>
-  <text x="106" y="190" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30">Local-first PR triage for maintainers</text>
-  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Try a public repo in the browser.</text>
+  <text x="106" y="190" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30">GitHub Action for PR triage</text>
+  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Read-only queue reports for maintainers.</text>
 
   <rect x="104" y="306" width="480" height="74" rx="14" fill="#101827"/>
-  <text x="132" y="352" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">maintainer-radar repo owner/repo</text>
+  <text x="132" y="352" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">uses: JackSpiece/maintainer-radar</text>
 
   <g transform="translate(650 202)">
     <rect width="470" height="362" rx="18" fill="#fbfcfe" stroke="#d8dee9" stroke-width="2"/>

@@ -24,6 +24,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('href="browser-preview.html"', html)
         self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
+        self.assertIn("GitHub Action and local CLI for read-only PR triage reports", html)
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
@@ -39,7 +40,8 @@ class PagesAssetTests(unittest.TestCase):
         svg = (ROOT / "docs" / "assets" / "social-preview.svg").read_text(encoding="utf-8")
 
         self.assertIn("Maintainer Radar", svg)
-        self.assertIn("Local-first PR triage for maintainers", svg)
+        self.assertIn("GitHub Action for PR triage", svg)
+        self.assertIn("uses: JackSpiece/maintainer-radar", svg)
         self.assertIn("jackspiece.github.io/maintainer-radar", svg)
 
     def test_browser_preview_docs_explain_network_and_limits(self) -> None:
@@ -58,7 +60,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.3", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.4", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)

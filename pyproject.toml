@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maintainer-radar"
-version = "0.16.3"
-description = "Local-first pull request triage reports for maintainers in the AI contribution era."
+version = "0.16.4"
+description = "GitHub Action and local CLI for read-only pull request triage reports."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

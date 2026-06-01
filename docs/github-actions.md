@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.3
+- uses: JackSpiece/maintainer-radar@v0.16.4
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -74,7 +74,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.3
+        uses: JackSpiece/maintainer-radar@v0.16.4
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -97,7 +97,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.3
+  uses: JackSpiece/maintainer-radar@v0.16.4
   env:
     GH_TOKEN: ${{ github.token }}
   with:

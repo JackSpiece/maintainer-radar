@@ -22,9 +22,18 @@ class MetadataTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("## Quick Start", readme)
+        self.assertIn("GitHub Action and local CLI for read-only pull request triage reports", readme)
         self.assertLess(
             readme.index("JackSpiece/maintainer-radar@"),
             readme.index('python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"'),
+        )
+
+    def test_project_description_mentions_action_and_read_only_triage(self) -> None:
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertIn(
+            'description = "GitHub Action and local CLI for read-only pull request triage reports."',
+            pyproject,
         )
 
 

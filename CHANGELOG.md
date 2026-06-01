@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.4
+
+- Updated README, package, Pages, and social-preview source descriptions to lead with the GitHub Action and read-only PR triage positioning.
+- Added tests to keep public metadata aligned with the Action-first positioning.
+
 ## 0.16.3
 
 - Added Copy Workflow to the browser demo so visitors can copy a ready scheduled GitHub Action workflow from the public preview.

@@ -2,7 +2,8 @@
 
 [![CI](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml)
 
-Local-first pull request triage reports for maintainers in the AI contribution era.
+GitHub Action and local CLI for read-only pull request triage reports in the AI
+contribution era.
 
 Demo: <https://jackspiece.github.io/maintainer-radar/> includes a no-install
 browser preview for public repositories.
@@ -60,7 +61,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.3
+- uses: JackSpiece/maintainer-radar@v0.16.4
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
