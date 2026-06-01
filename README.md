@@ -103,6 +103,13 @@ maintainer-radar repo owner/repo --action review-now --min-score 80
 maintainer-radar from-json queue.json --max-risk 25
 ```
 
+Sort a queue for the review session:
+
+```bash
+maintainer-radar repo owner/repo --sort action
+maintainer-radar from-json queue.json --sort risk
+```
+
 Use project-specific thresholds:
 
 ```bash
@@ -196,6 +203,8 @@ For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 For automation output, see [docs/json-output.md](docs/json-output.md).
 
 For spreadsheet output, see [docs/csv-output.md](docs/csv-output.md).
+
+For queue ordering, see [docs/sorting.md](docs/sorting.md).
 
 For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
 

@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from maintainer_radar.cli import _as_pr_list, build_parser, filter_analyses, filter_prs
+from maintainer_radar.cli import (
+    _as_pr_list,
+    build_parser,
+    filter_analyses,
+    filter_prs,
+    sort_analyses,
+)
 
 
 class CliTests(unittest.TestCase):
@@ -57,6 +63,17 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.action, "review-now")
         self.assertEqual(args.min_score, 80)
         self.assertEqual(args.max_risk, 20)
+
+    def test_sort_flag_is_available_for_queue_commands(self) -> None:
+        repo_args = build_parser().parse_args(["repo", "owner/repo", "--sort", "action"])
+        author_args = build_parser().parse_args(["author", "alice", "--sort", "risk"])
+        json_args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--sort", "stale"]
+        )
+
+        self.assertEqual(repo_args.sort, "action")
+        self.assertEqual(author_args.sort, "risk")
+        self.assertEqual(json_args.sort, "stale")
 
     def test_comment_template_flag_is_available_for_pr_command(self) -> None:
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
@@ -134,6 +151,53 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             [item["number"] for item in filter_analyses(analyses, max_risk=20)],
             [1],
+        )
+
+    def test_sort_analyses_supports_priority_score_risk_stale_and_number(self) -> None:
+        analyses = [
+            {
+                "number": 3,
+                "action": "ask for CI fix",
+                "reviewability": 20,
+                "risk": 80,
+                "stale_days": 3,
+            },
+            {
+                "number": 1,
+                "action": "review now",
+                "reviewability": 90,
+                "risk": 10,
+                "stale_days": 1,
+            },
+            {
+                "number": 2,
+                "action": "needs triage",
+                "reviewability": 30,
+                "risk": 70,
+                "stale_days": 12,
+            },
+        ]
+
+        self.assertEqual([item["number"] for item in sort_analyses(analyses)], [3, 1, 2])
+        self.assertEqual(
+            [item["number"] for item in sort_analyses(analyses, "action")],
+            [1, 3, 2],
+        )
+        self.assertEqual(
+            [item["number"] for item in sort_analyses(analyses, "score")],
+            [1, 2, 3],
+        )
+        self.assertEqual(
+            [item["number"] for item in sort_analyses(analyses, "risk")],
+            [3, 2, 1],
+        )
+        self.assertEqual(
+            [item["number"] for item in sort_analyses(analyses, "stale")],
+            [2, 3, 1],
+        )
+        self.assertEqual(
+            [item["number"] for item in sort_analyses(analyses, "number")],
+            [1, 2, 3],
         )
 
 

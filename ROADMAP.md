@@ -26,6 +26,10 @@
 
 - CSV export for maintainers who keep review queues in spreadsheets
 
+## 0.7
+
+- Deterministic queue sorting for different maintainer review sessions
+
 ## Design Rules
 
 - No hidden network service.

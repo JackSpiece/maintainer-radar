@@ -32,6 +32,19 @@ ACTION_SLUGS = {
     "needs-triage": "needs triage",
 }
 
+ACTION_PRIORITY = {
+    "review now": 0,
+    "review with caution": 1,
+    "ask for CI fix": 2,
+    "wait for CI": 3,
+    "needs author follow-up": 4,
+    "wait for author": 5,
+    "request smaller PR": 6,
+    "needs triage": 7,
+}
+
+SORT_CHOICES = ["input", "action", "score", "risk", "stale", "number"]
+
 
 def _load_json(path: str) -> Any:
     with open(path, "r", encoding="utf-8") as fh:
@@ -119,6 +132,45 @@ def filter_analyses(
     return result
 
 
+def sort_analyses(analyses: list[dict[str, Any]], sort_by: str = "input") -> list[dict[str, Any]]:
+    if sort_by == "input":
+        return analyses
+    if sort_by == "action":
+        return sorted(
+            analyses,
+            key=lambda item: (
+                ACTION_PRIORITY.get(str(item.get("action") or ""), 99),
+                -int(item.get("reviewability") or 0),
+                _number_value(item),
+            ),
+        )
+    if sort_by == "score":
+        return sorted(
+            analyses,
+            key=lambda item: (-int(item.get("reviewability") or 0), _number_value(item)),
+        )
+    if sort_by == "risk":
+        return sorted(
+            analyses,
+            key=lambda item: (-int(item.get("risk") or 0), _number_value(item)),
+        )
+    if sort_by == "stale":
+        return sorted(
+            analyses,
+            key=lambda item: (-int(item.get("stale_days") or 0), _number_value(item)),
+        )
+    if sort_by == "number":
+        return sorted(analyses, key=_number_value)
+    raise ValueError(f"Unsupported sort: {sort_by}")
+
+
+def _number_value(item: dict[str, Any]) -> int:
+    try:
+        return int(item.get("number") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
 def _emit(
     analyses: list[dict[str, Any]],
     fmt: str,
@@ -167,6 +219,14 @@ def build_parser() -> argparse.ArgumentParser:
             help="Path to config JSON. Defaults to .maintainer-radar.json when present.",
         )
 
+    def add_sort_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--sort",
+            choices=SORT_CHOICES,
+            default="input",
+            help="Sort queue output. Default: input.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -188,6 +248,7 @@ def build_parser() -> argparse.ArgumentParser:
     repo.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
     repo.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     repo.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
+    add_sort_argument(repo)
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -214,6 +275,7 @@ def build_parser() -> argparse.ArgumentParser:
     author.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
     author.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     author.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
+    add_sort_argument(author)
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
@@ -234,6 +296,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
     from_json.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     from_json.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
+    add_sort_argument(from_json)
 
     return parser
 
@@ -253,12 +316,14 @@ def main(argv: list[str] | None = None) -> int:
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
             )
+            analyses = [analyze_pr(pr, config=config) for pr in prs]
             analyses = filter_analyses(
-                [analyze_pr(pr, config=config) for pr in prs],
+                analyses,
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,
             )
+            analyses = sort_analyses(analyses, args.sort)
             _emit(
                 analyses,
                 args.format,
@@ -278,12 +343,14 @@ def main(argv: list[str] | None = None) -> int:
                 _emit([analysis], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
+            analyses = [analyze_pr(pr, config=config) for pr in prs]
             analyses = filter_analyses(
-                [analyze_pr(pr, config=config) for pr in prs],
+                analyses,
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,
             )
+            analyses = sort_analyses(analyses, args.sort)
             _emit(
                 analyses,
                 args.format,
@@ -292,12 +359,14 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path), source=args.source)
             detail = bool(args.detail and len(prs) == 1)
+            analyses = [analyze_pr(pr, config=config) for pr in prs]
             analyses = filter_analyses(
-                [analyze_pr(pr, config=config) for pr in prs],
+                analyses,
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,
             )
+            analyses = sort_analyses(analyses, args.sort)
             _emit(
                 analyses,
                 args.format,
