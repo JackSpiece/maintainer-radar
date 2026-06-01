@@ -150,6 +150,7 @@ Analyze offline JSON:
 
 ```bash
 maintainer-radar from-json examples/sample-prs.json
+cat examples/sample-prs.json | maintainer-radar from-json -
 maintainer-radar from-json gitlab-merge-requests.json --source gitlab
 maintainer-radar from-json forgejo-pull-requests.json --source forgejo
 maintainer-radar from-json gitea-pull-requests.json --source gitea

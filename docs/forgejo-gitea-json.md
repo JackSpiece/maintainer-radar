@@ -8,6 +8,7 @@ a hosted integration or stored token.
 ```bash
 maintainer-radar from-json forgejo-pull-requests.json --source forgejo
 maintainer-radar from-json gitea-pull-requests.json --source gitea --summary-only
+cat forgejo-pull-requests.json | maintainer-radar from-json - --source forgejo
 ```
 
 The command normalizes common Forgejo and Gitea pull request fields into the
