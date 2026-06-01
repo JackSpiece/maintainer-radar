@@ -18,6 +18,15 @@ class MetadataTests(unittest.TestCase):
         self.assertIsNotNone(match)
         self.assertEqual(__version__, match.group(1))
 
+    def test_readme_quick_start_leads_with_github_action(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("## Quick Start", readme)
+        self.assertLess(
+            readme.index("JackSpiece/maintainer-radar@"),
+            readme.index('python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"'),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

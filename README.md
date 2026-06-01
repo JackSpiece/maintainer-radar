@@ -52,27 +52,24 @@ dashboards. Maintainer Radar is different on purpose:
 - **Markdown-native:** output can be pasted into issues, PR comments, worklogs,
   release notes, or maintainer handoff docs.
 
-## Install
+## Quick Start
 
-Install directly from GitHub:
+For most maintainers, the fastest path is the reusable GitHub Action:
 
-```bash
-python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+```yaml
+- uses: actions/setup-python@v6
+  with:
+    python-version: "3.12"
+- uses: JackSpiece/maintainer-radar@v0.16.2
+  id: radar
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: markdown
 ```
 
-Then scan a repository:
-
-```bash
-maintainer-radar repo owner/repo --hydrate --sort action --top 10
-```
-
-Live GitHub commands require the GitHub CLI:
-
-```bash
-gh auth login
-```
-
-Create a read-only scheduled GitHub Actions report:
+Or generate a complete scheduled workflow:
 
 ```bash
 maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
@@ -83,19 +80,17 @@ a Markdown triage artifact. The report also appears in the GitHub Actions run
 summary, so maintainers do not have to download the artifact just to read the
 queue. It refuses to overwrite an existing file unless you pass `--force`.
 
-Or use the action directly in a workflow:
+For local CLI use, install directly from GitHub:
 
-```yaml
-- uses: actions/setup-python@v6
-  with:
-    python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.1
-  id: radar
-  env:
-    GH_TOKEN: ${{ github.token }}
-  with:
-    repository: ${{ github.repository }}
-    format: markdown
+```bash
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+maintainer-radar repo owner/repo --hydrate --sort action --top 10
+```
+
+Live CLI scans require the GitHub CLI:
+
+```bash
+gh auth login
 ```
 
 For local development from a checkout:
@@ -112,7 +107,7 @@ PYTHONPATH=src python -m maintainer_radar --help
 PYTHONPATH=src python -m unittest discover -s tests
 ```
 
-## Quickstart
+## Offline Example
 
 ![Maintainer Radar quickstart sequence](docs/assets/quickstart-sequence.svg)
 

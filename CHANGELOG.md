@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.2
+
+- Reworked the README quick start to lead with the reusable GitHub Action before local CLI install.
+- Added a README ordering test so the Action adoption path stays prominent.
+
 ## 0.16.1
 
 - Added dedicated GitHub Action usage documentation with copy-paste workflow, inputs, outputs, permissions, and troubleshooting.
