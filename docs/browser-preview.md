@@ -20,6 +20,10 @@ current repository.
 It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, score, risk-impact, and signal columns shown in the preview.
 
+The **Copy Workflow** button copies a ready scheduled GitHub Action workflow that
+uses the latest Maintainer Radar release and uploads the generated report as an
+artifact.
+
 ## What It Fetches
 
 For the recent open pull requests it scans, the preview fetches:

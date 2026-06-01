@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.3
+
+- Added Copy Workflow to the browser demo so visitors can copy a ready scheduled GitHub Action workflow from the public preview.
+- Added browser demo smoke coverage for workflow rendering and documented the new Copy Workflow button.
+
 ## 0.16.2
 
 - Reworked the README quick start to lead with the reusable GitHub Action before local CLI install.

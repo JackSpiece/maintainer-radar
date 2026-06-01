@@ -1,5 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
+  const ACTION_VERSION = "v0.16.3";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -389,6 +390,46 @@
     return `${lines.join("\n")}\n`;
   }
 
+  function renderActionWorkflow() {
+    return [
+      "name: Maintainer Radar",
+      "",
+      "on:",
+      "  workflow_dispatch:",
+      "  schedule:",
+      '    - cron: "0 8 * * 1-5"',
+      "",
+      "permissions:",
+      "  contents: read",
+      "  pull-requests: read",
+      "",
+      "jobs:",
+      "  report:",
+      "    runs-on: ubuntu-latest",
+      "    steps:",
+      "      - uses: actions/setup-python@v6",
+      "        with:",
+      '          python-version: "3.12"',
+      "      - name: Build PR report",
+      "        id: radar",
+      `        uses: JackSpiece/maintainer-radar@${ACTION_VERSION}`,
+      "        env:",
+      "          GH_TOKEN: ${{ github.token }}",
+      "        with:",
+      "          repository: ${{ github.repository }}",
+      "          format: markdown",
+      "          output: maintainer-radar.md",
+      '          limit: "50"',
+      "          sort: action",
+      '          hydrate: "true"',
+      "      - uses: actions/upload-artifact@v4",
+      "        with:",
+      "          name: maintainer-radar",
+      "          path: ${{ steps.radar.outputs.report-path }}",
+      "",
+    ].join("\n");
+  }
+
   function actionClass(action) {
     if (action === "review now") {
       return "review";
@@ -496,7 +537,8 @@
     const button = document.querySelector("#repo-submit");
     const copyButton = document.querySelector("#copy-link");
     const markdownButton = document.querySelector("#copy-markdown");
-    if (!form || !input || !button || !copyButton || !markdownButton) {
+    const workflowButton = document.querySelector("#copy-workflow");
+    if (!form || !input || !button || !copyButton || !markdownButton || !workflowButton) {
       return;
     }
 
@@ -594,6 +636,15 @@
       );
     });
 
+    workflowButton.addEventListener("click", async () => {
+      const workflow = renderActionWorkflow();
+      await copyText(
+        workflow,
+        `Copied GitHub Action workflow using Maintainer Radar ${ACTION_VERSION}.`,
+        "Workflow YAML is ready, but clipboard access is unavailable."
+      );
+    });
+
     const initialRepository = repositoryFromSearch(window.location.search);
     if (initialRepository) {
       input.value = initialRepository;
@@ -609,6 +660,7 @@
     normalizeRepository,
     repositoryFromSearch,
     renderMarkdownReport,
+    renderActionWorkflow,
     shareUrlForRepository,
     summarizeCheckRuns,
     summarizeItems,
