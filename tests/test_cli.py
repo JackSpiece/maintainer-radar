@@ -7,6 +7,7 @@ from maintainer_radar.cli import (
     build_parser,
     filter_analyses,
     filter_prs,
+    hydrate_prs,
     sort_analyses,
 )
 
@@ -74,6 +75,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(repo_args.sort, "action")
         self.assertEqual(author_args.sort, "risk")
         self.assertEqual(json_args.sort, "stale")
+
+    def test_hydrate_flag_is_available_for_live_queue_commands(self) -> None:
+        repo_args = build_parser().parse_args(["repo", "owner/repo", "--hydrate"])
+        author_args = build_parser().parse_args(["author", "alice", "--hydrate"])
+
+        self.assertTrue(repo_args.hydrate)
+        self.assertTrue(author_args.hydrate)
 
     def test_comment_template_flag_is_available_for_pr_command(self) -> None:
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
@@ -152,6 +160,60 @@ class CliTests(unittest.TestCase):
             [item["number"] for item in filter_analyses(analyses, max_risk=20)],
             [1],
         )
+
+    def test_hydrate_prs_fetches_detail_and_merges_existing_context(self) -> None:
+        calls: list[tuple[str, int | str]] = []
+
+        def viewer(repo: str, number: int | str) -> dict[str, object]:
+            calls.append((repo, number))
+            return {
+                "number": number,
+                "body": "Test plan: unit tests.",
+                "files": [{"path": "tests/test_parser.py"}],
+            }
+
+        hydrated = hydrate_prs(
+            [
+                {
+                    "number": 42,
+                    "title": "Fix parser",
+                    "labels": [{"name": "bug"}],
+                }
+            ],
+            repository="owner/repo",
+            viewer=viewer,
+        )
+
+        self.assertEqual(calls, [("owner/repo", 42)])
+        self.assertEqual(hydrated[0]["title"], "Fix parser")
+        self.assertEqual(hydrated[0]["body"], "Test plan: unit tests.")
+        self.assertEqual(hydrated[0]["files"][0]["path"], "tests/test_parser.py")
+
+    def test_hydrate_prs_uses_repository_from_author_search_items(self) -> None:
+        calls: list[tuple[str, int | str]] = []
+
+        def viewer(repo: str, number: int | str) -> dict[str, object]:
+            calls.append((repo, number))
+            return {"number": number, "body": "Validation: local run."}
+
+        hydrated = hydrate_prs(
+            [
+                {
+                    "number": 7,
+                    "repository": {"nameWithOwner": "org/project"},
+                    "title": "Fix race",
+                }
+            ],
+            viewer=viewer,
+        )
+
+        self.assertEqual(calls, [("org/project", 7)])
+        self.assertEqual(hydrated[0]["body"], "Validation: local run.")
+
+    def test_hydrate_prs_keeps_items_without_repository_context(self) -> None:
+        hydrated = hydrate_prs([{"number": 1, "title": "Unknown repo"}])
+
+        self.assertEqual(hydrated, [{"number": 1, "title": "Unknown repo"}])
 
     def test_sort_analyses_supports_priority_score_risk_stale_and_number(self) -> None:
         analyses = [

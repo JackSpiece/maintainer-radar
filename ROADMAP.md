@@ -30,6 +30,10 @@
 
 - Deterministic queue sorting for different maintainer review sessions
 
+## 0.8
+
+- Hydrated live GitHub scans for deeper body, file, and review signals
+
 ## Design Rules
 
 - No hidden network service.
