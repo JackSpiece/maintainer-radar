@@ -7,6 +7,8 @@ Local-first pull request triage reports for maintainers in the AI contribution e
 Demo: <https://jackspiece.github.io/maintainer-radar/> includes a no-install
 browser preview for public repositories.
 
+Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpython>
+
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
 
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
