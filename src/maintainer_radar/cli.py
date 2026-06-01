@@ -12,8 +12,10 @@ from .normalize import normalize_items
 from .render import (
     render_comment_template,
     render_comment_csv,
+    render_comment_html,
     render_csv,
     render_detail,
+    render_html,
     render_markdown,
     render_summary_csv,
     render_summary_markdown,
@@ -224,6 +226,9 @@ def _emit(
         else:
             print(render_csv(analyses), end="")
         return
+    if fmt == "html":
+        print(render_html(analyses, summary_only=summary_only), end="")
+        return
     if summary_only:
         print(render_summary_markdown(analyses), end="")
         return
@@ -242,7 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
     def add_format_argument(target: argparse.ArgumentParser, *, default: str | object) -> None:
         target.add_argument(
             "--format",
-            choices=["markdown", "json", "csv"],
+            choices=["markdown", "json", "csv", "html"],
             default=default,
             help="Output format. Default: markdown.",
         )
@@ -382,6 +387,8 @@ def main(argv: list[str] | None = None) -> int:
                     print(json.dumps({"comment": render_comment_template(analysis)}, indent=2))
                 elif args.format == "csv":
                     print(render_comment_csv(render_comment_template(analysis)), end="")
+                elif args.format == "html":
+                    print(render_comment_html(render_comment_template(analysis)), end="")
                 else:
                     print(render_comment_template(analysis), end="")
             else:

@@ -4,9 +4,11 @@ import unittest
 
 from maintainer_radar.render import (
     render_comment_csv,
+    render_comment_html,
     render_csv,
     render_comment_template,
     render_detail,
+    render_html,
     render_markdown,
     render_summary_csv,
     render_summary_markdown,
@@ -129,6 +131,42 @@ class RenderTests(unittest.TestCase):
 
         self.assertTrue(output.startswith("comment\n"))
         self.assertIn('"Thanks.\nPlease add tests."', output)
+
+    def test_html_output_contains_summary_and_escapes_content(self) -> None:
+        output = render_html(
+            [
+                {
+                    "number": 42,
+                    "title": "Fix <parser>",
+                    "url": "javascript:alert(1)",
+                    "action": "review now",
+                    "reviewability": 90,
+                    "signals": ["CI passed"],
+                    "flags": ["needs <tests>"],
+                }
+            ]
+        )
+
+        self.assertIn("<!doctype html>", output)
+        self.assertIn("PRs scanned", output)
+        self.assertIn("#42 Fix &lt;parser&gt;", output)
+        self.assertIn("needs &lt;tests&gt;", output)
+        self.assertNotIn("javascript:alert", output)
+
+    def test_summary_html_output_omits_table(self) -> None:
+        output = render_html(
+            [{"number": 1, "action": "review now", "reviewability": 90}],
+            summary_only=True,
+        )
+
+        self.assertIn("Maintainer Radar Report", output)
+        self.assertNotIn("<table>", output)
+
+    def test_comment_html_output_escapes_comment(self) -> None:
+        output = render_comment_html("Thanks.\n<script>alert(1)</script>")
+
+        self.assertIn("<pre>", output)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", output)
 
     def test_detail_contains_sections(self) -> None:
         output = render_detail(

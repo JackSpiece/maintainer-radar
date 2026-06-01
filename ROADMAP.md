@@ -34,6 +34,10 @@
 
 - Hydrated live GitHub scans for deeper body, file, and review signals
 
+## 0.9
+
+- Standalone static HTML reports for sharing local queue snapshots
+
 ## Design Rules
 
 - No hidden network service.
