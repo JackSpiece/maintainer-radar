@@ -52,3 +52,12 @@ maintainer-radar repo owner/repo --hydrate --sort action --top 10
 
 The CLI can use your authenticated `gh` session, inspect richer PR context, and
 emit Markdown, JSON, CSV, or standalone HTML reports.
+
+## Feedback
+
+If the preview scores a public PR incorrectly, open a focused report:
+
+https://github.com/JackSpiece/maintainer-radar/issues/new/choose
+
+Useful reports include the public PR link, the action you expected, and the
+signal that felt missing or too strong.

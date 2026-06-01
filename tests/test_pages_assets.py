@@ -15,6 +15,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Try a public repo", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('href="browser-preview.html"', html)
+        self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
@@ -41,6 +42,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("does not ask for a GitHub token", docs)
         self.assertIn("does not post comments", docs)
         self.assertIn("rate-limit", docs)
+        self.assertIn("issues/new/choose", docs)
 
 
 if __name__ == "__main__":
