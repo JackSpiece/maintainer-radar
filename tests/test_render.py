@@ -3,9 +3,12 @@ from __future__ import annotations
 import unittest
 
 from maintainer_radar.render import (
+    render_comment_csv,
+    render_csv,
     render_comment_template,
     render_detail,
     render_markdown,
+    render_summary_csv,
     render_summary_markdown,
     summarize_report,
 )
@@ -77,6 +80,55 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Maintainer Radar Summary", output)
         self.assertIn("Review now: 1", output)
         self.assertNotIn("| PR |", output)
+
+    def test_csv_output_contains_stable_columns(self) -> None:
+        output = render_csv(
+            [
+                {
+                    "number": 42,
+                    "title": "Fix parser cache race",
+                    "author": "alice",
+                    "action": "review now",
+                    "reviewability": 90,
+                    "risk": 10,
+                    "stale_days": 0,
+                    "changed_files": 2,
+                    "additions": 12,
+                    "deletions": 3,
+                    "labels": ["bug", "backend"],
+                    "signals": ["CI passed"],
+                    "flags": ["no test plan found"],
+                    "url": "https://example.test/pull/42",
+                }
+            ]
+        )
+
+        self.assertIn("number,title,author,action,reviewability,risk", output)
+        self.assertIn("42,Fix parser cache race,alice,review now,90,10", output)
+        self.assertIn("bug; backend", output)
+        self.assertIn("no test plan found", output)
+
+    def test_summary_csv_output_contains_one_summary_row(self) -> None:
+        output = render_summary_csv(
+            [
+                {"action": "review now", "reviewability": 90, "stale_days": 0},
+                {
+                    "action": "ask for CI fix",
+                    "reviewability": 30,
+                    "stale_days": 8,
+                    "flags": ["CI failing"],
+                },
+            ]
+        )
+
+        self.assertIn("total,review_now,author_follow_up", output)
+        self.assertIn("2,1,0,1,0,0,1,60", output)
+
+    def test_comment_csv_output_quotes_multiline_comment(self) -> None:
+        output = render_comment_csv("Thanks.\nPlease add tests.")
+
+        self.assertTrue(output.startswith("comment\n"))
+        self.assertIn('"Thanks.\nPlease add tests."', output)
 
     def test_detail_contains_sections(self) -> None:
         output = render_detail(

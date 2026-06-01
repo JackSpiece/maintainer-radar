@@ -1,6 +1,26 @@
 from __future__ import annotations
 
+import csv
+from io import StringIO
 from typing import Any
+
+
+CSV_FIELDS = [
+    "number",
+    "title",
+    "author",
+    "action",
+    "reviewability",
+    "risk",
+    "stale_days",
+    "changed_files",
+    "additions",
+    "deletions",
+    "labels",
+    "signals",
+    "flags",
+    "url",
+]
 
 
 def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
@@ -39,6 +59,57 @@ def render_summary_markdown(
         "",
     ]
     return "\n".join(lines)
+
+
+def render_csv(analyses: list[dict[str, Any]]) -> str:
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, lineterminator="\n")
+    writer.writeheader()
+    for item in analyses:
+        writer.writerow(
+            {
+                "number": item.get("number"),
+                "title": item.get("title") or "",
+                "author": item.get("author") or "",
+                "action": item.get("action") or "",
+                "reviewability": item.get("reviewability", ""),
+                "risk": item.get("risk", ""),
+                "stale_days": item.get("stale_days", ""),
+                "changed_files": item.get("changed_files", ""),
+                "additions": item.get("additions", ""),
+                "deletions": item.get("deletions", ""),
+                "labels": _join_csv_value(item.get("labels")),
+                "signals": _join_csv_value(item.get("signals")),
+                "flags": _join_csv_value(item.get("flags")),
+                "url": item.get("url") or "",
+            }
+        )
+    return output.getvalue()
+
+
+def render_summary_csv(analyses: list[dict[str, Any]]) -> str:
+    summary = summarize_report(analyses)
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=list(summary), lineterminator="\n")
+    writer.writeheader()
+    writer.writerow(summary)
+    return output.getvalue()
+
+
+def render_comment_csv(comment: str) -> str:
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=["comment"], lineterminator="\n")
+    writer.writeheader()
+    writer.writerow({"comment": comment})
+    return output.getvalue()
+
+
+def _join_csv_value(value: Any) -> str:
+    if not value:
+        return ""
+    if isinstance(value, list):
+        return "; ".join(str(item) for item in value if item)
+    return str(value)
 
 
 def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:

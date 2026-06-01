@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- Added CSV output for queue reports and summary reports.
+- Added CSV documentation for spreadsheet triage workflows.
+
 ## 0.5.1
 
 - Added a README quickstart screenshot sequence using sample data.

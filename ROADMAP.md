@@ -13,7 +13,6 @@
 - Better maintainer blocker detection
 - Repository health summary
 - `--since` and `--label` filters
-- CSV export for maintainers who keep review queues in spreadsheets
 - More real-world fixtures
 
 ## 0.3
@@ -23,6 +22,10 @@
 - Optional comment classifier plugin
 - Maintainer handoff report for release weeks
 
+## 0.6
+
+- CSV export for maintainers who keep review queues in spreadsheets
+
 ## Design Rules
 
 - No hidden network service.
@@ -30,4 +33,3 @@
 - No token storage.
 - Prefer transparent heuristics over opaque scores.
 - Markdown output first.
-

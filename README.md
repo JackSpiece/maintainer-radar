@@ -142,6 +142,12 @@ JSON output is available for automation:
 maintainer-radar repo owner/repo --format json
 ```
 
+CSV output is available for spreadsheets:
+
+```bash
+maintainer-radar repo owner/repo --format csv
+```
+
 ## Example Output
 
 ```markdown
@@ -188,6 +194,8 @@ For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md
 For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 
 For automation output, see [docs/json-output.md](docs/json-output.md).
+
+For spreadsheet output, see [docs/csv-output.md](docs/csv-output.md).
 
 For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
 
