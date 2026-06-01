@@ -39,6 +39,11 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertGreaterEqual(result["reviewability"], 75)
         self.assertIn("CI passed", result["signals"])
         self.assertIn("tests changed", result["signals"])
+        self.assertIn(
+            {"label": "CI passed", "risk_delta": -8, "kind": "signal"},
+            result["score_breakdown"],
+        )
+        self.assertLessEqual(result["raw_risk"], result["risk"])
 
     def test_blocked_large_pr_needs_author_follow_up(self) -> None:
         result = analyze_pr(
@@ -64,6 +69,14 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertLess(result["reviewability"], 50)
         self.assertIn("very large diff", result["flags"])
         self.assertIn("maintainer blocker language", result["flags"])
+        self.assertIn(
+            {"label": "very large diff", "risk_delta": 30, "kind": "flag"},
+            result["score_breakdown"],
+        )
+        self.assertIn(
+            {"label": "maintainer blocker language", "risk_delta": 25, "kind": "flag"},
+            result["score_breakdown"],
+        )
 
     def test_docs_only_shape_lowers_risk(self) -> None:
         result = analyze_pr(

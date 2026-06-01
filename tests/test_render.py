@@ -28,6 +28,9 @@ class RenderTests(unittest.TestCase):
                     "reviewability": 90,
                     "signals": ["CI passed"],
                     "flags": [],
+                    "score_breakdown": [
+                        {"label": "CI passed", "risk_delta": -8, "kind": "signal"},
+                    ],
                 }
             ]
         )
@@ -36,6 +39,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("PRs scanned: 1", output)
         self.assertIn("review now", output)
         self.assertIn("90", output)
+        self.assertIn("CI passed (-8 risk)", output)
         self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
 
     def test_summary_counts_actions(self) -> None:
@@ -100,14 +104,19 @@ class RenderTests(unittest.TestCase):
                     "labels": ["bug", "backend"],
                     "signals": ["CI passed"],
                     "flags": ["no test plan found"],
+                    "score_breakdown": [
+                        {"label": "no test plan found", "risk_delta": 8, "kind": "flag"},
+                    ],
                     "url": "https://example.test/pull/42",
                 }
             ]
         )
 
         self.assertIn("number,title,author,action,reviewability,risk", output)
+        self.assertIn("score_breakdown,url", output)
         self.assertIn("42,Fix parser cache race,alice,review now,90,10", output)
         self.assertIn("bug; backend", output)
+        self.assertIn("no test plan found (+8 risk)", output)
         self.assertIn("no test plan found", output)
 
     def test_summary_csv_output_contains_one_summary_row(self) -> None:
@@ -143,6 +152,9 @@ class RenderTests(unittest.TestCase):
                     "reviewability": 90,
                     "signals": ["CI passed"],
                     "flags": ["needs <tests>"],
+                    "score_breakdown": [
+                        {"label": "needs <tests>", "risk_delta": 8, "kind": "flag"},
+                    ],
                 }
             ]
         )
@@ -151,6 +163,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("PRs scanned", output)
         self.assertIn("#42 Fix &lt;parser&gt;", output)
         self.assertIn("needs &lt;tests&gt;", output)
+        self.assertIn("needs &lt;tests&gt; (+8 risk)", output)
         self.assertNotIn("javascript:alert", output)
 
     def test_summary_html_output_omits_table(self) -> None:
@@ -176,15 +189,21 @@ class RenderTests(unittest.TestCase):
                 "action": "review now",
                 "reviewability": 90,
                 "risk": 10,
+                "raw_risk": 10,
                 "checks": {"passed": 1},
                 "files": {"code_files": 1, "test_files": 1, "doc_files": 0},
                 "signals": ["CI passed"],
                 "flags": [],
+                "score_breakdown": [
+                    {"label": "CI passed", "risk_delta": -8, "kind": "signal"},
+                ],
             }
         )
 
         self.assertIn("Maintainer Brief", output)
         self.assertIn("### Checks", output)
+        self.assertIn("### Score Breakdown", output)
+        self.assertIn("CI passed: -8 risk", output)
         self.assertIn("### Flags", output)
 
     def test_comment_template_is_draft_and_uses_flags(self) -> None:

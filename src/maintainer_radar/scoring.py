@@ -211,6 +211,22 @@ def _label_names(pr: dict[str, Any]) -> list[str]:
     return [name for name in result if name]
 
 
+def _record_score(
+    breakdown: list[dict[str, Any]],
+    label: str,
+    risk_delta: int,
+    *,
+    kind: str,
+) -> None:
+    breakdown.append(
+        {
+            "label": label,
+            "risk_delta": risk_delta,
+            "kind": kind,
+        }
+    )
+
+
 def analyze_pr(
     pr: dict[str, Any],
     now: datetime | None = None,
@@ -234,72 +250,93 @@ def analyze_pr(
     risk = 0
     signals: list[str] = []
     flags: list[str] = []
+    score_breakdown: list[dict[str, Any]] = []
 
     if is_draft:
         risk += 25
         flags.append("draft PR")
+        _record_score(score_breakdown, "draft PR", 25, kind="flag")
 
     if total_diff > config["very_large_diff_lines"] or changed_files > config["very_large_file_count"]:
         risk += 30
         flags.append("very large diff")
+        _record_score(score_breakdown, "very large diff", 30, kind="flag")
     elif total_diff > config["large_diff_lines"] or changed_files > config["large_file_count"]:
         risk += 15
         flags.append("large diff")
+        _record_score(score_breakdown, "large diff", 15, kind="flag")
 
     if checks.total == 0:
         risk += 8
         flags.append("no visible checks")
+        _record_score(score_breakdown, "no visible checks", 8, kind="flag")
     elif checks.failed:
         risk += 30
         flags.append("CI failing")
+        _record_score(score_breakdown, "CI failing", 30, kind="flag")
     elif checks.pending:
         risk += 10
         flags.append("CI pending")
+        _record_score(score_breakdown, "CI pending", 10, kind="flag")
     elif checks.passed:
         risk -= 8
         signals.append("CI passed")
+        _record_score(score_breakdown, "CI passed", -8, kind="signal")
 
     if review_decision == "APPROVED":
         risk -= 10
         signals.append("approved")
+        _record_score(score_breakdown, "approved", -10, kind="signal")
     elif review_decision == "CHANGES_REQUESTED":
         risk += 25
         flags.append("changes requested")
+        _record_score(score_breakdown, "changes requested", 25, kind="flag")
     elif review_decision == "REVIEW_REQUIRED":
         signals.append("review required")
 
     if stale_days is not None:
         if stale_days >= config["stale_days"]:
             risk += 15
-            flags.append(f"stale {stale_days} days")
+            label = f"stale {stale_days} days"
+            flags.append(label)
+            _record_score(score_breakdown, label, 15, kind="flag")
         elif stale_days >= config["quiet_days"]:
             risk += 8
-            flags.append(f"quiet {stale_days} days")
+            label = f"quiet {stale_days} days"
+            flags.append(label)
+            _record_score(score_breakdown, label, 8, kind="flag")
 
     if has_blocker:
         risk += 25
         flags.append("maintainer blocker language")
+        _record_score(score_breakdown, "maintainer blocker language", 25, kind="flag")
 
     if has_body and not has_test_plan and files.code_files:
         risk += 8
         flags.append("no test plan found")
+        _record_score(score_breakdown, "no test plan found", 8, kind="flag")
     elif has_test_plan:
         signals.append("test plan present")
 
     if files.code_files and not files.test_files:
         risk += 10
         flags.append("code changed without tests")
+        _record_score(score_breakdown, "code changed without tests", 10, kind="flag")
     elif files.test_files:
         signals.append("tests changed")
 
     if files.generated_files:
-        risk += min(12, files.generated_files * 3)
+        generated_risk = min(12, files.generated_files * 3)
+        risk += generated_risk
         flags.append("generated or lockfile changes")
+        _record_score(score_breakdown, "generated or lockfile changes", generated_risk, kind="flag")
 
     if not files.code_files and files.doc_files:
         risk -= 6
         signals.append("docs-only shape")
+        _record_score(score_breakdown, "docs-only shape", -6, kind="signal")
 
+    raw_risk = risk
     risk = max(0, min(100, risk))
     reviewability = 100 - risk
     action = choose_action(
@@ -324,6 +361,8 @@ def analyze_pr(
         "action": action,
         "flags": flags,
         "signals": signals,
+        "score_breakdown": score_breakdown,
+        "raw_risk": raw_risk,
         "checks": checks.__dict__,
         "files": files.__dict__,
         "stale_days": stale_days,

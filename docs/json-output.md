@@ -23,9 +23,19 @@ Important fields:
 | `action` | string | Recommended maintainer action |
 | `signals` | array | Positive review signals |
 | `flags` | array | Risk flags |
+| `score_breakdown` | array | Heuristics that changed the PR risk score |
+| `raw_risk` | integer | Risk before clamping to the 0 to 100 range |
 | `checks` | object | Check summary |
 | `files` | object | File shape summary |
 | `stale_days` | integer or null | Days since last update |
+
+Each score breakdown entry has:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `label` | string | Heuristic name |
+| `risk_delta` | integer | Risk change from that heuristic |
+| `kind` | string | `signal` or `flag` |
 
 ## Summary Output
 

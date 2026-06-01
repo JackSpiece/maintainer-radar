@@ -53,6 +53,10 @@
 - Reproducible report time with `--now`
 - Generated sample output artifacts
 
+## 0.13
+
+- Score breakdowns for transparent risk impact in reports and automation
+
 ## Design Rules
 
 - No hidden network service.

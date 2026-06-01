@@ -29,6 +29,7 @@ Columns:
 | `labels` | Semicolon-separated labels |
 | `signals` | Semicolon-separated positive review signals |
 | `flags` | Semicolon-separated risk flags |
+| `score_breakdown` | Semicolon-separated risk impact explanations |
 | `url` | Pull request URL |
 
 ## Summary Output

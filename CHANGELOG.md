@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.13.0
+
+- Added score breakdowns that show which heuristics changed each PR's risk score.
+- Added risk impact output to Markdown, HTML, CSV, JSON, and detailed PR briefs.
+
 ## 0.12.0
 
 - Added `--now` for reproducible stale calculations.

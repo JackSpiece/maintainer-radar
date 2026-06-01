@@ -15,6 +15,14 @@
       "test plan present",
       "tests changed"
     ],
+    "score_breakdown": [
+      {
+        "label": "CI passed",
+        "risk_delta": -8,
+        "kind": "signal"
+      }
+    ],
+    "raw_risk": -8,
     "checks": {
       "passed": 2,
       "failed": 0,
@@ -53,6 +61,44 @@
       "code changed without tests"
     ],
     "signals": [],
+    "score_breakdown": [
+      {
+        "label": "very large diff",
+        "risk_delta": 30,
+        "kind": "flag"
+      },
+      {
+        "label": "CI failing",
+        "risk_delta": 30,
+        "kind": "flag"
+      },
+      {
+        "label": "changes requested",
+        "risk_delta": 25,
+        "kind": "flag"
+      },
+      {
+        "label": "stale 22 days",
+        "risk_delta": 15,
+        "kind": "flag"
+      },
+      {
+        "label": "maintainer blocker language",
+        "risk_delta": 25,
+        "kind": "flag"
+      },
+      {
+        "label": "no test plan found",
+        "risk_delta": 8,
+        "kind": "flag"
+      },
+      {
+        "label": "code changed without tests",
+        "risk_delta": 10,
+        "kind": "flag"
+      }
+    ],
+    "raw_risk": 143,
     "checks": {
       "passed": 0,
       "failed": 1,

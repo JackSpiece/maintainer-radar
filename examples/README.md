@@ -22,7 +22,9 @@ requests, then run it manually from the Actions tab or wait for the schedule.
 - `output/sample-report.csv`
 - `output/sample-report.html`
 
-These files are generated from `sample-prs.json` with a fixed report time:
+These files show the same sample queue in every supported output format,
+including risk impact explanations. They are generated from `sample-prs.json`
+with a fixed report time:
 
 ```bash
 PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json \

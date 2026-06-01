@@ -17,6 +17,7 @@ The report includes:
 - a triage table
 - links back to pull requests when the URL is safe
 - action labels
+- per-PR risk impact explanations
 - escaped titles, signals, flags, and comment text
 
 ## Summary Output

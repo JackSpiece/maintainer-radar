@@ -37,7 +37,7 @@ dashboards. Maintainer Radar is different on purpose:
 
 - **Maintainer-first:** it prioritizes review time, not contributor output.
 - **Local-first:** no SaaS, no webhook, no hosted database.
-- **Deterministic:** every flag comes from transparent heuristics.
+- **Deterministic:** every score comes with a visible heuristic breakdown.
 - **AI-era aware:** it catches the common failure shape of large PRs with weak
   test evidence and unresolved maintainer feedback.
 - **Markdown-native:** output can be pasted into issues, PR comments, worklogs,
@@ -179,10 +179,10 @@ maintainer-radar repo owner/repo --hydrate --sort action --format html > review-
 ```markdown
 ## Maintainer Radar Report
 
-| PR | Action | Score | Signals |
-| --- | --- | ---: | --- |
-| #42 Fix parser cache race | review now | 88 | CI passed, test plan present, tests changed |
-| #43 Add universal plugin system | request smaller PR | 41 | very large diff, no tests changed, review blockers |
+| PR | Action | Score | Risk Impact | Signals |
+| --- | --- | ---: | --- | --- |
+| #42 Fix parser cache race | review now | 100 | CI passed (-8 risk) | CI passed, test plan present, tests changed |
+| #43 Add universal plugin system | ask for CI fix | 0 | very large diff (+30 risk); CI failing (+30 risk) | very large diff, CI failing, changes requested |
 ```
 
 ## Signals
@@ -199,6 +199,7 @@ Maintainer Radar currently checks:
 - generated file paths and lockfiles
 - maintainer comments that look like blockers
 - failing or pending checks
+- per-PR score breakdowns that show each risk adjustment
 - draft follow-up comments for one PR, without posting automatically
 
 The goal is not to replace review. The goal is to route attention.

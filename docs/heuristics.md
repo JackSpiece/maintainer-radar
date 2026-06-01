@@ -3,6 +3,20 @@
 Maintainer Radar uses deterministic rules. The score is not truth. It is a
 routing hint for maintainer attention.
 
+Every analyzed PR includes a `score_breakdown` list. Each item names the
+heuristic, shows its `risk_delta`, and marks it as a `signal` or `flag`. Positive
+values raise risk. Negative values lower risk. The final risk score is clamped to
+the 0 to 100 range, then reviewability is calculated as `100 - risk`.
+
+Example:
+
+```json
+[
+  { "label": "CI passed", "risk_delta": -8, "kind": "signal" },
+  { "label": "code changed without tests", "risk_delta": 10, "kind": "flag" }
+]
+```
+
 ## Positive Signals
 
 - CI passed
@@ -45,4 +59,3 @@ This is not sentiment analysis. The goal is to catch comments that usually mean
 The test suite includes `tests/fixtures/blocker-prs.json` to keep blocker
 detection concrete. Add new fixture cases when a real maintainer pattern should
 be detected.
-

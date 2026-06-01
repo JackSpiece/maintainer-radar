@@ -21,6 +21,7 @@ CSV_FIELDS = [
     "labels",
     "signals",
     "flags",
+    "score_breakdown",
     "url",
 ]
 
@@ -42,6 +43,7 @@ HTML_TEMPLATE = """<!doctype html>
       --green: #047857;
       --amber: #b45309;
       --red: #b91c1c;
+      --purple: #7c3aed;
     }}
     body {{
       margin: 0;
@@ -149,6 +151,10 @@ HTML_TEMPLATE = """<!doctype html>
     .signals {{
       color: var(--muted);
     }}
+    .impact {{
+      color: var(--purple);
+      font-size: 14px;
+    }}
     .empty {{
       color: var(--muted);
       text-align: center;
@@ -241,6 +247,7 @@ def render_csv(analyses: list[dict[str, Any]]) -> str:
                 "labels": _join_csv_value(item.get("labels")),
                 "signals": _join_csv_value(item.get("signals")),
                 "flags": _join_csv_value(item.get("flags")),
+                "score_breakdown": _join_score_breakdown(item.get("score_breakdown")),
                 "url": item.get("url") or "",
             }
         )
@@ -294,6 +301,29 @@ def _join_csv_value(value: Any) -> str:
     return str(value)
 
 
+def _format_risk_delta(value: Any) -> str:
+    try:
+        delta = int(value)
+    except (TypeError, ValueError):
+        return "0"
+    return f"+{delta}" if delta > 0 else str(delta)
+
+
+def _join_score_breakdown(value: Any) -> str:
+    if not value:
+        return ""
+    items: list[str] = []
+    for entry in value:
+        if not isinstance(entry, dict):
+            continue
+        label = str(entry.get("label") or "").strip()
+        if not label:
+            continue
+        delta = _format_risk_delta(entry.get("risk_delta"))
+        items.append(f"{label} ({delta} risk)")
+    return "; ".join(items)
+
+
 def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
     summary = summarize_report(analyses)
     metrics = [
@@ -320,7 +350,7 @@ def _render_html_table(analyses: list[dict[str, Any]]) -> str:
     return (
         "<table>"
         "<thead><tr>"
-        "<th>PR</th><th>Action</th><th>Score</th><th>Signals</th>"
+        "<th>PR</th><th>Action</th><th>Score</th><th>Risk impact</th><th>Signals</th>"
         "</tr></thead>"
         f"<tbody>{rows}</tbody>"
         "</table>"
@@ -340,12 +370,14 @@ def _render_html_row(item: dict[str, Any]) -> str:
     action = str(item.get("action") or "needs triage")
     signals = item.get("signals") or []
     flags = item.get("flags") or []
+    impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
     signal_text = _join_csv_value([*signals, *flags]) or "no notable signals"
     return (
         "<tr>"
         f"<td>{pr_html}</td>"
         f'<td><span class="action {_action_class(action)}">{escape(action)}</span></td>'
         f'<td class="score">{escape(str(item.get("reviewability") or 0))}</td>'
+        f'<td class="impact">{escape(impact_text)}</td>'
         f'<td class="signals">{escape(signal_text)}</td>'
         "</tr>"
     )
@@ -367,8 +399,8 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
     lines = [
         render_summary_markdown(analyses, title=title).rstrip(),
         "",
-        "| PR | Action | Score | Signals |",
-        "| --- | --- | ---: | --- |",
+        "| PR | Action | Score | Risk Impact | Signals |",
+        "| --- | --- | ---: | --- | --- |",
     ]
     for item in analyses:
         number = item.get("number")
@@ -379,9 +411,10 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
             label = f"[{label}]({url})"
         signals = item.get("signals") or []
         flags = item.get("flags") or []
+        impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
         signal_text = ", ".join([*signals, *flags]) or "no notable signals"
         lines.append(
-            f"| {label} | {item.get('action')} | {item.get('reviewability')} | {signal_text} |"
+            f"| {label} | {item.get('action')} | {item.get('reviewability')} | {impact_text} | {signal_text} |"
         )
 
     lines.extend(
@@ -402,6 +435,9 @@ def render_detail(item: dict[str, Any]) -> str:
         f"- **Reviewability:** {item.get('reviewability')}/100",
         f"- **Risk:** {item.get('risk')}/100",
     ]
+    raw_risk = item.get("raw_risk")
+    if raw_risk is not None and raw_risk != item.get("risk"):
+        lines.append(f"- **Raw risk before clamp:** {raw_risk}")
     if item.get("url"):
         lines.append(f"- **URL:** {item.get('url')}")
     if item.get("author"):
@@ -431,6 +467,19 @@ def render_detail(item: dict[str, Any]) -> str:
             f"- Docs files: {files.get('doc_files', 0)}",
         ]
     )
+
+    lines.extend(["", "### Score Breakdown", ""])
+    score_breakdown = item.get("score_breakdown") or []
+    if score_breakdown:
+        for entry in score_breakdown:
+            if not isinstance(entry, dict):
+                continue
+            label = str(entry.get("label") or "").strip()
+            if label:
+                delta = _format_risk_delta(entry.get("risk_delta"))
+                lines.append(f"- {label}: {delta} risk")
+    else:
+        lines.append("- No score adjustments detected")
 
     flags = item.get("flags") or []
     signals = item.get("signals") or []
