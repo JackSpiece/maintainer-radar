@@ -30,6 +30,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("PRs scanned: 1", output)
         self.assertIn("review now", output)
         self.assertIn("90", output)
+        self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
 
     def test_summary_counts_actions(self) -> None:
         summary = summarize_report(

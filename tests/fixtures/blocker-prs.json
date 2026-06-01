@@ -1,0 +1,59 @@
+[
+  {
+    "number": 101,
+    "title": "Preview interaction update",
+    "body": "Validation: manual preview.",
+    "updatedAt": "2026-06-01T00:00:00Z",
+    "additions": 40,
+    "deletions": 8,
+    "changedFiles": 2,
+    "statusCheckRollup": [
+      { "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "comments": [
+      { "body": "This is not working in the preview." }
+    ],
+    "files": [
+      { "path": "src/ui/preview.ts" },
+      { "path": "src/ui/preview.test.ts" }
+    ]
+  },
+  {
+    "number": 102,
+    "title": "Refactor parser options",
+    "body": "Validation: local parser fixture.",
+    "updatedAt": "2026-06-01T00:00:00Z",
+    "additions": 120,
+    "deletions": 40,
+    "changedFiles": 5,
+    "statusCheckRollup": [
+      { "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      { "state": "CHANGES_REQUESTED", "body": "Please fix the regression before another review." }
+    ],
+    "files": [
+      { "path": "src/parser/options.py" },
+      { "path": "tests/test_parser_options.py" }
+    ]
+  },
+  {
+    "number": 103,
+    "title": "Add queue worker",
+    "body": "Initial implementation.",
+    "updatedAt": "2026-05-15T00:00:00Z",
+    "additions": 300,
+    "deletions": 12,
+    "changedFiles": 6,
+    "statusCheckRollup": [
+      { "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "comments": [
+      { "body": "This cannot merge without missing tests." }
+    ],
+    "files": [
+      { "path": "src/queue/worker.go" }
+    ]
+  }
+]
+

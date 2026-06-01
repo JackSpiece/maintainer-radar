@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
+from pathlib import Path
 import unittest
 
 from maintainer_radar.scoring import analyze_pr
@@ -82,7 +84,16 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertIn("docs-only shape", result["signals"])
         self.assertNotIn("code changed without tests", result["flags"])
 
+    def test_blocker_fixture_corpus_detects_maintainer_blockers(self) -> None:
+        fixture_path = Path(__file__).parent / "fixtures" / "blocker-prs.json"
+        prs = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+        for pr in prs:
+            with self.subTest(pr=pr["number"]):
+                result = analyze_pr(pr, now=NOW)
+                self.assertIn("maintainer blocker language", result["flags"])
+
+
 
 if __name__ == "__main__":
     unittest.main()
-

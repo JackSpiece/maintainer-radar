@@ -42,6 +42,7 @@ def render_summary_markdown(
 def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:
     lines = [
         render_summary_markdown(analyses, title=title).rstrip(),
+        "",
         "| PR | Action | Score | Signals |",
         "| --- | --- | ---: | --- |",
     ]

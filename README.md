@@ -159,6 +159,8 @@ For copy-paste maintainer workflows, see
 
 For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md).
 
+For scoring details, see [docs/heuristics.md](docs/heuristics.md).
+
 ## Contributing
 
 Issues and PRs are welcome, especially:

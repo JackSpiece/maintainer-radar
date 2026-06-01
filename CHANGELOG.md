@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+- Added maintainer blocker fixture corpus.
+- Added heuristic documentation.
+
 ## 0.2.1
 
 - Added output filters for recommended action, minimum reviewability score, and maximum risk.
