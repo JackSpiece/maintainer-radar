@@ -212,7 +212,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json.add_argument("path", help="Path to JSON file.")
     from_json.add_argument(
         "--source",
-        choices=["github", "gitlab"],
+        choices=["github", "gitlab", "forgejo", "gitea"],
         default="github",
         help="Input JSON source shape. Default: github.",
     )

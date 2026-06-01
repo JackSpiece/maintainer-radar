@@ -1,0 +1,45 @@
+{
+  "pull_requests": [
+    {
+      "number": 7,
+      "title": "Fix webhook retry loop",
+      "html_url": "https://forgejo.example.com/org/project/pulls/7",
+      "user": { "login": "maya" },
+      "body": "Validation: unit tests and local replay.",
+      "updated_at": "2026-06-01T00:00:00Z",
+      "draft": false,
+      "labels": [{ "name": "bug" }, { "name": "backend" }],
+      "reviews": [{ "state": "APPROVED", "body": "Looks good to me." }],
+      "statuses": [{ "context": "ci/test", "state": "success" }],
+      "changed_files": 2,
+      "additions": 48,
+      "deletions": 5,
+      "files": [
+        { "filename": "src/webhook/retry.py" },
+        { "filename": "tests/test_webhook_retry.py" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "WIP: Add queue rewrite",
+      "url": "https://gitea.example.com/org/project/pulls/8",
+      "user": { "username": "kai" },
+      "body": "Initial implementation.",
+      "updated_at": "2026-05-01T00:00:00Z",
+      "draft": true,
+      "labels": ["feature", "queue"],
+      "reviews": [
+        {
+          "state": "REQUEST_CHANGES",
+          "body": "This cannot merge until the worker regression is fixed."
+        }
+      ],
+      "checks": [{ "name": "unit tests", "status": "failure" }],
+      "changed_files": 24,
+      "additions": 1800,
+      "deletions": 120,
+      "files": [{ "path": "src/queue/runtime.ts" }],
+      "comments": [{ "body": "Please fix the failing worker regression." }]
+    }
+  ]
+}

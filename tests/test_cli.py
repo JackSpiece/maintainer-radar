@@ -68,6 +68,17 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(args.source, "gitlab")
 
+    def test_from_json_accepts_forgejo_and_gitea_sources(self) -> None:
+        forgejo_args = build_parser().parse_args(
+            ["from-json", "tests/fixtures/forgejo-pull-requests.json", "--source", "forgejo"]
+        )
+        gitea_args = build_parser().parse_args(
+            ["from-json", "tests/fixtures/forgejo-pull-requests.json", "--source", "gitea"]
+        )
+
+        self.assertEqual(forgejo_args.source, "forgejo")
+        self.assertEqual(gitea_args.source, "gitea")
+
     def test_config_flag_is_available_for_commands(self) -> None:
         args = build_parser().parse_args(
             ["from-json", "examples/sample-prs.json", "--config", "config.json"]

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Added Forgejo and Gitea pull request JSON normalization.
+- Added Forgejo/Gitea fixture coverage and documentation.
+
 ## 0.4.1
 
 - Added `.maintainer-radar.json` configuration support for thresholds and path hints.
