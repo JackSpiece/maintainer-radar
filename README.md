@@ -116,6 +116,12 @@ maintainer-radar repo owner/repo --sort action
 maintainer-radar from-json queue.json --sort risk
 ```
 
+Keep only the first results after filtering and sorting:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort risk --top 10
+```
+
 Use project-specific thresholds:
 
 ```bash
@@ -221,6 +227,8 @@ For spreadsheet output, see [docs/csv-output.md](docs/csv-output.md).
 For shareable static reports, see [docs/html-output.md](docs/html-output.md).
 
 For queue ordering, see [docs/sorting.md](docs/sorting.md).
+
+For compact queue snapshots, see [docs/focused-reports.md](docs/focused-reports.md).
 
 For deeper live GitHub reports, see [docs/hydrated-scans.md](docs/hydrated-scans.md).
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0
+
+- Added `--top` for focused queue reports after filtering and sorting.
+- Added focused report documentation.
+
 ## 0.9.1
 
 - Added copy-paste GitHub Actions workflow examples for Markdown and HTML artifacts.

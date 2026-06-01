@@ -23,3 +23,4 @@ Supported sorts:
 | `number` | Lowest PR number first. |
 
 Sorting runs after filters such as `--action`, `--min-score`, and `--max-risk`.
+Use `--top N` to keep only the first N items after sorting.
