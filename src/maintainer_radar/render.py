@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import csv
+from html import escape
 from io import StringIO
+import re
 from typing import Any
 
 
@@ -21,6 +23,164 @@ CSV_FIELDS = [
     "flags",
     "url",
 ]
+
+HTML_TEMPLATE = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title}</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --bg: #f8fafc;
+      --text: #111827;
+      --muted: #475569;
+      --line: #d8dee9;
+      --panel: #ffffff;
+      --blue: #2563eb;
+      --green: #047857;
+      --amber: #b45309;
+      --red: #b91c1c;
+    }}
+    body {{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }}
+    main {{
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto;
+    }}
+    header {{
+      margin-bottom: 24px;
+    }}
+    h1 {{
+      margin: 0 0 6px;
+      font-size: clamp(28px, 5vw, 42px);
+      letter-spacing: 0;
+    }}
+    .subtitle {{
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }}
+    .metrics {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 22px 0;
+    }}
+    .metric {{
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }}
+    .metric strong {{
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }}
+    .metric span {{
+      color: var(--muted);
+      font-size: 13px;
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }}
+    th, td {{
+      border-bottom: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }}
+    th {{
+      background: #eef2f7;
+      color: #243041;
+      font-size: 13px;
+      text-transform: uppercase;
+    }}
+    tr:last-child td {{
+      border-bottom: 0;
+    }}
+    a {{
+      color: var(--blue);
+      text-decoration: none;
+    }}
+    a:hover {{
+      text-decoration: underline;
+    }}
+    .score {{
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }}
+    .action {{
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #e5e7eb;
+      color: #1f2937;
+      white-space: nowrap;
+    }}
+    .action-review-now {{
+      background: #d1fae5;
+      color: var(--green);
+    }}
+    .action-ask-for-ci-fix,
+    .action-needs-author-follow-up,
+    .action-wait-for-author {{
+      background: #fee2e2;
+      color: var(--red);
+    }}
+    .action-wait-for-ci,
+    .action-review-with-caution,
+    .action-request-smaller-pr {{
+      background: #fef3c7;
+      color: var(--amber);
+    }}
+    .signals {{
+      color: var(--muted);
+    }}
+    .empty {{
+      color: var(--muted);
+      text-align: center;
+    }}
+    pre {{
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+      overflow-x: auto;
+    }}
+    footer {{
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>{title}</h1>
+      <p class="subtitle">Deterministic maintainer triage report.</p>
+    </header>
+    {summary}
+    {table}
+    <footer>Scores route maintainer attention. They do not replace review.</footer>
+  </main>
+</body>
+</html>
+"""
 
 
 def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
@@ -104,12 +264,103 @@ def render_comment_csv(comment: str) -> str:
     return output.getvalue()
 
 
+def render_html(
+    analyses: list[dict[str, Any]],
+    title: str = "Maintainer Radar Report",
+    *,
+    summary_only: bool = False,
+) -> str:
+    safe_title = escape(title)
+    summary_html = _render_html_summary(analyses)
+    table_html = "" if summary_only else _render_html_table(analyses)
+    return HTML_TEMPLATE.format(title=safe_title, summary=summary_html, table=table_html)
+
+
+def render_comment_html(comment: str) -> str:
+    title = "Maintainer Radar Comment Draft"
+    body = f"<pre>{escape(comment)}</pre>"
+    return HTML_TEMPLATE.format(
+        title=title,
+        summary="",
+        table=body,
+    )
+
+
 def _join_csv_value(value: Any) -> str:
     if not value:
         return ""
     if isinstance(value, list):
         return "; ".join(str(item) for item in value if item)
     return str(value)
+
+
+def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
+    summary = summarize_report(analyses)
+    metrics = [
+        ("PRs scanned", summary["total"]),
+        ("Review now", summary["review_now"]),
+        ("Author follow-up", summary["author_follow_up"]),
+        ("CI blocked", summary["ci_blocked"] + summary["ci_pending"]),
+        ("Large or triage", summary["large_or_triage"]),
+        ("Stale 7+ days", summary["stale"]),
+        ("Average score", f"{summary['average_score']}/100"),
+    ]
+    items = "\n".join(
+        f'<div class="metric"><strong>{escape(str(value))}</strong><span>{escape(label)}</span></div>'
+        for label, value in metrics
+    )
+    return f'<section class="metrics">{items}</section>'
+
+
+def _render_html_table(analyses: list[dict[str, Any]]) -> str:
+    if not analyses:
+        return '<p class="empty">No pull requests matched this report.</p>'
+
+    rows = "\n".join(_render_html_row(item) for item in analyses)
+    return (
+        "<table>"
+        "<thead><tr>"
+        "<th>PR</th><th>Action</th><th>Score</th><th>Signals</th>"
+        "</tr></thead>"
+        f"<tbody>{rows}</tbody>"
+        "</table>"
+    )
+
+
+def _render_html_row(item: dict[str, Any]) -> str:
+    number = item.get("number")
+    title_text = str(item.get("title") or "Untitled")
+    label = f"#{number} {title_text}" if number else title_text
+    url = _safe_url(item.get("url"))
+    if url:
+        pr_html = f'<a href="{url}">{escape(label)}</a>'
+    else:
+        pr_html = escape(label)
+
+    action = str(item.get("action") or "needs triage")
+    signals = item.get("signals") or []
+    flags = item.get("flags") or []
+    signal_text = _join_csv_value([*signals, *flags]) or "no notable signals"
+    return (
+        "<tr>"
+        f"<td>{pr_html}</td>"
+        f'<td><span class="action {_action_class(action)}">{escape(action)}</span></td>'
+        f'<td class="score">{escape(str(item.get("reviewability") or 0))}</td>'
+        f'<td class="signals">{escape(signal_text)}</td>'
+        "</tr>"
+    )
+
+
+def _safe_url(value: Any) -> str | None:
+    url = str(value or "")
+    if not url.startswith(("https://", "http://")):
+        return None
+    return escape(url, quote=True)
+
+
+def _action_class(action: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", action.lower()).strip("-")
+    return f"action-{slug}" if slug else "action-default"
 
 
 def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:

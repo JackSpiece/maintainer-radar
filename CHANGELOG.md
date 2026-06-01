@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0
+
+- Added standalone static HTML report output.
+- Added HTML output documentation.
+
 ## 0.8.0
 
 - Added opt-in hydrated live GitHub scans with `--hydrate`.

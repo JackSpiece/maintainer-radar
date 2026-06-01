@@ -161,6 +161,12 @@ CSV output is available for spreadsheets:
 maintainer-radar repo owner/repo --format csv
 ```
 
+HTML output is available for shareable local reports:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort action --format html > review-queue.html
+```
+
 ## Example Output
 
 ```markdown
@@ -209,6 +215,8 @@ For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 For automation output, see [docs/json-output.md](docs/json-output.md).
 
 For spreadsheet output, see [docs/csv-output.md](docs/csv-output.md).
+
+For shareable static reports, see [docs/html-output.md](docs/html-output.md).
 
 For queue ordering, see [docs/sorting.md](docs/sorting.md).
 
