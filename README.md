@@ -47,7 +47,25 @@ dashboards. Maintainer Radar is different on purpose:
 
 ## Install
 
-From a checkout:
+Install directly from GitHub:
+
+```bash
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+```
+
+Then scan a repository:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort action --top 10
+```
+
+Live GitHub commands require the GitHub CLI:
+
+```bash
+gh auth login
+```
+
+For local development from a checkout:
 
 ```bash
 python -m pip install -e .
@@ -59,12 +77,6 @@ Or run without installing:
 ```bash
 PYTHONPATH=src python -m maintainer_radar --help
 PYTHONPATH=src python -m unittest discover -s tests
-```
-
-Live GitHub commands require the GitHub CLI:
-
-```bash
-gh auth login
 ```
 
 ## Quickstart
