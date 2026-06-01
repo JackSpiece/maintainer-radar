@@ -13,22 +13,23 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Install Maintainer Radar
-        run: python -m pip install git+https://github.com/JackSpiece/maintainer-radar.git
       - name: Build Markdown report
+        id: radar
+        uses: JackSpiece/maintainer-radar@v0.16.0
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          maintainer-radar repo "${{ github.repository }}" \
-            --limit 50 \
-            --hydrate \
-            --sort action \
-            > maintainer-radar.md
+        with:
+          repository: ${{ github.repository }}
+          format: markdown
+          output: maintainer-radar.md
+          limit: "50"
+          sort: action
+          hydrate: "true"
+          step-summary: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: maintainer-radar-markdown
-          path: maintainer-radar.md
+          path: ${{ steps.radar.outputs.report-path }}

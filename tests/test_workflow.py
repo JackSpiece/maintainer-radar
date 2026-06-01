@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from maintainer_radar import __version__
 from maintainer_radar.workflow import render_github_action_workflow
 
 
@@ -15,10 +16,12 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("contents: read", output)
         self.assertIn("pull-requests: read", output)
         self.assertIn('GH_TOKEN: ${{ github.token }}', output)
-        self.assertIn("set -o pipefail", output)
-        self.assertIn('--sort action', output)
-        self.assertIn('--format markdown', output)
-        self.assertIn('| tee maintainer-radar.md >> "$GITHUB_STEP_SUMMARY"', output)
+        self.assertIn(f"uses: JackSpiece/maintainer-radar@v{__version__}", output)
+        self.assertIn("id: radar", output)
+        self.assertIn("format: markdown", output)
+        self.assertIn('sort: action', output)
+        self.assertIn('step-summary: "true"', output)
+        self.assertIn("path: ${{ steps.radar.outputs.report-path }}", output)
 
     def test_render_github_action_workflow_supports_html_without_hydration(self) -> None:
         output = render_github_action_workflow(
@@ -31,23 +34,18 @@ class WorkflowTests(unittest.TestCase):
         )
 
         self.assertIn('cron: "15 7 * * 1"', output)
-        self.assertIn("--limit 25", output)
-        self.assertNotIn("--hydrate", output)
-        self.assertIn("--sort risk", output)
-        self.assertIn("--top 10", output)
-        self.assertIn("--format html", output)
+        self.assertIn('limit: "25"', output)
+        self.assertIn('hydrate: "false"', output)
+        self.assertIn("sort: risk", output)
+        self.assertIn('top: "10"', output)
+        self.assertIn("format: html", output)
         self.assertIn("maintainer-radar.html", output)
-        self.assertIn("Publish job summary", output)
-        self.assertIn("continue-on-error: true", output)
-        self.assertIn('--summary-only >> "$GITHUB_STEP_SUMMARY"', output)
-        self.assertLess(output.index("actions/upload-artifact"), output.index("Publish job summary"))
+        self.assertIn('step-summary: "true"', output)
 
     def test_render_github_action_workflow_can_skip_step_summary(self) -> None:
         output = render_github_action_workflow(step_summary=False)
 
-        self.assertNotIn("GITHUB_STEP_SUMMARY", output)
-        self.assertNotIn("set -o pipefail", output)
-        self.assertIn("> maintainer-radar.md", output)
+        self.assertIn('step-summary: "false"', output)
 
     def test_render_github_action_workflow_rejects_invalid_values(self) -> None:
         with self.assertRaises(ValueError):

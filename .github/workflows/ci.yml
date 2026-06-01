@@ -26,3 +26,29 @@ jobs:
         run: |
           node --check docs/assets/demo.js
           node tests/demo_smoke.js
+
+  action-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Run local action
+        id: radar
+        uses: ./
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          repository: ${{ github.repository }}
+          format: markdown
+          output: maintainer-radar.md
+          limit: "5"
+          hydrate: "false"
+      - name: Check action output
+        run: |
+          test -s "${{ steps.radar.outputs.report-path }}"
+          grep -q "Maintainer Radar" "${{ steps.radar.outputs.report-path }}"

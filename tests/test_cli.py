@@ -165,7 +165,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(second_result, 2)
         self.assertEqual(forced_result, 0)
         self.assertIn("pull-requests: read", output)
-        self.assertIn("--format html", output)
+        self.assertIn("uses: JackSpiece/maintainer-radar@", output)
+        self.assertIn("format: html", output)
         self.assertIn("maintainer-radar.html", output)
 
     def test_init_action_does_not_load_scoring_config(self) -> None:

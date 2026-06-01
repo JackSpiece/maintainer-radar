@@ -14,6 +14,8 @@ This directory contains sample inputs and copy-paste workflow examples.
 
 Copy one workflow into `.github/workflows/` in a repository that uses GitHub pull
 requests, then run it manually from the Actions tab or wait for the schedule.
+The examples use the reusable `JackSpiece/maintainer-radar` GitHub Action and
+upload the generated report path exposed by the action.
 
 ## Generated Output
 

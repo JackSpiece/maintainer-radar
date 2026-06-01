@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.0
+
+- Added a reusable composite GitHub Action via `action.yml`.
+- Updated generated workflows and bundled examples to use `JackSpiece/maintainer-radar@v0.16.0`.
+- Added action metadata tests for inputs, outputs, run-summary behavior, and read-only guardrails.
+- Added CI smoke coverage that runs the action locally with `uses: ./`.
+
 ## 0.15.1
 
 - Updated generated GitHub Actions workflows to publish Markdown reports or summaries to the Actions run summary by default.

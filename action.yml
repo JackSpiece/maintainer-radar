@@ -1,0 +1,119 @@
+name: Maintainer Radar
+description: Build read-only pull request triage reports for maintainers.
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  repository:
+    description: Repository to scan in owner/name form. Defaults to the workflow repository.
+    required: false
+    default: ""
+  format:
+    description: Report format.
+    required: false
+    default: markdown
+  output:
+    description: Output file path for the report artifact. Defaults to maintainer-radar with the selected format extension.
+    required: false
+    default: ""
+  limit:
+    description: Maximum pull requests to scan.
+    required: false
+    default: "50"
+  sort:
+    description: Sort order for queue output.
+    required: false
+    default: action
+  top:
+    description: Only include the first N pull requests after filtering and sorting.
+    required: false
+    default: ""
+  hydrate:
+    description: Fetch full pull request details for deeper scoring.
+    required: false
+    default: "true"
+  step-summary:
+    description: Publish Markdown output or a compact summary to the GitHub Actions run summary.
+    required: false
+    default: "true"
+
+outputs:
+  report-path:
+    description: Path to the generated report file.
+    value: ${{ steps.build.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Maintainer Radar
+      shell: bash
+      run: python -m pip install "$GITHUB_ACTION_PATH"
+    - name: Build report
+      id: build
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_LIMIT: ${{ inputs.limit }}
+        INPUT_SORT: ${{ inputs.sort }}
+        INPUT_TOP: ${{ inputs.top }}
+        INPUT_HYDRATE: ${{ inputs.hydrate }}
+        INPUT_STEP_SUMMARY: ${{ inputs.step-summary }}
+      run: |
+        set -euo pipefail
+
+        repository="${INPUT_REPOSITORY:-${GITHUB_REPOSITORY:-}}"
+        if [ -z "$repository" ]; then
+          echo "repository input is required when GITHUB_REPOSITORY is unavailable" >&2
+          exit 2
+        fi
+        case "$INPUT_FORMAT" in
+          markdown) default_output="maintainer-radar.md" ;;
+          html) default_output="maintainer-radar.html" ;;
+          json) default_output="maintainer-radar.json" ;;
+          csv) default_output="maintainer-radar.csv" ;;
+          *)
+            echo "format must be markdown, html, json, or csv" >&2
+            exit 2
+            ;;
+        esac
+        output="${INPUT_OUTPUT:-$default_output}"
+        mkdir -p "$(dirname "$output")"
+        echo "report-path=$output" >> "$GITHUB_OUTPUT"
+
+        command=(
+          maintainer-radar repo "$repository"
+          --limit "$INPUT_LIMIT"
+          --sort "$INPUT_SORT"
+          --format "$INPUT_FORMAT"
+        )
+        if [ "$INPUT_HYDRATE" = "true" ]; then
+          command+=(--hydrate)
+        fi
+        if [ -n "$INPUT_TOP" ]; then
+          command+=(--top "$INPUT_TOP")
+        fi
+
+        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" = "markdown" ]; then
+          "${command[@]}" | tee "$output" >> "$GITHUB_STEP_SUMMARY"
+        else
+          "${command[@]}" > "$output"
+        fi
+
+        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ]; then
+          summary_command=(
+            maintainer-radar repo "$repository"
+            --limit "$INPUT_LIMIT"
+            --sort "$INPUT_SORT"
+            --summary-only
+          )
+          if [ "$INPUT_HYDRATE" = "true" ]; then
+            summary_command+=(--hydrate)
+          fi
+          if [ -n "$INPUT_TOP" ]; then
+            summary_command+=(--top "$INPUT_TOP")
+          fi
+          "${summary_command[@]}" >> "$GITHUB_STEP_SUMMARY" || true
+        fi

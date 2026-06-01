@@ -81,6 +81,21 @@ a Markdown triage artifact. The report also appears in the GitHub Actions run
 summary, so maintainers do not have to download the artifact just to read the
 queue. It refuses to overwrite an existing file unless you pass `--force`.
 
+Or use the action directly in a workflow:
+
+```yaml
+- uses: actions/setup-python@v6
+  with:
+    python-version: "3.12"
+- uses: JackSpiece/maintainer-radar@v0.16.0
+  id: radar
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: markdown
+```
+
 For local development from a checkout:
 
 ```bash
