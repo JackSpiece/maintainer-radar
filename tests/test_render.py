@@ -37,7 +37,12 @@ class RenderTests(unittest.TestCase):
         summary = summarize_report(
             [
                 {"action": "review now", "reviewability": 90, "stale_days": 0},
-                {"action": "ask for CI fix", "reviewability": 30, "stale_days": 8},
+                {
+                    "action": "ask for CI fix",
+                    "reviewability": 30,
+                    "stale_days": 8,
+                    "flags": ["CI failing"],
+                },
                 {"action": "needs triage", "reviewability": 20, "stale_days": 1},
             ]
         )
@@ -47,6 +52,20 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(summary["ci_blocked"], 1)
         self.assertEqual(summary["large_or_triage"], 1)
         self.assertEqual(summary["stale"], 1)
+
+    def test_summary_counts_ci_flags_even_when_action_differs(self) -> None:
+        summary = summarize_report(
+            [
+                {
+                    "action": "wait for author",
+                    "reviewability": 0,
+                    "stale_days": 0,
+                    "flags": ["draft PR", "CI failing"],
+                }
+            ]
+        )
+
+        self.assertEqual(summary["ci_blocked"], 1)
 
     def test_summary_only_output_has_no_table(self) -> None:
         output = render_summary_markdown(

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+- Added GitLab merge request JSON normalization.
+- Added GitLab fixture coverage and documentation.
+
 ## 0.3.0
 
 - Added `pr --comment-template` for draft maintainer follow-up comments.

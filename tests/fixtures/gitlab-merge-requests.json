@@ -1,0 +1,48 @@
+{
+  "merge_requests": [
+    {
+      "iid": 12,
+      "title": "Fix API cache invalidation",
+      "web_url": "https://gitlab.example.com/group/project/-/merge_requests/12",
+      "author": { "username": "alice" },
+      "description": "Validation: unit tests and local repro.",
+      "updated_at": "2026-06-01T00:00:00Z",
+      "draft": false,
+      "labels": ["bug", "backend"],
+      "approved": true,
+      "head_pipeline": { "status": "success", "ref": "feature/cache-fix" },
+      "changes_count": "2",
+      "changes": [
+        {
+          "new_path": "src/cache/api.py",
+          "diff": "@@\n-old_cache()\n+new_cache()\n"
+        },
+        {
+          "new_path": "tests/test_api_cache.py",
+          "diff": "@@\n+def test_cache_invalidation(): pass\n"
+        }
+      ]
+    },
+    {
+      "iid": 13,
+      "title": "Draft: Add plugin runtime",
+      "web_url": "https://gitlab.example.com/group/project/-/merge_requests/13",
+      "author": { "username": "bob" },
+      "description": "Initial implementation.",
+      "updated_at": "2026-05-01T00:00:00Z",
+      "draft": true,
+      "labels": "feature,plugins",
+      "blocking_discussions_resolved": false,
+      "pipeline": { "status": "failed", "ref": "feature/plugins" },
+      "changes_count": "35",
+      "stats": { "additions": 2200, "deletions": 200 },
+      "notes": [
+        { "body": "This cannot merge until the regression is fixed." }
+      ],
+      "changes": [
+        { "new_path": "src/plugin/runtime.ts", "diff": "" }
+      ]
+    }
+  ]
+}
+

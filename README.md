@@ -115,6 +115,7 @@ Analyze offline JSON:
 
 ```bash
 maintainer-radar from-json examples/sample-prs.json
+maintainer-radar from-json gitlab-merge-requests.json --source gitlab
 ```
 
 JSON output is available for automation:
@@ -169,6 +170,8 @@ For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md
 For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 
 For automation output, see [docs/json-output.md](docs/json-output.md).
+
+For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
 
 ## Contributing
 

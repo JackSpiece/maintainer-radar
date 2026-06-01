@@ -61,6 +61,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])
         self.assertEqual(_as_pr_list({"items": [{"number": 1}]}), [{"number": 1}])
 
+    def test_from_json_accepts_gitlab_source(self) -> None:
+        args = build_parser().parse_args(
+            ["from-json", "tests/fixtures/gitlab-merge-requests.json", "--source", "gitlab"]
+        )
+
+        self.assertEqual(args.source, "gitlab")
+
     def test_filter_prs_supports_label_author_and_dates(self) -> None:
         prs = [
             {

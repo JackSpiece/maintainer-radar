@@ -7,12 +7,14 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
     actions = [str(item.get("action") or "") for item in analyses]
     scores = [int(item.get("reviewability") or 0) for item in analyses]
     stale_count = sum(1 for item in analyses if (item.get("stale_days") or 0) >= 7)
+    ci_blocked = sum(1 for item in analyses if "CI failing" in (item.get("flags") or []))
+    ci_pending = sum(1 for item in analyses if "CI pending" in (item.get("flags") or []))
     return {
         "total": len(analyses),
         "review_now": actions.count("review now"),
         "author_follow_up": actions.count("needs author follow-up"),
-        "ci_blocked": actions.count("ask for CI fix"),
-        "ci_pending": actions.count("wait for CI"),
+        "ci_blocked": ci_blocked,
+        "ci_pending": ci_pending,
         "large_or_triage": actions.count("request smaller PR") + actions.count("needs triage"),
         "stale": stale_count,
         "average_score": round(sum(scores) / len(scores)) if scores else 0,

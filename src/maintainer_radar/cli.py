@@ -7,6 +7,7 @@ import sys
 from typing import Any
 
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
+from .normalize import normalize_items
 from .render import (
     render_comment_template,
     render_detail,
@@ -33,14 +34,8 @@ def _load_json(path: str) -> Any:
         return json.load(fh)
 
 
-def _as_pr_list(data: Any) -> list[dict[str, Any]]:
-    if isinstance(data, list):
-        return data
-    if isinstance(data, dict) and isinstance(data.get("items"), list):
-        return data["items"]
-    if isinstance(data, dict):
-        return [data]
-    raise ValueError("JSON input must be a PR object, a list of PR objects, or an object with items")
+def _as_pr_list(data: Any, *, source: str = "github") -> list[dict[str, Any]]:
+    return normalize_items(data, source=source)
 
 
 def _label_names(pr: dict[str, Any]) -> set[str]:
@@ -204,6 +199,12 @@ def build_parser() -> argparse.ArgumentParser:
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     from_json.add_argument("path", help="Path to JSON file.")
+    from_json.add_argument(
+        "--source",
+        choices=["github", "gitlab"],
+        default="github",
+        help="Input JSON source shape. Default: github.",
+    )
     from_json.add_argument("--detail", action="store_true", help="Render a detailed single-PR brief.")
     from_json.add_argument(
         "--action",
@@ -266,7 +267,7 @@ def main(argv: list[str] | None = None) -> int:
                 summary_only=args.summary_only,
             )
         elif args.command == "from-json":
-            prs = _as_pr_list(_load_json(args.path))
+            prs = _as_pr_list(_load_json(args.path), source=args.source)
             detail = bool(args.detail and len(prs) == 1)
             analyses = filter_analyses(
                 [analyze_pr(pr) for pr in prs],
