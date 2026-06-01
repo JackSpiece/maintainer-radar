@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Added output filters for recommended action, minimum reviewability score, and maximum risk.
+
 ## 0.2.0
 
 - Added `--summary-only` for queue commands.

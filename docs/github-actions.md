@@ -49,10 +49,18 @@ For a compact status artifact:
   run: maintainer-radar repo ${{ github.repository }} --limit 100 --summary-only > maintainer-radar-summary.md
 ```
 
+For a review-ready queue artifact:
+
+```yaml
+- name: Build review-ready report
+  env:
+    GH_TOKEN: ${{ github.token }}
+  run: maintainer-radar repo ${{ github.repository }} --action review-now --min-score 80 > review-ready.md
+```
+
 ## Notes
 
 - The tool uses `gh` for live GitHub data.
 - GitHub-hosted runners include `gh` by default.
 - The report is advisory. It does not approve, reject, or modify pull requests.
 - Keep permissions read-only unless your own workflow adds posting behavior.
-

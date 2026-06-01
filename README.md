@@ -86,6 +86,13 @@ Get a compact queue snapshot:
 maintainer-radar repo owner/repo --summary-only
 ```
 
+Focus a report on the most reviewable PRs:
+
+```bash
+maintainer-radar repo owner/repo --action review-now --min-score 80
+maintainer-radar from-json queue.json --max-risk 25
+```
+
 Analyze one PR in detail:
 
 ```bash

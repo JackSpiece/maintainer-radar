@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from maintainer_radar.cli import _as_pr_list, build_parser, filter_prs
+from maintainer_radar.cli import _as_pr_list, build_parser, filter_analyses, filter_prs
 
 
 class CliTests(unittest.TestCase):
@@ -33,6 +33,24 @@ class CliTests(unittest.TestCase):
         self.assertTrue(author_args.summary_only)
         self.assertTrue(json_args.summary_only)
 
+    def test_action_score_and_risk_flags_parse(self) -> None:
+        args = build_parser().parse_args(
+            [
+                "repo",
+                "owner/repo",
+                "--action",
+                "review-now",
+                "--min-score",
+                "80",
+                "--max-risk",
+                "20",
+            ]
+        )
+
+        self.assertEqual(args.action, "review-now")
+        self.assertEqual(args.min_score, 80)
+        self.assertEqual(args.max_risk, 20)
+
     def test_as_pr_list_accepts_common_shapes(self) -> None:
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])
@@ -58,6 +76,26 @@ class CliTests(unittest.TestCase):
         self.assertEqual([pr["number"] for pr in filter_prs(prs, author="bob")], [2])
         self.assertEqual(
             [pr["number"] for pr in filter_prs(prs, updated_since="2026-05-15")],
+            [1],
+        )
+
+    def test_filter_analyses_supports_action_score_and_risk(self) -> None:
+        analyses = [
+            {"number": 1, "action": "review now", "reviewability": 90, "risk": 10},
+            {"number": 2, "action": "ask for CI fix", "reviewability": 30, "risk": 70},
+            {"number": 3, "action": "review now", "reviewability": 65, "risk": 35},
+        ]
+
+        self.assertEqual(
+            [item["number"] for item in filter_analyses(analyses, action="review-now")],
+            [1, 3],
+        )
+        self.assertEqual(
+            [item["number"] for item in filter_analyses(analyses, min_score=80)],
+            [1],
+        )
+        self.assertEqual(
+            [item["number"] for item in filter_analyses(analyses, max_risk=20)],
             [1],
         )
 

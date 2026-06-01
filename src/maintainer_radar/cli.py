@@ -10,6 +10,17 @@ from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .render import render_detail, render_markdown, render_summary_markdown, summarize_report
 from .scoring import analyze_pr, days_since, parse_github_datetime
 
+ACTION_SLUGS = {
+    "review-now": "review now",
+    "review-with-caution": "review with caution",
+    "wait-for-author": "wait for author",
+    "wait-for-ci": "wait for CI",
+    "ask-for-ci-fix": "ask for CI fix",
+    "needs-author-follow-up": "needs author follow-up",
+    "request-smaller-pr": "request smaller PR",
+    "needs-triage": "needs triage",
+}
+
 
 def _load_json(path: str) -> Any:
     with open(path, "r", encoding="utf-8") as fh:
@@ -85,6 +96,24 @@ def filter_prs(
     return result
 
 
+def filter_analyses(
+    analyses: list[dict[str, Any]],
+    *,
+    action: str | None = None,
+    min_score: int | None = None,
+    max_risk: int | None = None,
+) -> list[dict[str, Any]]:
+    result = analyses
+    if action:
+        wanted_action = ACTION_SLUGS[action]
+        result = [item for item in result if item.get("action") == wanted_action]
+    if min_score is not None:
+        result = [item for item in result if int(item.get("reviewability") or 0) >= min_score]
+    if max_risk is not None:
+        result = [item for item in result if int(item.get("risk") or 0) <= max_risk]
+    return result
+
+
 def _emit(
     analyses: list[dict[str, Any]],
     fmt: str,
@@ -133,6 +162,13 @@ def build_parser() -> argparse.ArgumentParser:
     repo.add_argument("--author", help="Only include PRs by this author.")
     repo.add_argument("--stale-days", type=int, help="Only include PRs quiet for at least N days.")
     repo.add_argument("--updated-since", help="Only include PRs updated on or after this ISO date.")
+    repo.add_argument(
+        "--action",
+        choices=sorted(ACTION_SLUGS),
+        help="Only include PRs with this recommended action.",
+    )
+    repo.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
+    repo.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     repo.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
@@ -145,12 +181,26 @@ def build_parser() -> argparse.ArgumentParser:
     author.add_argument("username", help="GitHub username.")
     author.add_argument("--state", default="open", choices=["open", "closed"])
     author.add_argument("--limit", type=int, default=50)
+    author.add_argument(
+        "--action",
+        choices=sorted(ACTION_SLUGS),
+        help="Only include PRs with this recommended action.",
+    )
+    author.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
+    author.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     author.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     from_json.add_argument("path", help="Path to JSON file.")
     from_json.add_argument("--detail", action="store_true", help="Render a detailed single-PR brief.")
+    from_json.add_argument(
+        "--action",
+        choices=sorted(ACTION_SLUGS),
+        help="Only include PRs with this recommended action.",
+    )
+    from_json.add_argument("--min-score", type=int, help="Only include PRs with reviewability >= N.")
+    from_json.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     from_json.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     return parser
@@ -170,8 +220,14 @@ def main(argv: list[str] | None = None) -> int:
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
             )
-            _emit(
+            analyses = filter_analyses(
                 [analyze_pr(pr) for pr in prs],
+                action=args.action,
+                min_score=args.min_score,
+                max_risk=args.max_risk,
+            )
+            _emit(
+                analyses,
                 args.format,
                 summary_only=args.summary_only,
             )
@@ -180,16 +236,28 @@ def main(argv: list[str] | None = None) -> int:
             _emit([analyze_pr(pr)], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
-            _emit(
+            analyses = filter_analyses(
                 [analyze_pr(pr) for pr in prs],
+                action=args.action,
+                min_score=args.min_score,
+                max_risk=args.max_risk,
+            )
+            _emit(
+                analyses,
                 args.format,
                 summary_only=args.summary_only,
             )
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path))
             detail = bool(args.detail and len(prs) == 1)
-            _emit(
+            analyses = filter_analyses(
                 [analyze_pr(pr) for pr in prs],
+                action=args.action,
+                min_score=args.min_score,
+                max_risk=args.max_risk,
+            )
+            _emit(
+                analyses,
                 args.format,
                 detail=detail,
                 summary_only=args.summary_only,
