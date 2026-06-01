@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import timezone
+from datetime import datetime, timezone
 import json
 import sys
 from typing import Any, Callable
@@ -53,6 +53,17 @@ def _load_json(path: str) -> Any:
         return json.load(sys.stdin)
     with open(path, "r", encoding="utf-8") as fh:
         return json.load(fh)
+
+
+def _parse_now(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    now = parse_github_datetime(value)
+    if now is None:
+        raise ValueError("--now must be an ISO date, for example 2026-06-01")
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    return now
 
 
 def _as_pr_list(data: Any, *, source: str = "github") -> list[dict[str, Any]]:
@@ -283,6 +294,12 @@ def build_parser() -> argparse.ArgumentParser:
             help="Fetch full PR detail before scoring. Slower, but enables body, file, and review signals.",
         )
 
+    def add_now_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--now",
+            help="Override the current time for stale calculations. Use an ISO date.",
+        )
+
     def add_top_argument(target: argparse.ArgumentParser) -> None:
         target.add_argument(
             "--top",
@@ -296,6 +313,7 @@ def build_parser() -> argparse.ArgumentParser:
     repo = sub.add_parser("repo", help="Analyze pull requests in a repository.")
     add_format_argument(repo, default=argparse.SUPPRESS)
     add_config_argument(repo)
+    add_now_argument(repo)
     repo.add_argument("repository", help="Repository in owner/name form.")
     repo.add_argument("--state", default="open", choices=["open", "closed", "all"])
     repo.add_argument("--limit", type=int, default=30)
@@ -318,6 +336,7 @@ def build_parser() -> argparse.ArgumentParser:
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
     add_config_argument(pr)
+    add_now_argument(pr)
     pr.add_argument("repository", help="Repository in owner/name form.")
     pr.add_argument("number", help="Pull request number.")
     pr.add_argument(
@@ -329,6 +348,7 @@ def build_parser() -> argparse.ArgumentParser:
     author = sub.add_parser("author", help="Analyze pull requests by author.")
     add_format_argument(author, default=argparse.SUPPRESS)
     add_config_argument(author)
+    add_now_argument(author)
     author.add_argument("username", help="GitHub username.")
     author.add_argument("--state", default="open", choices=["open", "closed"])
     author.add_argument("--limit", type=int, default=50)
@@ -347,6 +367,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     add_config_argument(from_json)
+    add_now_argument(from_json)
     from_json.add_argument("path", help="Path to JSON file, or - for stdin.")
     from_json.add_argument(
         "--source",
@@ -375,6 +396,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         config = load_config(args.config)
+        now = _parse_now(args.now)
         if args.command == "repo":
             prs = list_repo_prs(args.repository, state=args.state, limit=args.limit)
             prs = filter_prs(
@@ -386,7 +408,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             if args.hydrate:
                 prs = hydrate_prs(prs, repository=args.repository)
-            analyses = [analyze_pr(pr, config=config) for pr in prs]
+            analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,
                 action=args.action,
@@ -402,7 +424,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
-            analysis = analyze_pr(pr, config=config)
+            analysis = analyze_pr(pr, config=config, now=now)
             if args.comment_template:
                 if args.format == "json":
                     print(json.dumps({"comment": render_comment_template(analysis)}, indent=2))
@@ -418,7 +440,7 @@ def main(argv: list[str] | None = None) -> int:
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
             if args.hydrate:
                 prs = hydrate_prs(prs)
-            analyses = [analyze_pr(pr, config=config) for pr in prs]
+            analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,
                 action=args.action,
@@ -435,7 +457,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path), source=args.source)
             detail = bool(args.detail and len(prs) == 1)
-            analyses = [analyze_pr(pr, config=config) for pr in prs]
+            analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,
                 action=args.action,

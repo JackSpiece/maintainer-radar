@@ -7,6 +7,7 @@ import unittest
 from maintainer_radar.cli import (
     _as_pr_list,
     _load_json,
+    _parse_now,
     build_parser,
     filter_analyses,
     filter_prs,
@@ -145,6 +146,23 @@ class CliTests(unittest.TestCase):
         )
 
         self.assertEqual(args.config, "config.json")
+
+    def test_now_flag_is_available_for_commands(self) -> None:
+        args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--now", "2026-06-01"]
+        )
+
+        self.assertEqual(args.now, "2026-06-01")
+
+    def test_parse_now_accepts_iso_dates_and_rejects_invalid_values(self) -> None:
+        self.assertIsNone(_parse_now(None))
+        self.assertEqual(
+            _parse_now("2026-06-01").isoformat(),
+            "2026-06-01T00:00:00+00:00",
+        )
+
+        with self.assertRaises(ValueError):
+            _parse_now("not-a-date")
 
     def test_filter_prs_supports_label_author_and_dates(self) -> None:
         prs = [
