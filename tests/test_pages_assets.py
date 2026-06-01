@@ -14,6 +14,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Try a public repo", html)
         self.assertIn("maintainer-radar init-action", html)
+        self.assertIn("run summary", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
         self.assertIn('id="copy-markdown"', html)

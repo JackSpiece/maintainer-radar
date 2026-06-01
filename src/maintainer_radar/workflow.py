@@ -21,6 +21,7 @@ def render_github_action_workflow(
     sort: str = "action",
     hydrate: bool = True,
     top: int | None = None,
+    step_summary: bool = True,
 ) -> str:
     if report_format not in REPORT_EXTENSIONS:
         formats = ", ".join(sorted(REPORT_EXTENSIONS))
@@ -39,28 +40,29 @@ def render_github_action_workflow(
     extension = REPORT_EXTENSIONS[report_format]
     output_path = f"maintainer-radar.{extension}"
     artifact_name = f"maintainer-radar-{report_format}"
-    command_lines = [
-        '          maintainer-radar repo "${{ github.repository }}" \\',
-        f"            --limit {limit} \\",
-    ]
-    if hydrate:
-        command_lines.append("            --hydrate \\")
-    command_lines.extend(
-        [
-            f"            --sort {sort} \\",
-        ]
+    command = _build_report_command(
+        report_format=report_format,
+        output_path=output_path,
+        limit=limit,
+        sort=sort,
+        hydrate=hydrate,
+        top=top,
+        step_summary=step_summary,
     )
-    if top is not None:
-        command_lines.append(f"            --top {top} \\")
-    command_lines.extend(
-        [
-            f"            --format {report_format} \\",
-            f"            > {output_path}",
-        ]
-    )
+    summary_step = _render_summary_step(limit=limit, sort=sort, hydrate=hydrate, top=top)
 
     escaped_schedule = clean_schedule.replace('"', '\\"')
-    command = "\n".join(command_lines)
+    job_summary_note = (
+        "\n"
+        "      - name: Publish job summary\n"
+        "        continue-on-error: true\n"
+        "        env:\n"
+        "          GH_TOKEN: ${{ github.token }}\n"
+        "        run: |\n"
+        f"{summary_step}"
+        if step_summary and report_format != "markdown"
+        else ""
+    )
     return f"""name: Maintainer Radar Report
 
 on:
@@ -91,4 +93,67 @@ jobs:
         with:
           name: {artifact_name}
           path: {output_path}
+{job_summary_note}
 """
+
+
+def _repo_command_base(
+    *,
+    limit: int,
+    sort: str,
+    hydrate: bool,
+    top: int | None,
+) -> list[str]:
+    lines = [
+        '          maintainer-radar repo "${{ github.repository }}" \\',
+        f"            --limit {limit} \\",
+    ]
+    if hydrate:
+        lines.append("            --hydrate \\")
+    lines.append(f"            --sort {sort} \\")
+    if top is not None:
+        lines.append(f"            --top {top} \\")
+    return lines
+
+
+def _build_report_command(
+    *,
+    report_format: str,
+    output_path: str,
+    limit: int,
+    sort: str,
+    hydrate: bool,
+    top: int | None,
+    step_summary: bool,
+) -> str:
+    lines: list[str] = []
+    if step_summary and report_format == "markdown":
+        lines.append("          set -o pipefail")
+    lines.extend(_repo_command_base(limit=limit, sort=sort, hydrate=hydrate, top=top))
+    if step_summary and report_format == "markdown":
+        lines.extend(
+            [
+                "            --format markdown \\",
+                f'            | tee {output_path} >> "$GITHUB_STEP_SUMMARY"',
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                f"            --format {report_format} \\",
+                f"            > {output_path}",
+            ]
+        )
+    return "\n".join(lines)
+
+
+def _render_summary_step(
+    *,
+    limit: int,
+    sort: str,
+    hydrate: bool,
+    top: int | None,
+) -> str:
+    lines = _repo_command_base(limit=limit, sort=sort, hydrate=hydrate, top=top)
+    lines.append('            --summary-only >> "$GITHUB_STEP_SUMMARY"')
+    return "\n".join(lines)

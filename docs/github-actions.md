@@ -22,6 +22,11 @@ The command prints YAML to stdout when `--path` is omitted. When `--path` is
 provided, it creates parent directories and refuses to overwrite an existing
 workflow unless `--force` is passed.
 
+Generated workflows publish Markdown output to the GitHub Actions run summary by
+default. For HTML, JSON, and CSV artifacts, the workflow also publishes a compact
+Markdown summary so the first read does not require downloading an artifact. Use
+`--no-step-summary` if you only want uploaded artifacts.
+
 Copy-paste examples are available in:
 
 - [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)

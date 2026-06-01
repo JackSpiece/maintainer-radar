@@ -77,8 +77,9 @@ maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
 ```
 
 This writes a workflow that scans the current repository's PR queue and uploads
-a Markdown triage artifact. It refuses to overwrite an existing file unless you
-pass `--force`.
+a Markdown triage artifact. The report also appears in the GitHub Actions run
+summary, so maintainers do not have to download the artifact just to read the
+queue. It refuses to overwrite an existing file unless you pass `--force`.
 
 For local development from a checkout:
 

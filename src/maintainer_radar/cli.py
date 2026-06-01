@@ -413,6 +413,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip full PR hydration for a faster but shallower workflow.",
     )
     init_action.add_argument(
+        "--no-step-summary",
+        action="store_true",
+        help="Skip publishing a Markdown report or summary to the Actions run summary.",
+    )
+    init_action.add_argument(
         "--path",
         help="Write the workflow to this path instead of stdout, for example .github/workflows/maintainer-radar.yml.",
     )
@@ -438,6 +443,7 @@ def main(argv: list[str] | None = None) -> int:
                 sort=args.sort,
                 hydrate=not args.no_hydrate,
                 top=args.top,
+                step_summary=not args.no_step_summary,
             )
             if args.path:
                 output_path = Path(args.path)

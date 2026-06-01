@@ -129,6 +129,7 @@ class CliTests(unittest.TestCase):
                 "--top",
                 "10",
                 "--no-hydrate",
+                "--no-step-summary",
                 "--path",
                 ".github/workflows/maintainer-radar.yml",
                 "--force",
@@ -142,6 +143,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.sort, "risk")
         self.assertEqual(args.top, 10)
         self.assertTrue(args.no_hydrate)
+        self.assertTrue(args.no_step_summary)
         self.assertTrue(args.force)
 
     def test_init_action_writes_workflow_and_protects_existing_file(self) -> None:

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.1
+
+- Updated generated GitHub Actions workflows to publish Markdown reports or summaries to the Actions run summary by default.
+- Added `--no-step-summary` for artifact-only workflows.
+- Added step-summary coverage for Markdown and non-Markdown workflow artifacts.
+
 ## 0.15.0
 
 - Added `init-action` to print or write a read-only GitHub Actions workflow.
