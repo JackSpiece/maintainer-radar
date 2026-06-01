@@ -49,6 +49,8 @@ SORT_CHOICES = ["input", "action", "score", "risk", "stale", "number"]
 
 
 def _load_json(path: str) -> Any:
+    if path == "-":
+        return json.load(sys.stdin)
     with open(path, "r", encoding="utf-8") as fh:
         return json.load(fh)
 
@@ -345,7 +347,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     add_config_argument(from_json)
-    from_json.add_argument("path", help="Path to JSON file.")
+    from_json.add_argument("path", help="Path to JSON file, or - for stdin.")
     from_json.add_argument(
         "--source",
         choices=["github", "gitlab", "forgejo", "gitea"],

@@ -8,6 +8,7 @@ integration or stored token.
 ```bash
 maintainer-radar from-json gitlab-merge-requests.json --source gitlab
 maintainer-radar from-json gitlab-merge-requests.json --source gitlab --summary-only
+cat gitlab-merge-requests.json | maintainer-radar from-json - --source gitlab
 ```
 
 The command normalizes common GitLab merge request fields into the same internal
@@ -73,4 +74,3 @@ Example:
 Maintainer Radar does not call GitLab directly yet. Export MR JSON through your
 own script, CI job, or GitLab API tooling, then pass the saved file to
 `from-json --source gitlab`.
-

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from io import StringIO
+from unittest.mock import patch
 import unittest
 
 from maintainer_radar.cli import (
     _as_pr_list,
+    _load_json,
     build_parser,
     filter_analyses,
     filter_prs,
@@ -111,6 +114,12 @@ class CliTests(unittest.TestCase):
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])
         self.assertEqual(_as_pr_list({"items": [{"number": 1}]}), [{"number": 1}])
+
+    def test_load_json_accepts_stdin_path(self) -> None:
+        with patch("sys.stdin", StringIO('{"items": [{"number": 7}]}')):
+            data = _load_json("-")
+
+        self.assertEqual(data, {"items": [{"number": 7}]})
 
     def test_from_json_accepts_gitlab_source(self) -> None:
         args = build_parser().parse_args(

@@ -70,3 +70,11 @@ score=$(maintainer-radar repo owner/repo --summary-only --format json |
 echo "Average reviewability: $score"
 ```
 
+## Stdin Input
+
+Use `from-json -` to read PR data from stdin:
+
+```bash
+cat examples/sample-prs.json | maintainer-radar from-json -
+gh api repos/owner/repo/pulls | maintainer-radar from-json -
+```

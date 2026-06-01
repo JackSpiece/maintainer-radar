@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0
+
+- Added stdin support for offline JSON with `from-json -`.
+- Added stdin pipeline documentation.
+
 ## 0.10.0
 
 - Added `--top` for focused queue reports after filtering and sorting.

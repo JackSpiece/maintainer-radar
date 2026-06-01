@@ -43,6 +43,10 @@
 
 - Focused top-N queue reports after filtering and sorting
 
+## 0.11
+
+- Stdin support for offline JSON pipelines
+
 ## Design Rules
 
 - No hidden network service.
