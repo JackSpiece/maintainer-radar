@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maintainer-radar"
+version = "0.1.0"
+description = "Local-first pull request triage reports for maintainers in the AI contribution era."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "JackSpiece" }]
+keywords = [
+  "github",
+  "maintainers",
+  "open-source",
+  "pull-requests",
+  "triage",
+  "ai",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Version Control :: Git",
+]
+dependencies = []
+
+[project.scripts]
+maintainer-radar = "maintainer_radar.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/JackSpiece/maintainer-radar"
+Issues = "https://github.com/JackSpiece/maintainer-radar/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

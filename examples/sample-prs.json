@@ -1,0 +1,44 @@
+[
+  {
+    "number": 42,
+    "title": "Fix parser cache race",
+    "url": "https://github.com/example/project/pull/42",
+    "author": { "login": "contributor-a" },
+    "body": "Summary: fixes a race in parser cache invalidation.\n\nTest plan: unit test plus local repro.",
+    "updatedAt": "2026-06-01T00:00:00Z",
+    "additions": 42,
+    "deletions": 18,
+    "changedFiles": 3,
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "status": "COMPLETED", "conclusion": "SUCCESS" },
+      { "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "files": [
+      { "path": "src/parser/cache.py" },
+      { "path": "tests/test_parser_cache.py" }
+    ]
+  },
+  {
+    "number": 43,
+    "title": "Add universal plugin system",
+    "url": "https://github.com/example/project/pull/43",
+    "author": { "login": "contributor-b" },
+    "body": "Implementation update.",
+    "updatedAt": "2026-05-10T00:00:00Z",
+    "additions": 2200,
+    "deletions": 120,
+    "changedFiles": 40,
+    "reviewDecision": "CHANGES_REQUESTED",
+    "statusCheckRollup": [
+      { "status": "COMPLETED", "conclusion": "FAILURE" }
+    ],
+    "comments": [
+      { "body": "This is not working in the preview." }
+    ],
+    "files": [
+      { "path": "src/plugin/runtime.ts" }
+    ]
+  }
+]
+

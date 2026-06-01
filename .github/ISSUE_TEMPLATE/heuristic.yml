@@ -1,0 +1,27 @@
+name: Heuristic improvement
+description: Suggest a better maintainer triage signal.
+title: "Heuristic: "
+labels: ["heuristic"]
+body:
+  - type: textarea
+    id: pattern
+    attributes:
+      label: Pattern
+      description: What PR pattern should Maintainer Radar detect?
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Link public examples or describe the shape.
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+      description: What action or flag should the tool produce?
+    validations:
+      required: true
+

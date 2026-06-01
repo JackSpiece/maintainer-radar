@@ -1,0 +1,26 @@
+name: Bug report
+description: Report incorrect scoring, output, or CLI behavior.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Minimal fixture or command
+      description: Paste a redacted JSON fixture or the exact command.
+      render: shell
+    validations:
+      required: false
+
