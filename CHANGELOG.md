@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Added maintainer handoff and follow-up examples.
+
 ## 0.1.2
 
 - Added label, author, stale-days, and updated-since filters for repo scans.

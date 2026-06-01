@@ -139,6 +139,9 @@ review workflows.
 
 See [ROADMAP.md](ROADMAP.md).
 
+For copy-paste maintainer workflows, see
+[docs/handoff-examples.md](docs/handoff-examples.md).
+
 ## Contributing
 
 Issues and PRs are welcome, especially:
