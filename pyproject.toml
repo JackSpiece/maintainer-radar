@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maintainer-radar"
-version = "0.13.0"
+version = "0.14.0"
 description = "Local-first pull request triage reports for maintainers in the AI contribution era."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,7 @@ maintainer-radar = "maintainer_radar.cli:main"
 [project.urls]
 Homepage = "https://github.com/JackSpiece/maintainer-radar"
 Issues = "https://github.com/JackSpiece/maintainer-radar/issues"
+Demo = "https://jackspiece.github.io/maintainer-radar/"
 
 [tool.setuptools.packages.find]
 where = ["src"]

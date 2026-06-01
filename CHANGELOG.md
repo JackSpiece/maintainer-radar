@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.0
+
+- Added a no-install browser preview for public GitHub repositories.
+- Added public check-run signals to the browser preview for CI passed, failing, pending, or absent states.
+- Added GitHub Pages demo metadata, social preview image, browser-preview documentation, and feedback links.
+- Added CI coverage for browser demo assets, Pages metadata, and package version alignment.
+
 ## 0.13.0
 
 - Added score breakdowns that show which heuristics changed each PR's risk score.

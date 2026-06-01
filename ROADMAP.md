@@ -57,6 +57,11 @@
 
 - Score breakdowns for transparent risk impact in reports and automation
 
+## 0.14
+
+- Interactive browser preview for public GitHub repositories
+- Public check-run signals and feedback links for the demo
+
 ## Design Rules
 
 - No hidden network service.
