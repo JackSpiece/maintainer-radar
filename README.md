@@ -161,6 +161,8 @@ For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md
 
 For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 
+For automation output, see [docs/json-output.md](docs/json-output.md).
+
 ## Contributing
 
 Issues and PRs are welcome, especially:
