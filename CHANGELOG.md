@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.14.1
+
+- Added shareable browser demo links with `?repo=owner/repo`.
+- Added a Copy Link flow after scanning a public repository in the browser demo.
+
 ## 0.14.0
 
 - Added a no-install browser preview for public GitHub repositories.
