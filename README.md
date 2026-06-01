@@ -210,6 +210,8 @@ For copy-paste maintainer workflows, see
 
 For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md).
 
+For copy-paste workflows and sample data, see [examples/README.md](examples/README.md).
+
 For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 
 For automation output, see [docs/json-output.md](docs/json-output.md).

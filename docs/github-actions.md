@@ -1,8 +1,13 @@
 # GitHub Actions Integration
 
-Maintainer Radar can run in CI and upload a Markdown triage report as an
-artifact. This is useful for maintainers who want a daily queue snapshot without
-installing another GitHub App.
+Maintainer Radar can run in CI and upload Markdown or HTML triage reports as
+artifacts. This is useful for maintainers who want a daily queue snapshot
+without installing another GitHub App.
+
+Copy-paste examples are available in:
+
+- [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)
+- [examples/github-actions/daily-html-report.yml](../examples/github-actions/daily-html-report.yml)
 
 ## Scheduled Queue Report
 
@@ -31,11 +36,37 @@ jobs:
       - name: Build PR report
         env:
           GH_TOKEN: ${{ github.token }}
-        run: maintainer-radar repo ${{ github.repository }} --limit 50 > maintainer-radar.md
+        run: |
+          maintainer-radar repo "${{ github.repository }}" \
+            --limit 50 \
+            --hydrate \
+            --sort action \
+            > maintainer-radar.md
       - uses: actions/upload-artifact@v4
         with:
           name: maintainer-radar
           path: maintainer-radar.md
+```
+
+## HTML Artifact
+
+For a static browser-friendly report:
+
+```yaml
+- name: Build HTML report
+  env:
+    GH_TOKEN: ${{ github.token }}
+  run: |
+    maintainer-radar repo "${{ github.repository }}" \
+      --limit 50 \
+      --hydrate \
+      --sort action \
+      --format html \
+      > maintainer-radar.html
+- uses: actions/upload-artifact@v4
+  with:
+    name: maintainer-radar-html
+    path: maintainer-radar.html
 ```
 
 ## Summary-Only Report

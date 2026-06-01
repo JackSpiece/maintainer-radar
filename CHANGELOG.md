@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.1
+
+- Added copy-paste GitHub Actions workflow examples for Markdown and HTML artifacts.
+- Added examples documentation.
+
 ## 0.9.0
 
 - Added standalone static HTML report output.
