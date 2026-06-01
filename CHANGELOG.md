@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0
+
+- Added queue sorting with `--sort` for action, score, risk, stale days, and PR number.
+- Added queue sorting documentation.
+
 ## 0.6.0
 
 - Added CSV output for queue reports and summary reports.
