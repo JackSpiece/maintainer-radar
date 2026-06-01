@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- Added a README quickstart screenshot sequence using sample data.
+
 ## 0.5.0
 
 - Added Forgejo and Gitea pull request JSON normalization.

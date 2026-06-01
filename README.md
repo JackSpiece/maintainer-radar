@@ -65,6 +65,16 @@ Live GitHub commands require the GitHub CLI:
 gh auth login
 ```
 
+## Quickstart
+
+![Maintainer Radar quickstart sequence](docs/assets/quickstart-sequence.svg)
+
+Try the offline sample data first:
+
+```bash
+PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json
+```
+
 ## Usage
 
 Analyze open PRs in a repository:
