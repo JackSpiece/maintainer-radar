@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maintainer Radar</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --text: #172033;
+      --muted: #5d6678;
+      --line: #d8dee9;
+      --panel: #ffffff;
+      --green: #047857;
+      --blue: #1d4ed8;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --violet: #6d28d9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 58px;
+    }
+
+    .brand {
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 34px 0 48px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+      gap: 26px;
+      align-items: start;
+      margin-bottom: 34px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 42px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      margin: 0 0 20px;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .command {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101827;
+      color: #f8fafc;
+      padding: 14px;
+      overflow-x: auto;
+      font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .note {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .note span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .report {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .report-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 16px;
+      background: #eef2f7;
+    }
+
+    .report-head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .report-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .metric {
+      background: var(--panel);
+      padding: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-top: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #2f3a4c;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .score {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .review {
+      background: #d1fae5;
+      color: var(--green);
+    }
+
+    .ci {
+      background: #fee2e2;
+      color: var(--red);
+    }
+
+    .impact {
+      color: var(--violet);
+      font-size: 14px;
+    }
+
+    .signals {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .asset {
+      margin-top: 34px;
+      border-top: 1px solid var(--line);
+      padding-top: 26px;
+    }
+
+    .asset img {
+      display: block;
+      width: min(760px, 100%);
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .asset p {
+      max-width: 760px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 860px) {
+      .intro,
+      .notes {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      table {
+        min-width: 760px;
+      }
+
+      .report {
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      nav,
+      .report-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="wrap" aria-label="Primary navigation">
+      <a class="brand" href="./">Maintainer Radar</a>
+      <div class="links">
+        <a href="https://github.com/JackSpiece/maintainer-radar">GitHub</a>
+        <a href="https://github.com/JackSpiece/maintainer-radar/releases">Releases</a>
+        <a href="heuristics.html">Heuristics</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <h1 id="title">Local PR triage for maintainers</h1>
+        <p class="lede">
+          Maintainer Radar turns pull request metadata into a deterministic queue brief:
+          what is ready for review, what is blocked by CI, and why each score changed.
+        </p>
+        <pre class="command">PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json --now 2026-06-01T00:00:00Z</pre>
+        <div class="notes" aria-label="Project traits">
+          <div class="note">
+            <strong>Local-first</strong>
+            <span>No GitHub App, webhook, hosted database, or model key required.</span>
+          </div>
+          <div class="note">
+            <strong>Explainable</strong>
+            <span>Every risk score includes the exact heuristic impact.</span>
+          </div>
+          <div class="note">
+            <strong>Maintainer-shaped</strong>
+            <span>Output is built for review queues, handoffs, and CI artifacts.</span>
+          </div>
+        </div>
+      </div>
+
+      <section class="report" aria-label="Sample Maintainer Radar report">
+        <div class="report-head">
+          <div>
+            <h2>Sample Queue Report</h2>
+            <span>Generated from offline fixture data</span>
+          </div>
+          <a href="https://github.com/JackSpiece/maintainer-radar/blob/main/examples/output/sample-report.md">View Markdown</a>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong>2</strong><span>PRs scanned</span></div>
+          <div class="metric"><strong>1</strong><span>Review now</span></div>
+          <div class="metric"><strong>1</strong><span>CI blocked</span></div>
+          <div class="metric"><strong>50</strong><span>Average score</span></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>PR</th>
+              <th>Action</th>
+              <th>Score</th>
+              <th>Risk impact</th>
+              <th>Signals</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#42 Fix parser cache race</td>
+              <td><span class="pill review">review now</span></td>
+              <td class="score">100</td>
+              <td class="impact">CI passed (-8 risk)</td>
+              <td class="signals">CI passed, review required, test plan present, tests changed</td>
+            </tr>
+            <tr>
+              <td>#43 Add universal plugin system</td>
+              <td><span class="pill ci">ask for CI fix</span></td>
+              <td class="score">0</td>
+              <td class="impact">very large diff (+30 risk); CI failing (+30 risk)</td>
+              <td class="signals">changes requested, stale 22 days, no test plan found</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section class="asset" aria-labelledby="terminal-title">
+      <h2 id="terminal-title">The CLI stays boring on purpose</h2>
+      <p>
+        It reads GitHub data through <code>gh</code> or offline JSON, then emits
+        Markdown, JSON, CSV, or standalone HTML. The scoring is transparent
+        enough to inspect and small enough to adjust for a repository's workflow.
+      </p>
+      <img src="assets/terminal-preview.svg" alt="Terminal preview of Maintainer Radar output">
+    </section>
+  </main>
+</body>
+</html>

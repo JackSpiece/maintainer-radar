@@ -4,6 +4,8 @@
 
 Local-first pull request triage reports for maintainers in the AI contribution era.
 
+Demo: <https://jackspiece.github.io/maintainer-radar/>
+
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
