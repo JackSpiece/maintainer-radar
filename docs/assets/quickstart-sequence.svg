@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="760" viewBox="0 0 1120 760" role="img" aria-labelledby="title desc">
+  <title id="title">Maintainer Radar quickstart sequence</title>
+  <desc id="desc">A three step terminal quickstart showing install, an offline JSON run, and the resulting maintainer triage report.</desc>
+  <rect width="1120" height="760" rx="18" fill="#f8fafc"/>
+  <text x="48" y="58" fill="#111827" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="700">Quickstart with sample data</text>
+  <text x="48" y="92" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="17">Run locally, inspect the queue, paste the Markdown where maintainers already work.</text>
+
+  <g transform="translate(48 126)">
+    <rect width="1024" height="152" rx="10" fill="#111827"/>
+    <rect width="1024" height="36" rx="10" fill="#1f2937"/>
+    <circle cx="24" cy="18" r="6" fill="#ef4444"/>
+    <circle cx="46" cy="18" r="6" fill="#f59e0b"/>
+    <circle cx="68" cy="18" r="6" fill="#22c55e"/>
+    <circle cx="954" cy="18" r="13" fill="#2563eb"/>
+    <text x="950" y="24" fill="#ffffff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="700">1</text>
+    <text x="28" y="68" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">$ python -m pip install -e .</text>
+    <text x="28" y="102" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">$ PYTHONPATH=src python -m maintainer_radar --help</text>
+    <text x="28" y="132" fill="#d1d5db" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">No service account, webhook, hosted app, or model token required.</text>
+  </g>
+
+  <g transform="translate(48 308)">
+    <rect width="1024" height="176" rx="10" fill="#111827"/>
+    <rect width="1024" height="36" rx="10" fill="#1f2937"/>
+    <circle cx="24" cy="18" r="6" fill="#ef4444"/>
+    <circle cx="46" cy="18" r="6" fill="#f59e0b"/>
+    <circle cx="68" cy="18" r="6" fill="#22c55e"/>
+    <circle cx="954" cy="18" r="13" fill="#2563eb"/>
+    <text x="950" y="24" fill="#ffffff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="700">2</text>
+    <text x="28" y="68" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">$ PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json</text>
+    <text x="28" y="106" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">## Maintainer Radar Report</text>
+    <text x="28" y="138" fill="#e5e7eb" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">- PRs scanned: 2    - Review now: 1    - CI blocked or pending: 1</text>
+  </g>
+
+  <g transform="translate(48 514)">
+    <rect width="1024" height="190" rx="10" fill="#111827"/>
+    <rect width="1024" height="36" rx="10" fill="#1f2937"/>
+    <circle cx="24" cy="18" r="6" fill="#ef4444"/>
+    <circle cx="46" cy="18" r="6" fill="#f59e0b"/>
+    <circle cx="68" cy="18" r="6" fill="#22c55e"/>
+    <circle cx="954" cy="18" r="13" fill="#2563eb"/>
+    <text x="950" y="24" fill="#ffffff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="700">3</text>
+    <text x="28" y="70" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">| PR                              | Action         | Score | Signals |</text>
+    <text x="28" y="102" fill="#a7f3d0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">| #42 Fix parser cache race        | review now     | 100   | CI passed, tests changed |</text>
+    <text x="28" y="134" fill="#fecaca" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">| #43 Add universal plugin system  | ask for CI fix | 0     | CI failing, blocker language |</text>
+    <text x="28" y="170" fill="#d1d5db" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Scores route attention. They do not replace maintainer judgment.</text>
+  </g>
+</svg>
