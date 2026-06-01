@@ -41,6 +41,23 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('output="${INPUT_OUTPUT:-$default_output}"', action)
         self.assertIn('echo "report-path=$output" >> "$GITHUB_OUTPUT"', action)
 
+    def test_action_docs_cover_inputs_and_outputs(self) -> None:
+        docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
+
+        for name in [
+            "repository",
+            "format",
+            "output",
+            "limit",
+            "sort",
+            "top",
+            "hydrate",
+            "step-summary",
+            "report-path",
+        ]:
+            with self.subTest(name=name):
+                self.assertIn(f"`{name}`", docs)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,8 @@ Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpytho
 
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
 
+GitHub Action usage: [docs/github-action.md](docs/github-action.md)
+
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic

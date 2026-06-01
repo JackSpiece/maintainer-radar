@@ -15,6 +15,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Try a public repo", html)
         self.assertIn("maintainer-radar init-action", html)
         self.assertIn("GitHub Action", html)
+        self.assertIn('href="github-action.html"', html)
         self.assertIn("run summary", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
@@ -51,6 +52,16 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("?repo=python/cpython", docs)
         self.assertIn("Copy Link", docs)
         self.assertIn("Copy Markdown", docs)
+
+    def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
+        docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
+
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.0", docs)
+        self.assertIn("report-path", docs)
+        self.assertIn("step-summary", docs)
+        self.assertIn("contents: read", docs)
+        self.assertIn("pull-requests: read", docs)
+        self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
 
 if __name__ == "__main__":

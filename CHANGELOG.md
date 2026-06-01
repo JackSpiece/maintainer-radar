@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.1
+
+- Added dedicated GitHub Action usage documentation with copy-paste workflow, inputs, outputs, permissions, and troubleshooting.
+- Linked GitHub Action docs from README, homepage navigation, and the GitHub Actions guide.
+- Added tests that keep the action documentation discoverable and aligned with the action contract.
+
 ## 0.16.0
 
 - Added a reusable composite GitHub Action via `action.yml`.

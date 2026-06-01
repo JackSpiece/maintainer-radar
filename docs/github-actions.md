@@ -4,6 +4,9 @@ Maintainer Radar can run in CI and upload Markdown or HTML triage reports as
 artifacts. This is useful for maintainers who want a daily queue snapshot
 without installing another GitHub App.
 
+For the reusable action contract, inputs, outputs, and troubleshooting, see
+[github-action.md](github-action.md).
+
 The fastest setup is the bootstrap command:
 
 ```bash
