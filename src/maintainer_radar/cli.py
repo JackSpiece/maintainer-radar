@@ -11,8 +11,11 @@ from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .normalize import normalize_items
 from .render import (
     render_comment_template,
+    render_comment_csv,
+    render_csv,
     render_detail,
     render_markdown,
+    render_summary_csv,
     render_summary_markdown,
     summarize_report,
 )
@@ -129,6 +132,12 @@ def _emit(
         else:
             print(json.dumps(analyses[0] if detail and len(analyses) == 1 else analyses, indent=2))
         return
+    if fmt == "csv":
+        if summary_only:
+            print(render_summary_csv(analyses), end="")
+        else:
+            print(render_csv(analyses), end="")
+        return
     if summary_only:
         print(render_summary_markdown(analyses), end="")
         return
@@ -147,7 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
     def add_format_argument(target: argparse.ArgumentParser, *, default: str | object) -> None:
         target.add_argument(
             "--format",
-            choices=["markdown", "json"],
+            choices=["markdown", "json", "csv"],
             default=default,
             help="Output format. Default: markdown.",
         )
@@ -261,6 +270,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.comment_template:
                 if args.format == "json":
                     print(json.dumps({"comment": render_comment_template(analysis)}, indent=2))
+                elif args.format == "csv":
+                    print(render_comment_csv(render_comment_template(analysis)), end="")
                 else:
                     print(render_comment_template(analysis), end="")
             else:

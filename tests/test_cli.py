@@ -22,6 +22,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.format, "json")
         self.assertEqual(args.command, "from-json")
 
+    def test_csv_format_is_available(self) -> None:
+        args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--format", "csv"]
+        )
+
+        self.assertEqual(args.format, "csv")
+
     def test_summary_only_flag_is_available_for_queue_commands(self) -> None:
         repo_args = build_parser().parse_args(["repo", "owner/repo", "--summary-only"])
         author_args = build_parser().parse_args(["author", "alice", "--summary-only"])
