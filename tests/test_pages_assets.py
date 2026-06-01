@@ -14,6 +14,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Try a public repo", html)
         self.assertIn('id="repo-form"', html)
+        self.assertIn('href="browser-preview.html"', html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
@@ -32,6 +33,14 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Maintainer Radar", svg)
         self.assertIn("Local-first PR triage for maintainers", svg)
         self.assertIn("jackspiece.github.io/maintainer-radar", svg)
+
+    def test_browser_preview_docs_explain_network_and_limits(self) -> None:
+        docs = (ROOT / "docs" / "browser-preview.md").read_text(encoding="utf-8")
+
+        self.assertIn("public GitHub API", docs)
+        self.assertIn("does not ask for a GitHub token", docs)
+        self.assertIn("does not post comments", docs)
+        self.assertIn("rate-limit", docs)
 
 
 if __name__ == "__main__":
