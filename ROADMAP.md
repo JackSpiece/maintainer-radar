@@ -46,6 +46,7 @@
 ## 0.11
 
 - Stdin support for offline JSON pipelines
+- Expanded maintainer workflow examples
 
 ## Design Rules
 

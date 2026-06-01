@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.1
+
+- Expanded maintainer workflow documentation with current CLI examples.
+
 ## 0.11.0
 
 - Added stdin support for offline JSON with `from-json -`.
