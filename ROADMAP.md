@@ -37,6 +37,7 @@
 ## 0.9
 
 - Standalone static HTML reports for sharing local queue snapshots
+- Copy-paste workflow examples for Markdown and HTML CI artifacts
 
 ## Design Rules
 
