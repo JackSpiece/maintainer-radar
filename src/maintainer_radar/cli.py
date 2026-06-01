@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+from pathlib import Path
 import sys
 from typing import Any, Callable
 
@@ -22,6 +23,7 @@ from .render import (
     summarize_report,
 )
 from .scoring import analyze_pr, days_since, parse_github_datetime
+from .workflow import render_github_action_workflow
 
 ACTION_SLUGS = {
     "review-now": "review now",
@@ -387,6 +389,39 @@ def build_parser() -> argparse.ArgumentParser:
     add_sort_argument(from_json)
     add_top_argument(from_json)
 
+    init_action = sub.add_parser(
+        "init-action",
+        help="Print or write a read-only GitHub Actions triage workflow.",
+    )
+    init_action.add_argument(
+        "--report-format",
+        choices=["markdown", "html", "json", "csv"],
+        default="markdown",
+        help="Report artifact format. Default: markdown.",
+    )
+    init_action.add_argument(
+        "--schedule",
+        default="0 8 * * 1-5",
+        help='Cron schedule for the report. Default: "0 8 * * 1-5".',
+    )
+    init_action.add_argument("--limit", type=int, default=50, help="Maximum PRs to scan.")
+    init_action.add_argument("--sort", choices=SORT_CHOICES, default="action")
+    init_action.add_argument("--top", type=int, help="Only include the first N PRs after sorting.")
+    init_action.add_argument(
+        "--no-hydrate",
+        action="store_true",
+        help="Skip full PR hydration for a faster but shallower workflow.",
+    )
+    init_action.add_argument(
+        "--path",
+        help="Write the workflow to this path instead of stdout, for example .github/workflows/maintainer-radar.yml.",
+    )
+    init_action.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --path when it already exists.",
+    )
+
     return parser
 
 
@@ -395,8 +430,28 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        config = load_config(args.config)
-        now = _parse_now(args.now)
+        if args.command == "init-action":
+            workflow = render_github_action_workflow(
+                report_format=args.report_format,
+                schedule=args.schedule,
+                limit=args.limit,
+                sort=args.sort,
+                hydrate=not args.no_hydrate,
+                top=args.top,
+            )
+            if args.path:
+                output_path = Path(args.path)
+                if output_path.exists() and not args.force:
+                    raise ValueError(f"{output_path} already exists; pass --force to overwrite")
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(workflow, encoding="utf-8")
+                print(f"Wrote {output_path}")
+            else:
+                print(workflow, end="")
+            return 0
+
+        config = load_config(getattr(args, "config", None))
+        now = _parse_now(getattr(args, "now", None))
         if args.command == "repo":
             prs = list_repo_prs(args.repository, state=args.state, limit=args.limit)
             prs = filter_prs(

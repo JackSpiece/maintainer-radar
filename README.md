@@ -70,6 +70,16 @@ Live GitHub commands require the GitHub CLI:
 gh auth login
 ```
 
+Create a read-only scheduled GitHub Actions report:
+
+```bash
+maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
+```
+
+This writes a workflow that scans the current repository's PR queue and uploads
+a Markdown triage artifact. It refuses to overwrite an existing file unless you
+pass `--force`.
+
 For local development from a checkout:
 
 ```bash
@@ -191,6 +201,12 @@ HTML output is available for shareable local reports:
 
 ```bash
 maintainer-radar repo owner/repo --hydrate --sort action --format html > review-queue.html
+```
+
+Bootstrap a repository workflow without copying YAML by hand:
+
+```bash
+maintainer-radar init-action --report-format html --path .github/workflows/maintainer-radar.yml
 ```
 
 ## Example Output

@@ -13,6 +13,7 @@ class PagesAssetTests(unittest.TestCase):
         html = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
 
         self.assertIn("Try a public repo", html)
+        self.assertIn("maintainer-radar init-action", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
         self.assertIn('id="copy-markdown"', html)

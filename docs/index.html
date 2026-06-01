@@ -398,8 +398,9 @@
         <p class="lede">
           Maintainer Radar turns pull request metadata into a deterministic queue brief:
           what is ready for review, what is blocked by CI, and why each score changed.
+          One command can create a read-only GitHub Actions report for a repo.
         </p>
-        <pre class="command">PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json --now 2026-06-01T00:00:00Z</pre>
+        <pre class="command">maintainer-radar init-action --path .github/workflows/maintainer-radar.yml</pre>
         <div class="notes" aria-label="Project traits">
           <div class="note">
             <strong>Local-first</strong>

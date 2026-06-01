@@ -4,6 +4,24 @@ Maintainer Radar can run in CI and upload Markdown or HTML triage reports as
 artifacts. This is useful for maintainers who want a daily queue snapshot
 without installing another GitHub App.
 
+The fastest setup is the bootstrap command:
+
+```bash
+maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
+```
+
+For an HTML artifact:
+
+```bash
+maintainer-radar init-action \
+  --report-format html \
+  --path .github/workflows/maintainer-radar.yml
+```
+
+The command prints YAML to stdout when `--path` is omitted. When `--path` is
+provided, it creates parent directories and refuses to overwrite an existing
+workflow unless `--force` is passed.
+
 Copy-paste examples are available in:
 
 - [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)

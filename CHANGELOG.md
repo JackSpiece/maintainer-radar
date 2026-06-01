@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.0
+
+- Added `init-action` to print or write a read-only GitHub Actions workflow.
+- Added workflow rendering tests and CLI overwrite protection.
+- Documented one-command workflow bootstrap in the README and GitHub Actions guide.
+
 ## 0.14.2
 
 - Added Copy Markdown to the browser demo for paste-ready queue briefs.

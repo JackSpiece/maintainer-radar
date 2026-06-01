@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 import unittest
 
@@ -13,6 +15,7 @@ from maintainer_radar.cli import (
     filter_prs,
     hydrate_prs,
     limit_analyses,
+    main,
     sort_analyses,
 )
 
@@ -110,6 +113,67 @@ class CliTests(unittest.TestCase):
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
 
         self.assertTrue(args.comment_template)
+
+    def test_init_action_command_accepts_report_options(self) -> None:
+        args = build_parser().parse_args(
+            [
+                "init-action",
+                "--report-format",
+                "html",
+                "--schedule",
+                "0 9 * * 1",
+                "--limit",
+                "25",
+                "--sort",
+                "risk",
+                "--top",
+                "10",
+                "--no-hydrate",
+                "--path",
+                ".github/workflows/maintainer-radar.yml",
+                "--force",
+            ]
+        )
+
+        self.assertEqual(args.command, "init-action")
+        self.assertEqual(args.report_format, "html")
+        self.assertEqual(args.schedule, "0 9 * * 1")
+        self.assertEqual(args.limit, 25)
+        self.assertEqual(args.sort, "risk")
+        self.assertEqual(args.top, 10)
+        self.assertTrue(args.no_hydrate)
+        self.assertTrue(args.force)
+
+    def test_init_action_writes_workflow_and_protects_existing_file(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / ".github" / "workflows" / "maintainer-radar.yml"
+
+            with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()):
+                first_result = main(["init-action", "--report-format", "html", "--path", str(path)])
+                second_result = main(
+                    ["init-action", "--report-format", "html", "--path", str(path)]
+                )
+                forced_result = main(
+                    ["init-action", "--report-format", "html", "--path", str(path), "--force"]
+                )
+
+            output = path.read_text(encoding="utf-8")
+
+        self.assertEqual(first_result, 0)
+        self.assertEqual(second_result, 2)
+        self.assertEqual(forced_result, 0)
+        self.assertIn("pull-requests: read", output)
+        self.assertIn("--format html", output)
+        self.assertIn("maintainer-radar.html", output)
+
+    def test_init_action_does_not_load_scoring_config(self) -> None:
+        with patch("maintainer_radar.cli.load_config") as load_config, patch(
+            "sys.stdout", new=StringIO()
+        ):
+            result = main(["init-action"])
+
+        self.assertEqual(result, 0)
+        load_config.assert_not_called()
 
     def test_as_pr_list_accepts_common_shapes(self) -> None:
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
