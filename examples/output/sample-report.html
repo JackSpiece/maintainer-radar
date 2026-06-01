@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maintainer Radar Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --text: #111827;
+      --muted: #475569;
+      --line: #d8dee9;
+      --panel: #ffffff;
+      --blue: #2563eb;
+      --green: #047857;
+      --amber: #b45309;
+      --red: #b91c1c;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(28px, 5vw, 42px);
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 22px 0;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef2f7;
+      color: #243041;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .score {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .action {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #e5e7eb;
+      color: #1f2937;
+      white-space: nowrap;
+    }
+    .action-review-now {
+      background: #d1fae5;
+      color: var(--green);
+    }
+    .action-ask-for-ci-fix,
+    .action-needs-author-follow-up,
+    .action-wait-for-author {
+      background: #fee2e2;
+      color: var(--red);
+    }
+    .action-wait-for-ci,
+    .action-review-with-caution,
+    .action-request-smaller-pr {
+      background: #fef3c7;
+      color: var(--amber);
+    }
+    .signals {
+      color: var(--muted);
+    }
+    .empty {
+      color: var(--muted);
+      text-align: center;
+    }
+    pre {
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+      overflow-x: auto;
+    }
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Maintainer Radar Report</h1>
+      <p class="subtitle">Deterministic maintainer triage report.</p>
+    </header>
+    <section class="metrics"><div class="metric"><strong>2</strong><span>PRs scanned</span></div>
+<div class="metric"><strong>1</strong><span>Review now</span></div>
+<div class="metric"><strong>0</strong><span>Author follow-up</span></div>
+<div class="metric"><strong>1</strong><span>CI blocked</span></div>
+<div class="metric"><strong>0</strong><span>Large or triage</span></div>
+<div class="metric"><strong>1</strong><span>Stale 7+ days</span></div>
+<div class="metric"><strong>50/100</strong><span>Average score</span></div></section>
+    <table><thead><tr><th>PR</th><th>Action</th><th>Score</th><th>Signals</th></tr></thead><tbody><tr><td><a href="https://github.com/example/project/pull/42">#42 Fix parser cache race</a></td><td><span class="action action-review-now">review now</span></td><td class="score">100</td><td class="signals">CI passed; review required; test plan present; tests changed</td></tr>
+<tr><td><a href="https://github.com/example/project/pull/43">#43 Add universal plugin system</a></td><td><span class="action action-ask-for-ci-fix">ask for CI fix</span></td><td class="score">0</td><td class="signals">very large diff; CI failing; changes requested; stale 22 days; maintainer blocker language; no test plan found; code changed without tests</td></tr></tbody></table>
+    <footer>Scores route maintainer attention. They do not replace review.</footer>
+  </main>
+</body>
+</html>

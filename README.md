@@ -219,6 +219,8 @@ For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md
 
 For copy-paste workflows and sample data, see [examples/README.md](examples/README.md).
 
+For generated sample reports, see [examples/output](examples/output).
+
 For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 
 For automation output, see [docs/json-output.md](docs/json-output.md).
@@ -230,6 +232,8 @@ For shareable static reports, see [docs/html-output.md](docs/html-output.md).
 For queue ordering, see [docs/sorting.md](docs/sorting.md).
 
 For compact queue snapshots, see [docs/focused-reports.md](docs/focused-reports.md).
+
+For stable sample output, see [docs/reproducible-reports.md](docs/reproducible-reports.md).
 
 For deeper live GitHub reports, see [docs/hydrated-scans.md](docs/hydrated-scans.md).
 

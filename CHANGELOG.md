@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.0
+
+- Added `--now` for reproducible stale calculations.
+- Added generated sample output artifacts for Markdown, JSON, CSV, and HTML.
+
 ## 0.11.1
 
 - Expanded maintainer workflow documentation with current CLI examples.

@@ -48,6 +48,11 @@
 - Stdin support for offline JSON pipelines
 - Expanded maintainer workflow examples
 
+## 0.12
+
+- Reproducible report time with `--now`
+- Generated sample output artifacts
+
 ## Design Rules
 
 - No hidden network service.

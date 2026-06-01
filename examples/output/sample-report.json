@@ -1,0 +1,75 @@
+[
+  {
+    "number": 42,
+    "title": "Fix parser cache race",
+    "url": "https://github.com/example/project/pull/42",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 0,
+    "reviewability": 100,
+    "action": "review now",
+    "flags": [],
+    "signals": [
+      "CI passed",
+      "review required",
+      "test plan present",
+      "tests changed"
+    ],
+    "checks": {
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "files": {
+      "code_files": 2,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  },
+  {
+    "number": 43,
+    "title": "Add universal plugin system",
+    "url": "https://github.com/example/project/pull/43",
+    "author": "contributor-b",
+    "labels": [],
+    "risk": 100,
+    "reviewability": 0,
+    "action": "ask for CI fix",
+    "flags": [
+      "very large diff",
+      "CI failing",
+      "changes requested",
+      "stale 22 days",
+      "maintainer blocker language",
+      "no test plan found",
+      "code changed without tests"
+    ],
+    "signals": [],
+    "checks": {
+      "passed": 0,
+      "failed": 1,
+      "pending": 0,
+      "skipped": 0,
+      "total": 1
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 0,
+      "generated_files": 0,
+      "total_files": 1
+    },
+    "stale_days": 22,
+    "additions": 2200,
+    "deletions": 120,
+    "changed_files": 40
+  }
+]
