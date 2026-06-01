@@ -7,7 +7,7 @@ import sys
 from typing import Any
 
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
-from .render import render_detail, render_markdown
+from .render import render_detail, render_markdown, render_summary_markdown, summarize_report
 from .scoring import analyze_pr, days_since, parse_github_datetime
 
 
@@ -85,9 +85,21 @@ def filter_prs(
     return result
 
 
-def _emit(analyses: list[dict[str, Any]], fmt: str, *, detail: bool = False) -> None:
+def _emit(
+    analyses: list[dict[str, Any]],
+    fmt: str,
+    *,
+    detail: bool = False,
+    summary_only: bool = False,
+) -> None:
     if fmt == "json":
-        print(json.dumps(analyses[0] if detail and len(analyses) == 1 else analyses, indent=2))
+        if summary_only:
+            print(json.dumps(summarize_report(analyses), indent=2))
+        else:
+            print(json.dumps(analyses[0] if detail and len(analyses) == 1 else analyses, indent=2))
+        return
+    if summary_only:
+        print(render_summary_markdown(analyses), end="")
         return
     if detail and len(analyses) == 1:
         print(render_detail(analyses[0]), end="")
@@ -121,6 +133,7 @@ def build_parser() -> argparse.ArgumentParser:
     repo.add_argument("--author", help="Only include PRs by this author.")
     repo.add_argument("--stale-days", type=int, help="Only include PRs quiet for at least N days.")
     repo.add_argument("--updated-since", help="Only include PRs updated on or after this ISO date.")
+    repo.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -132,11 +145,13 @@ def build_parser() -> argparse.ArgumentParser:
     author.add_argument("username", help="GitHub username.")
     author.add_argument("--state", default="open", choices=["open", "closed"])
     author.add_argument("--limit", type=int, default=50)
+    author.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     from_json.add_argument("path", help="Path to JSON file.")
     from_json.add_argument("--detail", action="store_true", help="Render a detailed single-PR brief.")
+    from_json.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
 
     return parser
 
@@ -155,17 +170,30 @@ def main(argv: list[str] | None = None) -> int:
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
             )
-            _emit([analyze_pr(pr) for pr in prs], args.format)
+            _emit(
+                [analyze_pr(pr) for pr in prs],
+                args.format,
+                summary_only=args.summary_only,
+            )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
             _emit([analyze_pr(pr)], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
-            _emit([analyze_pr(pr) for pr in prs], args.format)
+            _emit(
+                [analyze_pr(pr) for pr in prs],
+                args.format,
+                summary_only=args.summary_only,
+            )
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path))
             detail = bool(args.detail and len(prs) == 1)
-            _emit([analyze_pr(pr) for pr in prs], args.format, detail=detail)
+            _emit(
+                [analyze_pr(pr) for pr in prs],
+                args.format,
+                detail=detail,
+                summary_only=args.summary_only,
+            )
         else:
             parser.error("unknown command")
     except (GitHubCliError, OSError, ValueError) as exc:

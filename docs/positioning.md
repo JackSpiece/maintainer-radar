@@ -13,6 +13,15 @@ The project sits before review. It answers a simpler question:
 - Bounty boards match contributors to paid tasks.
 - Generic dashboards show repository activity.
 
+## Comparison
+
+| Category | Main Job | Tradeoff | Maintainer Radar Difference |
+| --- | --- | --- | --- |
+| AI review bots | Comment on code changes | Can add review noise and needs model access | Routes queue attention before review |
+| GitHub Apps | Enforce policy in a repo | Needs installation and permissions | Runs locally with read-only `gh` access |
+| Generic dashboards | Show repository activity | Often broad and hosted | Produces paste-ready maintainer reports |
+| Bounty boards | Match tasks to contributors | Optimized for contributor work | Optimized for maintainer review load |
+
 ## Maintainer Radar's Angle
 
 Maintainer Radar generates a local, transparent triage brief:
@@ -33,4 +42,3 @@ AI-assisted code contributions create a new review burden. Some PRs are useful.
 Some are large, under-tested, stale, or already known not to work.
 
 Maintainer Radar helps sort that queue without judging the author.
-

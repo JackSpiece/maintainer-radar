@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Added `--summary-only` for queue commands.
+- Added a terminal preview image to the README.
+- Added GitHub Actions integration documentation.
+
 ## 0.1.3
 
 - Added maintainer handoff and follow-up examples.

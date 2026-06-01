@@ -19,7 +19,10 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
-def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:
+def render_summary_markdown(
+    analyses: list[dict[str, Any]],
+    title: str = "Maintainer Radar Summary",
+) -> str:
     summary = summarize_report(analyses)
     lines = [
         f"## {title}",
@@ -32,6 +35,13 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
         f"- Stale 7+ days: {summary['stale']}",
         f"- Average reviewability: {summary['average_score']}/100",
         "",
+    ]
+    return "\n".join(lines)
+
+
+def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:
+    lines = [
+        render_summary_markdown(analyses, title=title).rstrip(),
         "| PR | Action | Score | Signals |",
         "| --- | --- | ---: | --- |",
     ]

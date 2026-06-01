@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import unittest
 
-from maintainer_radar.render import render_detail, render_markdown, summarize_report
+from maintainer_radar.render import (
+    render_detail,
+    render_markdown,
+    render_summary_markdown,
+    summarize_report,
+)
 
 
 class RenderTests(unittest.TestCase):
@@ -40,6 +45,17 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(summary["ci_blocked"], 1)
         self.assertEqual(summary["large_or_triage"], 1)
         self.assertEqual(summary["stale"], 1)
+
+    def test_summary_only_output_has_no_table(self) -> None:
+        output = render_summary_markdown(
+            [
+                {"action": "review now", "reviewability": 90, "stale_days": 0},
+            ]
+        )
+
+        self.assertIn("Maintainer Radar Summary", output)
+        self.assertIn("Review now: 1", output)
+        self.assertNotIn("| PR |", output)
 
     def test_detail_contains_sections(self) -> None:
         output = render_detail(

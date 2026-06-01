@@ -4,6 +4,8 @@
 
 Local-first pull request triage reports for maintainers in the AI contribution era.
 
+![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
+
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
 review brief: which PRs are ready to review, which ones need author follow-up,
 which ones are blocked by CI, and which ones are too risky to merge without more
@@ -78,6 +80,12 @@ maintainer-radar repo owner/repo --label bug --stale-days 14
 maintainer-radar repo owner/repo --author contributor --updated-since 2026-06-01
 ```
 
+Get a compact queue snapshot:
+
+```bash
+maintainer-radar repo owner/repo --summary-only
+```
+
 Analyze one PR in detail:
 
 ```bash
@@ -141,6 +149,8 @@ See [ROADMAP.md](ROADMAP.md).
 
 For copy-paste maintainer workflows, see
 [docs/handoff-examples.md](docs/handoff-examples.md).
+
+For scheduled queue reports, see [docs/github-actions.md](docs/github-actions.md).
 
 ## Contributing
 
