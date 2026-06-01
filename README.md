@@ -1,5 +1,7 @@
 # Maintainer Radar
 
+[![CI](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml)
+
 Local-first pull request triage reports for maintainers in the AI contribution era.
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
