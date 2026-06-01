@@ -122,6 +122,8 @@ Analyze offline JSON:
 ```bash
 maintainer-radar from-json examples/sample-prs.json
 maintainer-radar from-json gitlab-merge-requests.json --source gitlab
+maintainer-radar from-json forgejo-pull-requests.json --source forgejo
+maintainer-radar from-json gitea-pull-requests.json --source gitea
 ```
 
 JSON output is available for automation:
@@ -178,6 +180,9 @@ For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 For automation output, see [docs/json-output.md](docs/json-output.md).
 
 For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
+
+For Forgejo and Gitea exports, see
+[docs/forgejo-gitea-json.md](docs/forgejo-gitea-json.md).
 
 For project-specific thresholds, see [docs/configuration.md](docs/configuration.md).
 
