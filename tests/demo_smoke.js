@@ -19,14 +19,22 @@ const ready = demo.analyzePullRequest(
     draft: false,
   },
   [{ filename: "src/parser/cache.py" }, { filename: "tests/test_parser_cache.py" }],
-  new Date("2026-06-01T00:00:00Z")
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [
+      { status: "COMPLETED", conclusion: "SUCCESS" },
+      { status: "COMPLETED", conclusion: "SUCCESS" },
+    ],
+  }
 );
 
 assert.equal(ready.action, "review now");
 assert.equal(ready.reviewability, 100);
 assert.deepEqual(ready.flags, []);
+assert.ok(ready.signals.includes("CI passed"));
 assert.ok(ready.signals.includes("test plan present"));
 assert.ok(ready.signals.includes("tests changed"));
+assert.ok(demo.formatImpact(ready.scoreBreakdown).includes("CI passed (-8 risk)"));
 
 const risky = demo.analyzePullRequest(
   {
@@ -41,15 +49,22 @@ const risky = demo.analyzePullRequest(
     draft: false,
   },
   [{ filename: "src/plugin/runtime.ts" }],
-  new Date("2026-06-01T00:00:00Z")
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [{ status: "COMPLETED", conclusion: "FAILURE" }],
+  }
 );
 
-assert.equal(risky.action, "request smaller PR");
-assert.equal(risky.reviewability, 37);
+assert.equal(risky.action, "ask for CI fix");
+assert.equal(risky.reviewability, 7);
 assert.ok(risky.flags.includes("very large diff"));
+assert.ok(risky.flags.includes("CI failing"));
 assert.ok(risky.flags.includes("stale 22 days"));
 assert.ok(risky.flags.includes("no test plan found"));
 assert.ok(risky.flags.includes("code changed without tests"));
 assert.ok(demo.formatImpact(risky.scoreBreakdown).includes("very large diff (+30 risk)"));
+
+const pending = demo.summarizeCheckRuns([{ status: "IN_PROGRESS", conclusion: null }]);
+assert.deepEqual(pending, { passed: 0, failed: 0, pending: 1, skipped: 0, total: 1 });
 
 console.log("browser demo smoke checks passed");

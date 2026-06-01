@@ -88,6 +88,37 @@
     };
   }
 
+  function summarizeCheckRuns(checkRuns) {
+    let passed = 0;
+    let failed = 0;
+    let pending = 0;
+    let skipped = 0;
+
+    for (const item of checkRuns || []) {
+      const status = String(item.status || "").toUpperCase();
+      const conclusion = String(item.conclusion || "").toUpperCase();
+      if (status && status !== "COMPLETED") {
+        pending += 1;
+      } else if (conclusion === "SUCCESS" || conclusion === "NEUTRAL") {
+        passed += 1;
+      } else if (conclusion === "SKIPPED") {
+        skipped += 1;
+      } else if (["FAILURE", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED"].includes(conclusion)) {
+        failed += 1;
+      } else if (conclusion) {
+        pending += 1;
+      }
+    }
+
+    return {
+      passed,
+      failed,
+      pending,
+      skipped,
+      total: passed + failed + pending + skipped,
+    };
+  }
+
   function daysSince(value, now = new Date()) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -104,16 +135,29 @@
     return Math.max(0, Math.min(100, value));
   }
 
-  function analyzePullRequest(pr, files, now = new Date()) {
+  function resolveAnalysisOptions(value) {
+    if (value instanceof Date) {
+      return { now: value, checkRuns: null };
+    }
+    return {
+      now: value && value.now ? value.now : new Date(),
+      checkRuns: value && Array.isArray(value.checkRuns) ? value.checkRuns : null,
+    };
+  }
+
+  function analyzePullRequest(pr, files, optionsValue = {}) {
+    const options = resolveAnalysisOptions(optionsValue);
     const fileSummary = summarizeFiles(files);
+    const checkSummary = summarizeCheckRuns(options.checkRuns);
     const additions = Number(pr.additions || 0);
     const deletions = Number(pr.deletions || 0);
     const changedFiles = Number(pr.changed_files || fileSummary.totalFiles || 0);
     const totalDiff = additions + deletions;
-    const staleDays = daysSince(pr.updated_at, now);
+    const staleDays = daysSince(pr.updated_at, options.now);
     const hasBody = Object.prototype.hasOwnProperty.call(pr, "body");
     const hasTestPlan = TEST_PLAN_RE.test(String(pr.body || ""));
     const isDraft = Boolean(pr.draft);
+    const hasCheckData = Array.isArray(options.checkRuns);
 
     let risk = 0;
     const signals = [];
@@ -134,6 +178,26 @@
       risk += 15;
       flags.push("large diff");
       addImpact(scoreBreakdown, "large diff", 15, "flag");
+    }
+
+    if (hasCheckData) {
+      if (checkSummary.total === 0) {
+        risk += 8;
+        flags.push("no visible checks");
+        addImpact(scoreBreakdown, "no visible checks", 8, "flag");
+      } else if (checkSummary.failed) {
+        risk += 30;
+        flags.push("CI failing");
+        addImpact(scoreBreakdown, "CI failing", 30, "flag");
+      } else if (checkSummary.pending) {
+        risk += 10;
+        flags.push("CI pending");
+        addImpact(scoreBreakdown, "CI pending", 10, "flag");
+      } else if (checkSummary.passed) {
+        risk -= 8;
+        signals.push("CI passed");
+        addImpact(scoreBreakdown, "CI passed", -8, "signal");
+      }
     }
 
     if (staleDays !== null) {
@@ -190,6 +254,8 @@
       action: chooseAction({
         reviewability,
         isDraft,
+        checks: checkSummary,
+        hasCheckData,
         totalDiff,
         changedFiles,
       }),
@@ -202,9 +268,15 @@
     };
   }
 
-  function chooseAction({ reviewability, isDraft, totalDiff, changedFiles }) {
+  function chooseAction({ reviewability, isDraft, checks, hasCheckData, totalDiff, changedFiles }) {
     if (isDraft) {
       return "wait for author";
+    }
+    if (hasCheckData && checks && checks.failed) {
+      return "ask for CI fix";
+    }
+    if (hasCheckData && checks && checks.pending) {
+      return "wait for CI";
     }
     if (totalDiff > 1500 || changedFiles > 25) {
       return "request smaller PR";
@@ -266,6 +338,14 @@
     return response.json();
   }
 
+  async function requestOptionalJson(path) {
+    try {
+      return await requestJson(path);
+    } catch (_error) {
+      return null;
+    }
+  }
+
   async function fetchPreview(repository) {
     const pulls = await requestJson(
       `/repos/${repository}/pulls?state=open&sort=updated&direction=desc&per_page=${MAX_PULLS}`
@@ -276,7 +356,12 @@
           requestJson(`/repos/${repository}/pulls/${pull.number}`),
           requestJson(`/repos/${repository}/pulls/${pull.number}/files?per_page=100`),
         ]);
-        return analyzePullRequest(detail, files);
+        const sha = detail && detail.head && detail.head.sha;
+        const checks = sha
+          ? await requestOptionalJson(`/repos/${repository}/commits/${sha}/check-runs?per_page=100`)
+          : null;
+        const checkRuns = checks && Array.isArray(checks.check_runs) ? checks.check_runs : null;
+        return analyzePullRequest(detail, files, { checkRuns });
       })
     );
   }
@@ -357,7 +442,7 @@
         const items = await fetchPreview(repository);
         renderPreview(items, repository);
         setStatus(
-          `Scanned ${items.length} recent open PRs from ${repository}. CLI scans can include richer CI and review context.`
+          `Scanned ${items.length} recent open PRs from ${repository}. CLI scans can include richer review and comment context.`
         );
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Scan failed.");
@@ -372,6 +457,7 @@
     chooseAction,
     formatImpact,
     normalizeRepository,
+    summarizeCheckRuns,
     summarizeFiles,
   };
 
