@@ -71,6 +71,13 @@ Analyze open PRs in a repository:
 maintainer-radar repo owner/repo --limit 20
 ```
 
+Filter noisy queues:
+
+```bash
+maintainer-radar repo owner/repo --label bug --stale-days 14
+maintainer-radar repo owner/repo --author contributor --updated-since 2026-06-01
+```
+
 Analyze one PR in detail:
 
 ```bash

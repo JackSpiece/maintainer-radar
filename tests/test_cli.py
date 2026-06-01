@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from maintainer_radar.cli import _as_pr_list, build_parser
+from maintainer_radar.cli import _as_pr_list, build_parser, filter_prs
 
 
 class CliTests(unittest.TestCase):
@@ -27,7 +27,29 @@ class CliTests(unittest.TestCase):
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])
         self.assertEqual(_as_pr_list({"items": [{"number": 1}]}), [{"number": 1}])
 
+    def test_filter_prs_supports_label_author_and_dates(self) -> None:
+        prs = [
+            {
+                "number": 1,
+                "author": {"login": "alice"},
+                "labels": [{"name": "bug"}],
+                "updatedAt": "2026-06-01T00:00:00Z",
+            },
+            {
+                "number": 2,
+                "author": {"login": "bob"},
+                "labels": [{"name": "docs"}],
+                "updatedAt": "2026-05-01T00:00:00Z",
+            },
+        ]
+
+        self.assertEqual([pr["number"] for pr in filter_prs(prs, label="bug")], [1])
+        self.assertEqual([pr["number"] for pr in filter_prs(prs, author="bob")], [2])
+        self.assertEqual(
+            [pr["number"] for pr in filter_prs(prs, updated_since="2026-05-15")],
+            [1],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
-

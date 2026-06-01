@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Added label, author, stale-days, and updated-since filters for repo scans.
+
 ## 0.1.1
 
 - Added a repo-level report summary.
