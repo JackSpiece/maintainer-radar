@@ -5,6 +5,12 @@ assert.equal(demo.normalizeRepository("python/cpython"), "python/cpython");
 assert.equal(demo.normalizeRepository("https://github.com/python/cpython/pulls"), "python/cpython");
 assert.equal(demo.normalizeRepository("github.com/vercel/next.js/pull/123"), "vercel/next.js");
 assert.equal(demo.normalizeRepository("not a repo"), "");
+assert.equal(demo.repositoryFromSearch("?repo=python/cpython"), "python/cpython");
+assert.equal(
+  demo.repositoryFromSearch("?repo=https%3A%2F%2Fgithub.com%2Fpython%2Fcpython%2Fpulls"),
+  "python/cpython"
+);
+assert.equal(demo.repositoryFromSearch("?q=python/cpython"), "");
 
 const ready = demo.analyzePullRequest(
   {

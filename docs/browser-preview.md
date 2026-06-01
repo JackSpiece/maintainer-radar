@@ -8,6 +8,12 @@ https://jackspiece.github.io/maintainer-radar/
 Enter a repository as `owner/repo`. The page reads public GitHub API data and
 renders a lightweight triage report in your browser.
 
+You can also share a prefilled scan link:
+
+```text
+https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
+```
+
 ## What It Fetches
 
 For the recent open pull requests it scans, the preview fetches:

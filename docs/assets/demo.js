@@ -54,6 +54,11 @@
     return match ? `${match[1]}/${match[2]}` : "";
   }
 
+  function repositoryFromSearch(search) {
+    const params = new URLSearchParams(String(search || "").replace(/^\?/, ""));
+    return normalizeRepository(params.get("repo"));
+  }
+
   function summarizeFiles(files) {
     let codeFiles = 0;
     let docFiles = 0;
@@ -450,6 +455,12 @@
         button.disabled = false;
       }
     });
+
+    const initialRepository = repositoryFromSearch(window.location.search);
+    if (initialRepository) {
+      input.value = initialRepository;
+      form.requestSubmit();
+    }
   }
 
   const api = {
@@ -457,6 +468,7 @@
     chooseAction,
     formatImpact,
     normalizeRepository,
+    repositoryFromSearch,
     summarizeCheckRuns,
     summarizeFiles,
   };

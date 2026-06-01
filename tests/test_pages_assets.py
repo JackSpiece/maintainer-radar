@@ -43,6 +43,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("does not post comments", docs)
         self.assertIn("rate-limit", docs)
         self.assertIn("issues/new/choose", docs)
+        self.assertIn("?repo=python/cpython", docs)
 
 
 if __name__ == "__main__":
