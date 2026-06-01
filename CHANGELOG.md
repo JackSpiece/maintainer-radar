@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Added `.maintainer-radar.json` configuration support for thresholds and path hints.
+
 ## 0.4.0
 
 - Added GitLab merge request JSON normalization.

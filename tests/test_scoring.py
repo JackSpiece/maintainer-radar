@@ -93,6 +93,42 @@ class AnalyzePrTests(unittest.TestCase):
                 result = analyze_pr(pr, now=NOW)
                 self.assertIn("maintainer blocker language", result["flags"])
 
+    def test_configurable_thresholds_and_hints(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 45,
+                "title": "Custom repo shape",
+                "body": "Validation: fixture run.",
+                "updatedAt": "2026-05-20T00:00:00Z",
+                "additions": 30,
+                "deletions": 0,
+                "changedFiles": 2,
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/app.py"},
+                    {"path": "specs/app_spec.py"},
+                    {"path": "snapshots/app.snap"},
+                ],
+            },
+            now=NOW,
+            config={
+                "large_diff_lines": 20,
+                "very_large_diff_lines": 80,
+                "large_file_count": 3,
+                "very_large_file_count": 8,
+                "quiet_days": 3,
+                "stale_days": 10,
+                "test_hints": ["specs/"],
+                "doc_hints": [],
+                "generated_hints": ["snapshots/"],
+            },
+        )
+
+        self.assertIn("large diff", result["flags"])
+        self.assertIn("stale 12 days", result["flags"])
+        self.assertIn("tests changed", result["signals"])
+        self.assertIn("generated or lockfile changes", result["flags"])
+
 
 
 if __name__ == "__main__":

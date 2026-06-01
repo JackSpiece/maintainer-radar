@@ -6,6 +6,7 @@ import json
 import sys
 from typing import Any
 
+from .config import load_config
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .normalize import normalize_items
 from .render import (
@@ -151,11 +152,18 @@ def build_parser() -> argparse.ArgumentParser:
             help="Output format. Default: markdown.",
         )
 
+    def add_config_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--config",
+            help="Path to config JSON. Defaults to .maintainer-radar.json when present.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
     repo = sub.add_parser("repo", help="Analyze pull requests in a repository.")
     add_format_argument(repo, default=argparse.SUPPRESS)
+    add_config_argument(repo)
     repo.add_argument("repository", help="Repository in owner/name form.")
     repo.add_argument("--state", default="open", choices=["open", "closed", "all"])
     repo.add_argument("--limit", type=int, default=30)
@@ -174,6 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
+    add_config_argument(pr)
     pr.add_argument("repository", help="Repository in owner/name form.")
     pr.add_argument("number", help="Pull request number.")
     pr.add_argument(
@@ -184,6 +193,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     author = sub.add_parser("author", help="Analyze pull requests by author.")
     add_format_argument(author, default=argparse.SUPPRESS)
+    add_config_argument(author)
     author.add_argument("username", help="GitHub username.")
     author.add_argument("--state", default="open", choices=["open", "closed"])
     author.add_argument("--limit", type=int, default=50)
@@ -198,6 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
+    add_config_argument(from_json)
     from_json.add_argument("path", help="Path to JSON file.")
     from_json.add_argument(
         "--source",
@@ -223,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        config = load_config(args.config)
         if args.command == "repo":
             prs = list_repo_prs(args.repository, state=args.state, limit=args.limit)
             prs = filter_prs(
@@ -233,7 +245,7 @@ def main(argv: list[str] | None = None) -> int:
                 updated_since=args.updated_since,
             )
             analyses = filter_analyses(
-                [analyze_pr(pr) for pr in prs],
+                [analyze_pr(pr, config=config) for pr in prs],
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,
@@ -245,7 +257,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
-            analysis = analyze_pr(pr)
+            analysis = analyze_pr(pr, config=config)
             if args.comment_template:
                 if args.format == "json":
                     print(json.dumps({"comment": render_comment_template(analysis)}, indent=2))
@@ -256,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
             analyses = filter_analyses(
-                [analyze_pr(pr) for pr in prs],
+                [analyze_pr(pr, config=config) for pr in prs],
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,
@@ -270,7 +282,7 @@ def main(argv: list[str] | None = None) -> int:
             prs = _as_pr_list(_load_json(args.path), source=args.source)
             detail = bool(args.detail and len(prs) == 1)
             analyses = filter_analyses(
-                [analyze_pr(pr) for pr in prs],
+                [analyze_pr(pr, config=config) for pr in prs],
                 action=args.action,
                 min_score=args.min_score,
                 max_risk=args.max_risk,

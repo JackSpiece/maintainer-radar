@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import re
 from typing import Any
 
+from .config import DEFAULT_CONFIG
 
 CODE_EXTENSIONS = {
     ".c",
@@ -144,17 +145,24 @@ def summarize_checks(items: list[dict[str, Any]] | None) -> CheckSummary:
     )
 
 
-def summarize_files(files: list[dict[str, Any]] | None) -> FileSummary:
+def summarize_files(
+    files: list[dict[str, Any]] | None,
+    config: dict[str, Any] | None = None,
+) -> FileSummary:
+    config = config or DEFAULT_CONFIG
+    test_hints = (*TEST_HINTS, *config.get("test_hints", []))
+    doc_hints = (*DOC_HINTS, *config.get("doc_hints", []))
+    generated_hints = (*GENERATED_HINTS, *config.get("generated_hints", []))
     code_files = doc_files = test_files = generated_files = 0
     for file_info in files or []:
         path = str(file_info.get("path") or file_info.get("filename") or "").lower()
         if not path:
             continue
-        if any(hint in path for hint in TEST_HINTS):
+        if any(hint in path for hint in test_hints):
             test_files += 1
-        if any(path.endswith(hint) or hint in path for hint in DOC_HINTS):
+        if any(path.endswith(hint) or hint in path for hint in doc_hints):
             doc_files += 1
-        if any(hint in path for hint in GENERATED_HINTS):
+        if any(hint in path for hint in generated_hints):
             generated_files += 1
         if any(path.endswith(ext) for ext in CODE_EXTENSIONS):
             code_files += 1
@@ -203,10 +211,15 @@ def _label_names(pr: dict[str, Any]) -> list[str]:
     return [name for name in result if name]
 
 
-def analyze_pr(pr: dict[str, Any], now: datetime | None = None) -> dict[str, Any]:
+def analyze_pr(
+    pr: dict[str, Any],
+    now: datetime | None = None,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return deterministic maintainer triage metadata for one PR dictionary."""
+    config = config or DEFAULT_CONFIG
     checks = summarize_checks(pr.get("statusCheckRollup"))
-    files = summarize_files(pr.get("files"))
+    files = summarize_files(pr.get("files"), config=config)
     additions = int(pr.get("additions") or 0)
     deletions = int(pr.get("deletions") or 0)
     changed_files = int(pr.get("changedFiles") or files.total_files or 0)
@@ -226,10 +239,10 @@ def analyze_pr(pr: dict[str, Any], now: datetime | None = None) -> dict[str, Any
         risk += 25
         flags.append("draft PR")
 
-    if total_diff > 1500 or changed_files > 25:
+    if total_diff > config["very_large_diff_lines"] or changed_files > config["very_large_file_count"]:
         risk += 30
         flags.append("very large diff")
-    elif total_diff > 500 or changed_files > 10:
+    elif total_diff > config["large_diff_lines"] or changed_files > config["large_file_count"]:
         risk += 15
         flags.append("large diff")
 
@@ -256,10 +269,10 @@ def analyze_pr(pr: dict[str, Any], now: datetime | None = None) -> dict[str, Any
         signals.append("review required")
 
     if stale_days is not None:
-        if stale_days >= 14:
+        if stale_days >= config["stale_days"]:
             risk += 15
             flags.append(f"stale {stale_days} days")
-        elif stale_days >= 7:
+        elif stale_days >= config["quiet_days"]:
             risk += 8
             flags.append(f"quiet {stale_days} days")
 
@@ -297,6 +310,7 @@ def analyze_pr(pr: dict[str, Any], now: datetime | None = None) -> dict[str, Any
         total_diff=total_diff,
         changed_files=changed_files,
         review_decision=review_decision,
+        config=config,
     )
 
     return {
@@ -328,7 +342,9 @@ def choose_action(
     total_diff: int,
     changed_files: int,
     review_decision: str,
+    config: dict[str, Any] | None = None,
 ) -> str:
+    config = config or DEFAULT_CONFIG
     if is_draft:
         return "wait for author"
     if checks.failed:
@@ -337,11 +353,10 @@ def choose_action(
         return "wait for CI"
     if review_decision == "CHANGES_REQUESTED" or has_blocker:
         return "needs author follow-up"
-    if total_diff > 1500 or changed_files > 25:
+    if total_diff > config["very_large_diff_lines"] or changed_files > config["very_large_file_count"]:
         return "request smaller PR"
     if reviewability >= 75:
         return "review now"
     if reviewability >= 55:
         return "review with caution"
     return "needs triage"
-

@@ -93,6 +93,12 @@ maintainer-radar repo owner/repo --action review-now --min-score 80
 maintainer-radar from-json queue.json --max-risk 25
 ```
 
+Use project-specific thresholds:
+
+```bash
+maintainer-radar repo owner/repo --config .maintainer-radar.json
+```
+
 Analyze one PR in detail:
 
 ```bash
@@ -172,6 +178,8 @@ For scoring details, see [docs/heuristics.md](docs/heuristics.md).
 For automation output, see [docs/json-output.md](docs/json-output.md).
 
 For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
+
+For project-specific thresholds, see [docs/configuration.md](docs/configuration.md).
 
 ## Contributing
 

@@ -68,6 +68,13 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(args.source, "gitlab")
 
+    def test_config_flag_is_available_for_commands(self) -> None:
+        args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--config", "config.json"]
+        )
+
+        self.assertEqual(args.config, "config.json")
+
     def test_filter_prs_supports_label_author_and_dates(self) -> None:
         prs = [
             {

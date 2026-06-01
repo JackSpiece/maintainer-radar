@@ -1,0 +1,12 @@
+{
+  "large_diff_lines": 20,
+  "very_large_diff_lines": 80,
+  "large_file_count": 3,
+  "very_large_file_count": 8,
+  "quiet_days": 3,
+  "stale_days": 10,
+  "test_hints": ["specs/"],
+  "doc_hints": ["guides/"],
+  "generated_hints": ["snapshots/"]
+}
+
