@@ -62,6 +62,25 @@
 - Interactive browser preview for public GitHub repositories
 - Public check-run signals and feedback links for the demo
 
+## 0.15
+
+- `init-action` workflow generator for scheduled reports
+- GitHub Actions run-summary output for Markdown and compact summaries
+
+## 0.16
+
+- Reusable composite GitHub Action
+- GitHub Action quick start and dedicated docs
+- Browser demo Copy Workflow flow
+- Project-specific config support for scheduled Action reports
+- Deterministic next-step guidance in reports and generated samples
+
+## Next
+
+- More real-world maintainer blocker fixtures
+- Better grouped review-session reports for busy queues
+- Marketplace/listing discovery once the Action is published through GitHub UI
+
 ## Design Rules
 
 - No hidden network service.

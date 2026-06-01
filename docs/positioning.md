@@ -11,6 +11,7 @@ The project sits before review. It answers a simpler question:
 - AI code review bots comment on diffs.
 - GitHub Apps automate policy checks.
 - Bounty boards match contributors to paid tasks.
+- GitHub Actions automate repository workflows.
 - Generic dashboards show repository activity.
 
 ## Comparison
@@ -19,12 +20,14 @@ The project sits before review. It answers a simpler question:
 | --- | --- | --- | --- |
 | AI review bots | Comment on code changes | Can add review noise and needs model access | Routes queue attention before review |
 | GitHub Apps | Enforce policy in a repo | Needs installation and permissions | Runs locally with read-only `gh` access |
-| Generic dashboards | Show repository activity | Often broad and hosted | Produces paste-ready maintainer reports |
+| GitHub Actions | Run scheduled repository jobs | Usually needs custom scripts for triage | Ships a reusable read-only Action and workflow generator |
+| Generic dashboards | Show repository activity | Often broad and hosted | Produces paste-ready maintainer reports and artifacts |
 | Bounty boards | Match tasks to contributors | Optimized for contributor work | Optimized for maintainer review load |
 
 ## Maintainer Radar's Angle
 
-Maintainer Radar generates a local, transparent triage brief:
+Maintainer Radar generates a transparent triage brief from the CLI, a reusable
+GitHub Action, or a no-install browser preview:
 
 - review now
 - wait for CI
@@ -33,8 +36,11 @@ Maintainer Radar generates a local, transparent triage brief:
 - request smaller PR
 - needs triage
 
-This is intentionally small. It makes the review queue easier to scan without
-adding another bot account, webhook, or SaaS subscription.
+Each PR includes a score breakdown and a next step, so the report explains both
+why a PR was routed and what a maintainer should do next.
+
+This is intentionally small. It makes the review queue easier to scan without a
+bot account, webhook, hosted database, or SaaS subscription.
 
 ## Why Maintainers Might Care
 

@@ -53,6 +53,8 @@ dashboards. Maintainer Radar is different on purpose:
 - **Markdown-native:** output can be pasted into issues, PR comments, worklogs,
   release notes, or maintainer handoff docs.
 
+For a category comparison, see [docs/positioning.md](docs/positioning.md).
+
 ## Quick Start
 
 For most maintainers, the fastest path is the reusable GitHub Action:
