@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0
+
+- Added opt-in hydrated live GitHub scans with `--hydrate`.
+- Added documentation for fast versus hydrated scan tradeoffs.
+
 ## 0.7.0
 
 - Added queue sorting with `--sort` for action, score, risk, stale days, and PR number.

@@ -4,7 +4,7 @@ import argparse
 from datetime import timezone
 import json
 import sys
-from typing import Any
+from typing import Any, Callable
 
 from .config import load_config
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
@@ -112,6 +112,40 @@ def filter_prs(
                 updated_result.append(pr)
         result = updated_result
     return result
+
+
+def hydrate_prs(
+    prs: list[dict[str, Any]],
+    *,
+    repository: str | None = None,
+    viewer: Callable[[str, str | int], dict[str, Any]] = view_pr,
+) -> list[dict[str, Any]]:
+    hydrated: list[dict[str, Any]] = []
+    for pr in prs:
+        repo_name = repository or _repository_name(pr.get("repository"))
+        number = pr.get("number")
+        if not repo_name or number is None:
+            hydrated.append(pr)
+            continue
+        detail = viewer(repo_name, number)
+        hydrated.append({**pr, **detail})
+    return hydrated
+
+
+def _repository_name(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value
+    if not isinstance(value, dict):
+        return None
+    if value.get("nameWithOwner"):
+        return str(value["nameWithOwner"])
+    if value.get("fullName"):
+        return str(value["fullName"])
+    owner = value.get("owner")
+    owner_name = owner.get("login") if isinstance(owner, dict) else owner
+    if owner_name and value.get("name"):
+        return f"{owner_name}/{value['name']}"
+    return None
 
 
 def filter_analyses(
@@ -227,6 +261,13 @@ def build_parser() -> argparse.ArgumentParser:
             help="Sort queue output. Default: input.",
         )
 
+    def add_hydrate_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--hydrate",
+            action="store_true",
+            help="Fetch full PR detail before scoring. Slower, but enables body, file, and review signals.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -249,6 +290,7 @@ def build_parser() -> argparse.ArgumentParser:
     repo.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     repo.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(repo)
+    add_hydrate_argument(repo)
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -276,6 +318,7 @@ def build_parser() -> argparse.ArgumentParser:
     author.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     author.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(author)
+    add_hydrate_argument(author)
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
@@ -316,6 +359,8 @@ def main(argv: list[str] | None = None) -> int:
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
             )
+            if args.hydrate:
+                prs = hydrate_prs(prs, repository=args.repository)
             analyses = [analyze_pr(pr, config=config) for pr in prs]
             analyses = filter_analyses(
                 analyses,
@@ -343,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
                 _emit([analysis], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
+            if args.hydrate:
+                prs = hydrate_prs(prs)
             analyses = [analyze_pr(pr, config=config) for pr in prs]
             analyses = filter_analyses(
                 analyses,

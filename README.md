@@ -83,6 +83,12 @@ Analyze open PRs in a repository:
 maintainer-radar repo owner/repo --limit 20
 ```
 
+Fetch full PR detail for deeper live scoring:
+
+```bash
+maintainer-radar repo owner/repo --limit 20 --hydrate
+```
+
 Filter noisy queues:
 
 ```bash
@@ -187,9 +193,9 @@ The goal is not to replace review. The goal is to route attention.
 ## Project Status
 
 This is an early public release. The core CLI, scoring engine, Markdown renderer,
-offline JSON mode, and tests are present. Next work is focused on better GitHub
-query coverage, richer maintainer blocker detection, and examples from real OSS
-review workflows.
+offline JSON mode, hydrated GitHub scans, and tests are present. Next work is
+focused on richer maintainer blocker detection and examples from real OSS review
+workflows.
 
 See [ROADMAP.md](ROADMAP.md).
 
@@ -205,6 +211,8 @@ For automation output, see [docs/json-output.md](docs/json-output.md).
 For spreadsheet output, see [docs/csv-output.md](docs/csv-output.md).
 
 For queue ordering, see [docs/sorting.md](docs/sorting.md).
+
+For deeper live GitHub reports, see [docs/hydrated-scans.md](docs/hydrated-scans.md).
 
 For GitLab exports, see [docs/gitlab-json.md](docs/gitlab-json.md).
 
