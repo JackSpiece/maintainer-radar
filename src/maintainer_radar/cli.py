@@ -200,6 +200,14 @@ def sort_analyses(analyses: list[dict[str, Any]], sort_by: str = "input") -> lis
     raise ValueError(f"Unsupported sort: {sort_by}")
 
 
+def limit_analyses(analyses: list[dict[str, Any]], top: int | None = None) -> list[dict[str, Any]]:
+    if top is None:
+        return analyses
+    if top < 0:
+        raise ValueError("--top must be 0 or greater")
+    return analyses[:top]
+
+
 def _number_value(item: dict[str, Any]) -> int:
     try:
         return int(item.get("number") or 0)
@@ -273,6 +281,13 @@ def build_parser() -> argparse.ArgumentParser:
             help="Fetch full PR detail before scoring. Slower, but enables body, file, and review signals.",
         )
 
+    def add_top_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--top",
+            type=int,
+            help="Only emit the first N PRs after filtering and sorting.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -296,6 +311,7 @@ def build_parser() -> argparse.ArgumentParser:
     repo.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(repo)
     add_hydrate_argument(repo)
+    add_top_argument(repo)
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -324,6 +340,7 @@ def build_parser() -> argparse.ArgumentParser:
     author.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(author)
     add_hydrate_argument(author)
+    add_top_argument(author)
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
@@ -345,6 +362,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json.add_argument("--max-risk", type=int, help="Only include PRs with risk <= N.")
     from_json.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(from_json)
+    add_top_argument(from_json)
 
     return parser
 
@@ -374,6 +392,7 @@ def main(argv: list[str] | None = None) -> int:
                 max_risk=args.max_risk,
             )
             analyses = sort_analyses(analyses, args.sort)
+            analyses = limit_analyses(analyses, args.top)
             _emit(
                 analyses,
                 args.format,
@@ -405,6 +424,7 @@ def main(argv: list[str] | None = None) -> int:
                 max_risk=args.max_risk,
             )
             analyses = sort_analyses(analyses, args.sort)
+            analyses = limit_analyses(analyses, args.top)
             _emit(
                 analyses,
                 args.format,
@@ -421,6 +441,7 @@ def main(argv: list[str] | None = None) -> int:
                 max_risk=args.max_risk,
             )
             analyses = sort_analyses(analyses, args.sort)
+            analyses = limit_analyses(analyses, args.top)
             _emit(
                 analyses,
                 args.format,

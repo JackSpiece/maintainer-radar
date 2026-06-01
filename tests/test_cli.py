@@ -8,6 +8,7 @@ from maintainer_radar.cli import (
     filter_analyses,
     filter_prs,
     hydrate_prs,
+    limit_analyses,
     sort_analyses,
 )
 
@@ -89,6 +90,17 @@ class CliTests(unittest.TestCase):
 
         self.assertTrue(repo_args.hydrate)
         self.assertTrue(author_args.hydrate)
+
+    def test_top_flag_is_available_for_queue_commands(self) -> None:
+        repo_args = build_parser().parse_args(["repo", "owner/repo", "--top", "5"])
+        author_args = build_parser().parse_args(["author", "alice", "--top", "3"])
+        json_args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--top", "1"]
+        )
+
+        self.assertEqual(repo_args.top, 5)
+        self.assertEqual(author_args.top, 3)
+        self.assertEqual(json_args.top, 1)
 
     def test_comment_template_flag_is_available_for_pr_command(self) -> None:
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
@@ -221,6 +233,17 @@ class CliTests(unittest.TestCase):
         hydrated = hydrate_prs([{"number": 1, "title": "Unknown repo"}])
 
         self.assertEqual(hydrated, [{"number": 1, "title": "Unknown repo"}])
+
+    def test_limit_analyses_applies_top_n_after_other_queue_steps(self) -> None:
+        analyses = [{"number": 1}, {"number": 2}, {"number": 3}]
+
+        self.assertEqual(limit_analyses(analyses), analyses)
+        self.assertEqual(limit_analyses(analyses, 2), [{"number": 1}, {"number": 2}])
+        self.assertEqual(limit_analyses(analyses, 0), [])
+
+    def test_limit_analyses_rejects_negative_top_n(self) -> None:
+        with self.assertRaises(ValueError):
+            limit_analyses([{"number": 1}], -1)
 
     def test_sort_analyses_supports_priority_score_risk_stale_and_number(self) -> None:
         analyses = [

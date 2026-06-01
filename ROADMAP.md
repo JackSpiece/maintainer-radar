@@ -39,6 +39,10 @@
 - Standalone static HTML reports for sharing local queue snapshots
 - Copy-paste workflow examples for Markdown and HTML CI artifacts
 
+## 0.10
+
+- Focused top-N queue reports after filtering and sorting
+
 ## Design Rules
 
 - No hidden network service.
