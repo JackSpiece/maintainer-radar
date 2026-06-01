@@ -8,6 +8,7 @@
     "risk": 0,
     "reviewability": 100,
     "action": "review now",
+    "next_step": "Review now while the PR appears small, active, and low risk.",
     "flags": [],
     "signals": [
       "CI passed",
@@ -51,6 +52,7 @@
     "risk": 100,
     "reviewability": 0,
     "action": "ask for CI fix",
+    "next_step": "Ask the author to get failing checks green before deeper review.",
     "flags": [
       "very large diff",
       "CI failing",

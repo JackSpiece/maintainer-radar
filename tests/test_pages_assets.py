@@ -17,6 +17,8 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("GitHub Action", html)
         self.assertIn('href="github-action.html"', html)
         self.assertIn("run summary", html)
+        self.assertIn("Next step", html)
+        self.assertIn("Review now while the PR appears small, active, and low risk.", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
         self.assertIn('id="copy-markdown"', html)
@@ -60,7 +62,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.5", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.6", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)

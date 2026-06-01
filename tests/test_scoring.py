@@ -39,6 +39,10 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertGreaterEqual(result["reviewability"], 75)
         self.assertIn("CI passed", result["signals"])
         self.assertIn("tests changed", result["signals"])
+        self.assertEqual(
+            result["next_step"],
+            "Review now while the PR appears small, active, and low risk.",
+        )
         self.assertIn(
             {"label": "CI passed", "risk_delta": -8, "kind": "signal"},
             result["score_breakdown"],
@@ -69,6 +73,10 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertLess(result["reviewability"], 50)
         self.assertIn("very large diff", result["flags"])
         self.assertIn("maintainer blocker language", result["flags"])
+        self.assertEqual(
+            result["next_step"],
+            "Ask the author to get failing checks green before deeper review.",
+        )
         self.assertIn(
             {"label": "very large diff", "risk_delta": 30, "kind": "flag"},
             result["score_breakdown"],
@@ -96,6 +104,10 @@ class AnalyzePrTests(unittest.TestCase):
 
         self.assertIn("docs-only shape", result["signals"])
         self.assertNotIn("code changed without tests", result["flags"])
+        self.assertEqual(
+            result["next_step"],
+            "Review now as a likely low-risk docs-only change.",
+        )
 
     def test_blocker_fixture_corpus_detects_maintainer_blockers(self) -> None:
         fixture_path = Path(__file__).parent / "fixtures" / "blocker-prs.json"

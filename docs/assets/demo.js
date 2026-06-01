@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.5";
+  const ACTION_VERSION = "v0.16.6";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -265,19 +265,21 @@
     const rawRisk = risk;
     risk = clampRisk(risk);
     const reviewability = 100 - risk;
+    const action = chooseAction({
+      reviewability,
+      isDraft,
+      checks: checkSummary,
+      hasCheckData,
+      totalDiff,
+      changedFiles,
+    });
 
     return {
       number: pr.number,
       title: pr.title || "Untitled",
       url: pr.html_url || "",
-      action: chooseAction({
-        reviewability,
-        isDraft,
-        checks: checkSummary,
-        hasCheckData,
-        totalDiff,
-        changedFiles,
-      }),
+      action,
+      nextStep: recommendNextStep({ action, flags, signals }),
       reviewability,
       risk,
       rawRisk,
@@ -307,6 +309,37 @@
       return "review with caution";
     }
     return "needs triage";
+  }
+
+  function recommendNextStep({ action, flags = [], signals = [] }) {
+    if (action === "wait for author") {
+      return "Wait for the author to mark the PR ready for review.";
+    }
+    if (action === "ask for CI fix") {
+      return "Ask the author to get failing checks green before deeper review.";
+    }
+    if (action === "wait for CI") {
+      return "Wait for checks to finish before spending review time.";
+    }
+    if (action === "needs author follow-up") {
+      if (flags.includes("maintainer blocker language")) {
+        return "Ask the author to respond to unresolved maintainer feedback.";
+      }
+      return "Ask the author to address requested changes before another review pass.";
+    }
+    if (action === "request smaller PR") {
+      return "Ask for a smaller split or a clear scope explanation.";
+    }
+    if (action === "review now") {
+      if (signals.includes("docs-only shape")) {
+        return "Review now as a likely low-risk docs-only change.";
+      }
+      return "Review now while the PR appears small, active, and low risk.";
+    }
+    if (action === "review with caution") {
+      return "Review, but inspect the risk flags before approving.";
+    }
+    return "Triage manually before assigning reviewer time.";
   }
 
   function formatDelta(value) {
@@ -365,18 +398,20 @@
     }
     lines.push(
       "",
-      "| PR | Action | Score | Risk Impact | Signals |",
-      "| --- | --- | ---: | --- | --- |"
+      "| PR | Action | Next Step | Score | Risk Impact | Signals |",
+      "| --- | --- | --- | ---: | --- | --- |"
     );
 
     if (!items || !items.length) {
-      lines.push("| No open PRs found | n/a | 0 | n/a | n/a |");
+      lines.push("| No open PRs found | n/a | n/a | 0 | n/a | n/a |");
     } else {
       for (const item of items) {
         const title = `#${item.number} ${item.title}`;
         const label = item.url ? `[${markdownCell(title)}](${item.url})` : markdownCell(title);
         lines.push(
-          `| ${label} | ${markdownCell(item.action)} | ${item.reviewability} | ${markdownCell(
+          `| ${label} | ${markdownCell(item.action)} | ${markdownCell(
+            item.nextStep
+          )} | ${item.reviewability} | ${markdownCell(
             formatImpact(item.scoreBreakdown)
           )} | ${markdownCell(formatSignals(item))} |`
         );
@@ -504,7 +539,7 @@
       return;
     }
     if (!items.length) {
-      body.innerHTML = `<tr><td colspan="5">No open pull requests found for ${escapeHtml(repository)}.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="6">No open pull requests found for ${escapeHtml(repository)}.</td></tr>`;
       return;
     }
     body.innerHTML = items
@@ -516,6 +551,7 @@
         return `<tr>
           <td>${pr}</td>
           <td><span class="pill ${actionClass(item.action)}">${escapeHtml(item.action)}</span></td>
+          <td>${escapeHtml(item.nextStep)}</td>
           <td class="score">${item.reviewability}</td>
           <td class="impact">${escapeHtml(formatImpact(item.scoreBreakdown))}</td>
           <td class="signals">${escapeHtml(formatSignals(item))}</td>
@@ -658,6 +694,7 @@
     chooseAction,
     formatImpact,
     normalizeRepository,
+    recommendNextStep,
     repositoryFromSearch,
     renderMarkdownReport,
     renderActionWorkflow,

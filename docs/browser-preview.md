@@ -18,7 +18,8 @@ After a scan, the page updates the address bar and enables **Copy Link** for the
 current repository.
 
 It also enables **Copy Markdown**, which copies a paste-ready queue brief with
-the same action, score, risk-impact, and signal columns shown in the preview.
+the same action, next-step, score, risk-impact, and signal columns shown in the
+preview.
 
 The **Copy Workflow** button copies a ready scheduled GitHub Action workflow that
 uses the latest Maintainer Radar release and uploads the generated report as an

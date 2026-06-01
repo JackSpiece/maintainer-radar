@@ -349,6 +349,11 @@ def analyze_pr(
         review_decision=review_decision,
         config=config,
     )
+    next_step = recommend_next_step(
+        action=action,
+        flags=flags,
+        signals=signals,
+    )
 
     return {
         "number": pr.get("number"),
@@ -359,6 +364,7 @@ def analyze_pr(
         "risk": risk,
         "reviewability": reviewability,
         "action": action,
+        "next_step": next_step,
         "flags": flags,
         "signals": signals,
         "score_breakdown": score_breakdown,
@@ -399,3 +405,32 @@ def choose_action(
     if reviewability >= 55:
         return "review with caution"
     return "needs triage"
+
+
+def recommend_next_step(
+    *,
+    action: str,
+    flags: list[str] | None = None,
+    signals: list[str] | None = None,
+) -> str:
+    flags = flags or []
+    signals = signals or []
+    if action == "wait for author":
+        return "Wait for the author to mark the PR ready for review."
+    if action == "ask for CI fix":
+        return "Ask the author to get failing checks green before deeper review."
+    if action == "wait for CI":
+        return "Wait for checks to finish before spending review time."
+    if action == "needs author follow-up":
+        if "maintainer blocker language" in flags:
+            return "Ask the author to respond to unresolved maintainer feedback."
+        return "Ask the author to address requested changes before another review pass."
+    if action == "request smaller PR":
+        return "Ask for a smaller split or a clear scope explanation."
+    if action == "review now":
+        if "docs-only shape" in signals:
+            return "Review now as a likely low-risk docs-only change."
+        return "Review now while the PR appears small, active, and low risk."
+    if action == "review with caution":
+        return "Review, but inspect the risk flags before approving."
+    return "Triage manually before assigning reviewer time."

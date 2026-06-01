@@ -61,7 +61,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.5
+- uses: JackSpiece/maintainer-radar@v0.16.6
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -234,10 +234,10 @@ maintainer-radar init-action --report-format html --path .github/workflows/maint
 ```markdown
 ## Maintainer Radar Report
 
-| PR | Action | Score | Risk Impact | Signals |
-| --- | --- | ---: | --- | --- |
-| #42 Fix parser cache race | review now | 100 | CI passed (-8 risk) | CI passed, test plan present, tests changed |
-| #43 Add universal plugin system | ask for CI fix | 0 | very large diff (+30 risk); CI failing (+30 risk) | very large diff, CI failing, changes requested |
+| PR | Action | Next Step | Score | Risk Impact | Signals |
+| --- | --- | --- | ---: | --- | --- |
+| #42 Fix parser cache race | review now | Review now while the PR appears small, active, and low risk. | 100 | CI passed (-8 risk) | CI passed, test plan present, tests changed |
+| #43 Add universal plugin system | ask for CI fix | Ask the author to get failing checks green before deeper review. | 0 | very large diff (+30 risk); CI failing (+30 risk) | very large diff, CI failing, changes requested |
 ```
 
 ## Signals
@@ -255,6 +255,7 @@ Maintainer Radar currently checks:
 - maintainer comments that look like blockers
 - failing or pending checks
 - per-PR score breakdowns that show each risk adjustment
+- per-PR next steps that translate triage into a maintainer move
 - draft follow-up comments for one PR, without posting automatically
 
 The goal is not to replace review. The goal is to route attention.

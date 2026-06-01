@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.6
+
+- Added deterministic `next_step` guidance to PR analyses so reports translate each action into a concrete maintainer move.
+- Surfaced next steps in Markdown, HTML, CSV, JSON, detail output, generated samples, and the browser preview.
+
 ## 0.16.5
 
 - Added a `config` input to the reusable GitHub Action so scheduled reports can use project-specific scoring thresholds.

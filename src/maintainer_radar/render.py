@@ -12,6 +12,7 @@ CSV_FIELDS = [
     "title",
     "author",
     "action",
+    "next_step",
     "reviewability",
     "risk",
     "stale_days",
@@ -238,6 +239,7 @@ def render_csv(analyses: list[dict[str, Any]]) -> str:
                 "title": item.get("title") or "",
                 "author": item.get("author") or "",
                 "action": item.get("action") or "",
+                "next_step": _next_step(item),
                 "reviewability": item.get("reviewability", ""),
                 "risk": item.get("risk", ""),
                 "stale_days": item.get("stale_days", ""),
@@ -301,6 +303,10 @@ def _join_csv_value(value: Any) -> str:
     return str(value)
 
 
+def _next_step(item: dict[str, Any]) -> str:
+    return str(item.get("next_step") or "Triage manually before assigning reviewer time.")
+
+
 def _format_risk_delta(value: Any) -> str:
     try:
         delta = int(value)
@@ -350,7 +356,7 @@ def _render_html_table(analyses: list[dict[str, Any]]) -> str:
     return (
         "<table>"
         "<thead><tr>"
-        "<th>PR</th><th>Action</th><th>Score</th><th>Risk impact</th><th>Signals</th>"
+        "<th>PR</th><th>Action</th><th>Next step</th><th>Score</th><th>Risk impact</th><th>Signals</th>"
         "</tr></thead>"
         f"<tbody>{rows}</tbody>"
         "</table>"
@@ -376,6 +382,7 @@ def _render_html_row(item: dict[str, Any]) -> str:
         "<tr>"
         f"<td>{pr_html}</td>"
         f'<td><span class="action {_action_class(action)}">{escape(action)}</span></td>'
+        f"<td>{escape(_next_step(item))}</td>"
         f'<td class="score">{escape(str(item.get("reviewability") or 0))}</td>'
         f'<td class="impact">{escape(impact_text)}</td>'
         f'<td class="signals">{escape(signal_text)}</td>'
@@ -399,8 +406,8 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
     lines = [
         render_summary_markdown(analyses, title=title).rstrip(),
         "",
-        "| PR | Action | Score | Risk Impact | Signals |",
-        "| --- | --- | ---: | --- | --- |",
+        "| PR | Action | Next Step | Score | Risk Impact | Signals |",
+        "| --- | --- | --- | ---: | --- | --- |",
     ]
     for item in analyses:
         number = item.get("number")
@@ -414,7 +421,7 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
         impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
         signal_text = ", ".join([*signals, *flags]) or "no notable signals"
         lines.append(
-            f"| {label} | {item.get('action')} | {item.get('reviewability')} | {impact_text} | {signal_text} |"
+            f"| {label} | {item.get('action')} | {_next_step(item)} | {item.get('reviewability')} | {impact_text} | {signal_text} |"
         )
 
     lines.extend(
@@ -432,6 +439,7 @@ def render_detail(item: dict[str, Any]) -> str:
         "",
         f"- **Title:** {item.get('title')}",
         f"- **Action:** {item.get('action')}",
+        f"- **Next step:** {_next_step(item)}",
         f"- **Reviewability:** {item.get('reviewability')}/100",
         f"- **Risk:** {item.get('risk')}/100",
     ]

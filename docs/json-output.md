@@ -21,6 +21,7 @@ Important fields:
 | `risk` | integer | Risk score from 0 to 100 |
 | `reviewability` | integer | Reviewability score from 0 to 100 |
 | `action` | string | Recommended maintainer action |
+| `next_step` | string | Suggested next maintainer move |
 | `signals` | array | Positive review signals |
 | `flags` | array | Risk flags |
 | `score_breakdown` | array | Heuristics that changed the PR risk score |

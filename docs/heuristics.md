@@ -8,6 +8,9 @@ heuristic, shows its `risk_delta`, and marks it as a `signal` or `flag`. Positiv
 values raise risk. Negative values lower risk. The final risk score is clamped to
 the 0 to 100 range, then reviewability is calculated as `100 - risk`.
 
+Each analyzed PR also includes `next_step`, a deterministic sentence that turns
+the selected action and strongest flags into a concrete maintainer move.
+
 Example:
 
 ```json

@@ -20,6 +20,7 @@ Columns:
 | `title` | Pull request title |
 | `author` | Author login |
 | `action` | Recommended maintainer action |
+| `next_step` | Suggested next maintainer move |
 | `reviewability` | Reviewability score from 0 to 100 |
 | `risk` | Risk score from 0 to 100 |
 | `stale_days` | Days since last update |

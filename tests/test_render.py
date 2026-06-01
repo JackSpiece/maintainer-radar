@@ -25,6 +25,7 @@ class RenderTests(unittest.TestCase):
                     "title": "Fix bug",
                     "url": "https://example.test/pull/1",
                     "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
                     "reviewability": 90,
                     "signals": ["CI passed"],
                     "flags": [],
@@ -38,6 +39,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Maintainer Radar Report", output)
         self.assertIn("PRs scanned: 1", output)
         self.assertIn("review now", output)
+        self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("90", output)
         self.assertIn("CI passed (-8 risk)", output)
         self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
@@ -95,6 +97,7 @@ class RenderTests(unittest.TestCase):
                     "title": "Fix parser cache race",
                     "author": "alice",
                     "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
                     "reviewability": 90,
                     "risk": 10,
                     "stale_days": 0,
@@ -112,9 +115,10 @@ class RenderTests(unittest.TestCase):
             ]
         )
 
-        self.assertIn("number,title,author,action,reviewability,risk", output)
+        self.assertIn("number,title,author,action,next_step,reviewability,risk", output)
         self.assertIn("score_breakdown,url", output)
-        self.assertIn("42,Fix parser cache race,alice,review now,90,10", output)
+        self.assertIn("42,Fix parser cache race,alice,review now", output)
+        self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("bug; backend", output)
         self.assertIn("no test plan found (+8 risk)", output)
         self.assertIn("no test plan found", output)
@@ -149,6 +153,7 @@ class RenderTests(unittest.TestCase):
                     "title": "Fix <parser>",
                     "url": "javascript:alert(1)",
                     "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
                     "reviewability": 90,
                     "signals": ["CI passed"],
                     "flags": ["needs <tests>"],
@@ -162,6 +167,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("<!doctype html>", output)
         self.assertIn("PRs scanned", output)
         self.assertIn("#42 Fix &lt;parser&gt;", output)
+        self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("needs &lt;tests&gt;", output)
         self.assertIn("needs &lt;tests&gt; (+8 risk)", output)
         self.assertNotIn("javascript:alert", output)
@@ -187,6 +193,7 @@ class RenderTests(unittest.TestCase):
                 "number": 1,
                 "title": "Fix bug",
                 "action": "review now",
+                "next_step": "Review now while the PR appears small, active, and low risk.",
                 "reviewability": 90,
                 "risk": 10,
                 "raw_risk": 10,
@@ -201,6 +208,8 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertIn("Maintainer Brief", output)
+        self.assertIn("Next step:", output)
+        self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("### Checks", output)
         self.assertIn("### Score Breakdown", output)
         self.assertIn("CI passed: -8 risk", output)
