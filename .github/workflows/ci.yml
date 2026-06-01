@@ -22,3 +22,7 @@ jobs:
         run: python -m unittest discover -s tests
       - name: Run sample command
         run: maintainer-radar from-json examples/sample-prs.json
+      - name: Check browser demo
+        run: |
+          node --check docs/assets/demo.js
+          node tests/demo_smoke.js
