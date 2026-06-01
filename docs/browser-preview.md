@@ -17,6 +17,9 @@ https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
 After a scan, the page updates the address bar and enables **Copy Link** for the
 current repository.
 
+It also enables **Copy Markdown**, which copies a paste-ready queue brief with
+the same action, score, risk-impact, and signal columns shown in the preview.
+
 ## What It Fetches
 
 For the recent open pull requests it scans, the preview fetches:

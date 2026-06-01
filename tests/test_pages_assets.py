@@ -15,6 +15,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Try a public repo", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
+        self.assertIn('id="copy-markdown"', html)
         self.assertIn('href="browser-preview.html"', html)
         self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
@@ -46,6 +47,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("issues/new/choose", docs)
         self.assertIn("?repo=python/cpython", docs)
         self.assertIn("Copy Link", docs)
+        self.assertIn("Copy Markdown", docs)
 
 
 if __name__ == "__main__":
