@@ -107,6 +107,56 @@
       white-space: pre;
     }
 
+    .scan-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .scan-form label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .scan-form input {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 11px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .scan-form button {
+      border: 1px solid #1d4ed8;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 13px;
+      white-space: nowrap;
+    }
+
+    .scan-form button:disabled {
+      cursor: wait;
+      opacity: 0.7;
+    }
+
+    .status {
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      padding: 9px 16px;
+    }
+
     .notes {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -225,6 +275,11 @@
       color: var(--red);
     }
 
+    .caution {
+      background: #fef3c7;
+      color: var(--amber);
+    }
+
     .impact {
       color: var(--violet);
       font-size: 14px;
@@ -292,6 +347,10 @@
       .metrics {
         grid-template-columns: 1fr;
       }
+
+      .scan-form {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -332,19 +391,27 @@
         </div>
       </div>
 
-      <section class="report" aria-label="Sample Maintainer Radar report">
+      <section class="report" aria-label="Maintainer Radar browser preview">
         <div class="report-head">
           <div>
-            <h2>Sample Queue Report</h2>
-            <span>Generated from offline fixture data</span>
+            <h2>Try a public repo</h2>
+            <span>Browser preview. The CLI gives deeper hydrated scans.</span>
           </div>
           <a href="https://github.com/JackSpiece/maintainer-radar/blob/main/examples/output/sample-report.md">View Markdown</a>
         </div>
+        <form class="scan-form" id="repo-form">
+          <label for="repo-input">Repository</label>
+          <input id="repo-input" name="repository" placeholder="owner/repo" value="python/cpython" autocomplete="off">
+          <button id="repo-submit" type="submit">Scan</button>
+        </form>
+        <div class="status" id="demo-status" aria-live="polite">
+          Sample output is shown below until you scan a public repository.
+        </div>
         <div class="metrics">
-          <div class="metric"><strong>2</strong><span>PRs scanned</span></div>
-          <div class="metric"><strong>1</strong><span>Review now</span></div>
-          <div class="metric"><strong>1</strong><span>CI blocked</span></div>
-          <div class="metric"><strong>50</strong><span>Average score</span></div>
+          <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
+          <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
+          <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
+          <div class="metric"><strong id="metric-score">50</strong><span>Average score</span></div>
         </div>
         <table>
           <thead>
@@ -356,7 +423,7 @@
               <th>Signals</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="queue-body">
             <tr>
               <td>#42 Fix parser cache race</td>
               <td><span class="pill review">review now</span></td>
@@ -386,5 +453,6 @@
       <img src="assets/terminal-preview.svg" alt="Terminal preview of Maintainer Radar output">
     </section>
   </main>
+  <script src="assets/demo.js"></script>
 </body>
 </html>

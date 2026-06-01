@@ -4,7 +4,7 @@
 
 Local-first pull request triage reports for maintainers in the AI contribution era.
 
-Demo: <https://jackspiece.github.io/maintainer-radar/>
+Demo: <https://jackspiece.github.io/maintainer-radar/> includes a no-install browser preview for public repositories.
 
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
