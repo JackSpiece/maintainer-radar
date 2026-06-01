@@ -60,7 +60,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.4", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.5", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)

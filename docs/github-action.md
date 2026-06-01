@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.4
+        uses: JackSpiece/maintainer-radar@v0.16.5
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -55,6 +55,7 @@ jobs:
 | `limit` | `50` | Maximum pull requests to scan. |
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
+| `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |
 
@@ -85,6 +86,17 @@ with:
   step-summary: "false"
 ```
 
+## Project Config
+
+Use the `config` input when a repository has custom size, stale, test path, doc
+path, or generated file thresholds:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  config: .maintainer-radar.json
+```
+
 ## Bootstrap Command
 
 If you already use the CLI locally, generate the workflow instead of writing YAML
@@ -92,6 +104,7 @@ by hand:
 
 ```bash
 maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
+maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
 ```
 
 ## Permissions

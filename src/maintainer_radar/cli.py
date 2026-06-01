@@ -408,6 +408,10 @@ def build_parser() -> argparse.ArgumentParser:
     init_action.add_argument("--sort", choices=SORT_CHOICES, default="action")
     init_action.add_argument("--top", type=int, help="Only include the first N PRs after sorting.")
     init_action.add_argument(
+        "--config",
+        help="Add a config JSON path to the generated workflow.",
+    )
+    init_action.add_argument(
         "--no-hydrate",
         action="store_true",
         help="Skip full PR hydration for a faster but shallower workflow.",
@@ -443,6 +447,7 @@ def main(argv: list[str] | None = None) -> int:
                 sort=args.sort,
                 hydrate=not args.no_hydrate,
                 top=args.top,
+                config=args.config,
                 step_summary=not args.no_step_summary,
             )
             if args.path:

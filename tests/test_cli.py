@@ -128,6 +128,8 @@ class CliTests(unittest.TestCase):
                 "risk",
                 "--top",
                 "10",
+                "--config",
+                ".maintainer-radar.json",
                 "--no-hydrate",
                 "--no-step-summary",
                 "--path",
@@ -142,6 +144,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.limit, 25)
         self.assertEqual(args.sort, "risk")
         self.assertEqual(args.top, 10)
+        self.assertEqual(args.config, ".maintainer-radar.json")
         self.assertTrue(args.no_hydrate)
         self.assertTrue(args.no_step_summary)
         self.assertTrue(args.force)
@@ -151,12 +154,31 @@ class CliTests(unittest.TestCase):
             path = Path(tmp) / ".github" / "workflows" / "maintainer-radar.yml"
 
             with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()):
-                first_result = main(["init-action", "--report-format", "html", "--path", str(path)])
+                first_result = main(
+                    [
+                        "init-action",
+                        "--report-format",
+                        "html",
+                        "--config",
+                        ".maintainer-radar.json",
+                        "--path",
+                        str(path),
+                    ]
+                )
                 second_result = main(
                     ["init-action", "--report-format", "html", "--path", str(path)]
                 )
                 forced_result = main(
-                    ["init-action", "--report-format", "html", "--path", str(path), "--force"]
+                    [
+                        "init-action",
+                        "--report-format",
+                        "html",
+                        "--config",
+                        ".maintainer-radar.json",
+                        "--path",
+                        str(path),
+                        "--force",
+                    ]
                 )
 
             output = path.read_text(encoding="utf-8")
@@ -167,6 +189,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("pull-requests: read", output)
         self.assertIn("uses: JackSpiece/maintainer-radar@", output)
         self.assertIn("format: html", output)
+        self.assertIn('config: ".maintainer-radar.json"', output)
         self.assertIn("maintainer-radar.html", output)
 
     def test_init_action_does_not_load_scoring_config(self) -> None:

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.5
+
+- Added a `config` input to the reusable GitHub Action so scheduled reports can use project-specific scoring thresholds.
+- Added `maintainer-radar init-action --config` support and documented the Action config path in README and configuration docs.
+
 ## 0.16.4
 
 - Updated README, package, Pages, and social-preview source descriptions to lead with the GitHub Action and read-only PR triage positioning.

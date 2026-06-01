@@ -24,6 +24,7 @@ def render_github_action_workflow(
     sort: str = "action",
     hydrate: bool = True,
     top: int | None = None,
+    config: str | None = None,
     step_summary: bool = True,
     action_ref: str | None = None,
 ) -> str:
@@ -37,6 +38,9 @@ def render_github_action_workflow(
         raise ValueError("--limit must be 1 or greater")
     if top is not None and top < 1:
         raise ValueError("--top must be 1 or greater")
+    clean_config = (config or "").strip()
+    if "\n" in clean_config or "\r" in clean_config:
+        raise ValueError("--config must be a single-line path")
     clean_schedule = schedule.strip()
     if not clean_schedule or "\n" in clean_schedule or "\r" in clean_schedule:
         raise ValueError("--schedule must be a single-line cron expression")
@@ -46,6 +50,8 @@ def render_github_action_workflow(
     artifact_name = f"maintainer-radar-{report_format}"
     action = action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
     top_input = f'          top: "{top}"\n' if top is not None else ""
+    escaped_config = clean_config.replace('"', '\\"')
+    config_input = f'          config: "{escaped_config}"\n' if clean_config else ""
 
     escaped_schedule = clean_schedule.replace('"', '\\"')
     return f"""name: Maintainer Radar Report
@@ -77,7 +83,7 @@ jobs:
           output: {output_path}
           limit: "{limit}"
           sort: {sort}
-{top_input}          hydrate: "{str(hydrate).lower()}"
+{top_input}{config_input}          hydrate: "{str(hydrate).lower()}"
           step-summary: "{str(step_summary).lower()}"
       - uses: actions/upload-artifact@v4
         with:

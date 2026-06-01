@@ -31,6 +31,7 @@ class WorkflowTests(unittest.TestCase):
             sort="risk",
             hydrate=False,
             top=10,
+            config=".maintainer-radar.json",
         )
 
         self.assertIn('cron: "15 7 * * 1"', output)
@@ -38,6 +39,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('hydrate: "false"', output)
         self.assertIn("sort: risk", output)
         self.assertIn('top: "10"', output)
+        self.assertIn('config: ".maintainer-radar.json"', output)
         self.assertIn("format: html", output)
         self.assertIn("maintainer-radar.html", output)
         self.assertIn('step-summary: "true"', output)
@@ -54,6 +56,8 @@ class WorkflowTests(unittest.TestCase):
             render_github_action_workflow(limit=0)
         with self.assertRaises(ValueError):
             render_github_action_workflow(top=0)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(config="config.json\nname: injected")
         with self.assertRaises(ValueError):
             render_github_action_workflow(schedule="0 8 * * 1\nname: injected")
 

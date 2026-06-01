@@ -44,3 +44,17 @@ maintainer-radar repo owner/repo --config .maintainer-radar.json
 maintainer-radar from-json queue.json --config strict-config.json
 ```
 
+For scheduled GitHub Action reports, pass the same file path with the `config`
+input:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  config: .maintainer-radar.json
+```
+
+Or generate that workflow locally:
+
+```bash
+maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
+```

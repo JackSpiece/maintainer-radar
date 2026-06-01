@@ -29,6 +29,10 @@ inputs:
     description: Only include the first N pull requests after filtering and sorting.
     required: false
     default: ""
+  config:
+    description: Optional path to a Maintainer Radar config JSON file.
+    required: false
+    default: ""
   hydrate:
     description: Fetch full pull request details for deeper scoring.
     required: false
@@ -59,6 +63,7 @@ runs:
         INPUT_LIMIT: ${{ inputs.limit }}
         INPUT_SORT: ${{ inputs.sort }}
         INPUT_TOP: ${{ inputs.top }}
+        INPUT_CONFIG: ${{ inputs.config }}
         INPUT_HYDRATE: ${{ inputs.hydrate }}
         INPUT_STEP_SUMMARY: ${{ inputs.step-summary }}
       run: |
@@ -95,6 +100,9 @@ runs:
         if [ -n "$INPUT_TOP" ]; then
           command+=(--top "$INPUT_TOP")
         fi
+        if [ -n "$INPUT_CONFIG" ]; then
+          command+=(--config "$INPUT_CONFIG")
+        fi
 
         if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" = "markdown" ]; then
           "${command[@]}" | tee "$output" >> "$GITHUB_STEP_SUMMARY"
@@ -114,6 +122,9 @@ runs:
           fi
           if [ -n "$INPUT_TOP" ]; then
             summary_command+=(--top "$INPUT_TOP")
+          fi
+          if [ -n "$INPUT_CONFIG" ]; then
+            summary_command+=(--config "$INPUT_CONFIG")
           fi
           "${summary_command[@]}" >> "$GITHUB_STEP_SUMMARY" || true
         fi

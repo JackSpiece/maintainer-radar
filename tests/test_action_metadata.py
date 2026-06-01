@@ -17,6 +17,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("using: composite", action)
         self.assertIn("repository:", action)
         self.assertIn("format:", action)
+        self.assertIn("config:", action)
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
@@ -26,6 +27,8 @@ class ActionMetadataTests(unittest.TestCase):
 
         self.assertIn('python -m pip install "$GITHUB_ACTION_PATH"', action)
         self.assertIn('maintainer-radar repo "$repository"', action)
+        self.assertIn('command+=(--config "$INPUT_CONFIG")', action)
+        self.assertIn('summary_command+=(--config "$INPUT_CONFIG")', action)
         self.assertIn('--summary-only', action)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', action)
         self.assertNotIn("gh pr comment", action)
@@ -51,6 +54,7 @@ class ActionMetadataTests(unittest.TestCase):
             "limit",
             "sort",
             "top",
+            "config",
             "hydrate",
             "step-summary",
             "report-path",
