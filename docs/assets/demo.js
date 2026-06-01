@@ -59,6 +59,19 @@
     return normalizeRepository(params.get("repo"));
   }
 
+  function shareUrlForRepository(baseUrl, value) {
+    const repository = normalizeRepository(value);
+    if (!repository) {
+      return "";
+    }
+    const url = new URL(
+      String(baseUrl || "https://jackspiece.github.io/maintainer-radar/"),
+      "https://jackspiece.github.io/maintainer-radar/"
+    );
+    url.searchParams.set("repo", repository);
+    return url.toString();
+  }
+
   function summarizeFiles(files) {
     let codeFiles = 0;
     let docFiles = 0;
@@ -429,8 +442,32 @@
     const form = document.querySelector("#repo-form");
     const input = document.querySelector("#repo-input");
     const button = document.querySelector("#repo-submit");
-    if (!form || !input || !button) {
+    const copyButton = document.querySelector("#copy-link");
+    if (!form || !input || !button || !copyButton) {
       return;
+    }
+
+    let currentRepository = "";
+
+    function setShareRepository(repository) {
+      currentRepository = normalizeRepository(repository);
+      copyButton.disabled = !currentRepository;
+    }
+
+    function updateLocation(repository) {
+      const shareUrl = shareUrlForRepository(window.location.href, repository);
+      if (shareUrl && window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", shareUrl);
+      }
+      return shareUrl;
+    }
+
+    function submitForm() {
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
     }
 
     form.addEventListener("submit", async (event) => {
@@ -442,12 +479,15 @@
       }
 
       button.disabled = true;
+      setShareRepository("");
       setStatus(`Scanning ${repository} with public GitHub API data.`);
       try {
         const items = await fetchPreview(repository);
         renderPreview(items, repository);
+        const shareUrl = updateLocation(repository);
+        setShareRepository(repository);
         setStatus(
-          `Scanned ${items.length} recent open PRs from ${repository}. CLI scans can include richer review and comment context.`
+          `Scanned ${items.length} recent open PRs from ${repository}. Share link ready: ${shareUrl}`
         );
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Scan failed.");
@@ -456,10 +496,29 @@
       }
     });
 
+    copyButton.addEventListener("click", async () => {
+      const repository = currentRepository || normalizeRepository(input.value);
+      const shareUrl = shareUrlForRepository(window.location.href, repository);
+      if (!shareUrl) {
+        setStatus("Scan a repository before copying a share link.");
+        return;
+      }
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          throw new Error("Clipboard API is unavailable.");
+        }
+        await navigator.clipboard.writeText(shareUrl);
+        setStatus(`Copied share link for ${repository}.`);
+      } catch (_error) {
+        setStatus(`Share link: ${shareUrl}`);
+      }
+    });
+
     const initialRepository = repositoryFromSearch(window.location.search);
     if (initialRepository) {
       input.value = initialRepository;
-      form.requestSubmit();
+      setShareRepository(initialRepository);
+      submitForm();
     }
   }
 
@@ -469,6 +528,7 @@
     formatImpact,
     normalizeRepository,
     repositoryFromSearch,
+    shareUrlForRepository,
     summarizeCheckRuns,
     summarizeFiles,
   };

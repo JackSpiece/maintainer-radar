@@ -11,6 +11,11 @@ assert.equal(
   "python/cpython"
 );
 assert.equal(demo.repositoryFromSearch("?q=python/cpython"), "");
+assert.equal(
+  demo.shareUrlForRepository("https://jackspiece.github.io/maintainer-radar/?x=1", "python/cpython"),
+  "https://jackspiece.github.io/maintainer-radar/?x=1&repo=python%2Fcpython"
+);
+assert.equal(demo.shareUrlForRepository("https://example.test/", "not a repo"), "");
 
 const ready = demo.analyzePullRequest(
   {

@@ -14,6 +14,9 @@ You can also share a prefilled scan link:
 https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
 ```
 
+After a scan, the page updates the address bar and enables **Copy Link** for the
+current repository.
+
 ## What It Fetches
 
 For the recent open pull requests it scans, the preview fetches:

@@ -145,6 +145,11 @@
       font: inherit;
     }
 
+    .scan-actions {
+      display: flex;
+      gap: 8px;
+    }
+
     .scan-form button {
       border: 1px solid #1d4ed8;
       border-radius: 8px;
@@ -155,6 +160,12 @@
       font-weight: 700;
       padding: 10px 13px;
       white-space: nowrap;
+    }
+
+    .scan-form button.secondary {
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--text);
     }
 
     .scan-form button:disabled {
@@ -416,7 +427,10 @@
         <form class="scan-form" id="repo-form">
           <label for="repo-input">Repository</label>
           <input id="repo-input" name="repository" placeholder="owner/repo" value="python/cpython" autocomplete="off">
-          <button id="repo-submit" type="submit">Scan</button>
+          <div class="scan-actions">
+            <button id="repo-submit" type="submit">Scan</button>
+            <button class="secondary" id="copy-link" type="button" disabled>Copy Link</button>
+          </div>
         </form>
         <div class="status" id="demo-status" aria-live="polite">
           Sample output is shown below until you scan a public repository.
