@@ -14,6 +14,13 @@ assert.equal(demo.repositoryFromSearch("?q=python/cpython"), "");
 assert.equal(demo.groupByActionFromSearch("?repo=python/cpython&group=action"), true);
 assert.equal(demo.groupByActionFromSearch("?repo=python/cpython&group-by=action"), true);
 assert.equal(demo.groupByActionFromSearch("?repo=python/cpython"), false);
+assert.equal(demo.normalizePlanMinutes("45"), 45);
+assert.equal(demo.normalizePlanMinutes("0", 30), 30);
+assert.equal(demo.normalizePlanMinutes("invalid", 0), 0);
+assert.equal(demo.planMinutesFromSearch("?repo=python/cpython&plan=45"), 45);
+assert.equal(demo.planMinutesFromSearch("?repo=python/cpython&plan-minutes=20"), 20);
+assert.equal(demo.planMinutesFromSearch("?repo=python/cpython&review-plan-minutes=15"), 15);
+assert.equal(demo.planMinutesFromSearch("?repo=python/cpython"), "");
 assert.equal(
   demo.shareUrlForRepository("https://jackspiece.github.io/maintainer-radar/?x=1", "python/cpython"),
   "https://jackspiece.github.io/maintainer-radar/?x=1&repo=python%2Fcpython"
@@ -30,6 +37,23 @@ assert.equal(
     "python/cpython"
   ),
   "https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython"
+);
+assert.equal(
+  demo.shareUrlForRepository("https://jackspiece.github.io/maintainer-radar/?x=1", "python/cpython", {
+    planMinutes: 45,
+  }),
+  "https://jackspiece.github.io/maintainer-radar/?x=1&repo=python%2Fcpython&plan=45"
+);
+assert.equal(
+  demo.shareUrlForRepository(
+    "https://jackspiece.github.io/maintainer-radar/?plan-minutes=10",
+    "python/cpython",
+    {
+      groupByAction: true,
+      planMinutes: 30,
+    }
+  ),
+  "https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython&group=action&plan=30"
 );
 assert.equal(demo.shareUrlForRepository("https://example.test/", "not a repo"), "");
 assert.equal(
@@ -234,7 +258,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.22"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.23"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));
 assert.ok(workflow.includes("output: review-plan.md"));

@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.22";
+  const ACTION_VERSION = "v0.16.23";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -78,6 +78,25 @@
     return group === "action";
   }
 
+  function normalizePlanMinutes(value, fallback = 30) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number >= 1) {
+      return Math.trunc(number);
+    }
+    const fallbackNumber = Number(fallback);
+    if (Number.isFinite(fallbackNumber) && fallbackNumber >= 1) {
+      return Math.trunc(fallbackNumber);
+    }
+    return 0;
+  }
+
+  function planMinutesFromSearch(search) {
+    const params = new URLSearchParams(String(search || "").replace(/^\?/, ""));
+    const value =
+      params.get("plan") ?? params.get("plan-minutes") ?? params.get("review-plan-minutes");
+    return value === null ? "" : normalizePlanMinutes(value, 30);
+  }
+
   function shareUrlForRepository(baseUrl, value, options = {}) {
     const repository = normalizeRepository(value);
     if (!repository) {
@@ -93,6 +112,16 @@
     } else {
       url.searchParams.delete("group");
       url.searchParams.delete("group-by");
+    }
+    if (Object.prototype.hasOwnProperty.call(options, "planMinutes")) {
+      const planMinutes = normalizePlanMinutes(options.planMinutes, 0);
+      if (planMinutes) {
+        url.searchParams.set("plan", String(planMinutes));
+      } else {
+        url.searchParams.delete("plan");
+      }
+      url.searchParams.delete("plan-minutes");
+      url.searchParams.delete("review-plan-minutes");
     }
     return url.toString();
   }
@@ -965,6 +994,7 @@
     function updateLocation(repository) {
       const shareUrl = shareUrlForRepository(window.location.href, repository, {
         groupByAction: groupToggle.checked,
+        planMinutes: planMinutesInput.value,
       });
       if (shareUrl && window.history && window.history.replaceState) {
         window.history.replaceState(null, "", shareUrl);
@@ -1029,6 +1059,7 @@
       const repository = currentRepository || normalizeRepository(input.value);
       const shareUrl = shareUrlForRepository(window.location.href, repository, {
         groupByAction: groupToggle.checked,
+        planMinutes: planMinutesInput.value,
       });
       if (!shareUrl) {
         setStatus("Scan a repository before copying a share link.");
@@ -1041,6 +1072,7 @@
       const repository = currentRepository || normalizeRepository(input.value);
       const shareUrl = shareUrlForRepository(window.location.href, repository, {
         groupByAction: groupToggle.checked,
+        planMinutes: planMinutesInput.value,
       });
       const badge = renderBadgeMarkdown(repository, shareUrl);
       if (!badge) {
@@ -1129,10 +1161,15 @@
     planMinutesInput.addEventListener("input", () => {
       if (currentScanReady) {
         renderPlanPreview(currentItems, planMinutesInput.value);
+        currentShareUrl = updateLocation(currentRepository);
       }
     });
 
     groupToggle.checked = groupByActionFromSearch(window.location.search);
+    const initialPlanMinutes = planMinutesFromSearch(window.location.search);
+    if (initialPlanMinutes) {
+      planMinutesInput.value = String(initialPlanMinutes);
+    }
     const initialRepository = repositoryFromSearch(window.location.search);
     if (initialRepository) {
       input.value = initialRepository;
@@ -1153,6 +1190,8 @@
     buildReviewPlan,
     estimateReviewMinutes,
     normalizeRepository,
+    normalizePlanMinutes,
+    planMinutesFromSearch,
     recommendNextStep,
     renderBadgeMarkdown,
     renderCliCommand,

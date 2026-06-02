@@ -8,20 +8,20 @@ https://jackspiece.github.io/maintainer-radar/
 Enter a repository as `owner/repo`. The page reads public GitHub API data and
 renders a lightweight triage report in your browser.
 
-You can also share a prefilled scan link:
+You can also share a prefilled scan link with a review-plan budget:
 
 ```text
-https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
+https://jackspiece.github.io/maintainer-radar/?repo=python/cpython&plan=30
 ```
 
 You can open the same scan with action grouping already enabled:
 
 ```text
-https://jackspiece.github.io/maintainer-radar/?repo=python/cpython&group=action
+https://jackspiece.github.io/maintainer-radar/?repo=python/cpython&group=action&plan=30
 ```
 
 After a scan, the page updates the address bar and enables **Copy Link** for the
-current repository and grouped view.
+current repository, grouped view, and plan minutes.
 
 Use **Copy Badge** to copy a static Markdown badge that links to the current
 browser preview. It is intended for a README, maintainer handoff issue, or
@@ -37,7 +37,7 @@ preview.
 
 Use **Copy Plan** to copy a time-boxed review plan for the scanned PRs. Set the
 plan minutes field first when you want something other than the default 30
-minute plan.
+minute plan. The current minutes value is also preserved in copied demo links.
 
 The page also shows a compact review plan preview under the summary metrics so
 you can inspect the planned active time before copying Markdown.

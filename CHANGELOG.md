@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.23
+
+- Added shareable browser demo links that preserve the current review-plan
+  minutes with `?plan=30`.
+- Copy Link, Copy Badge, copied Markdown, and the address bar now keep the
+  current plan minutes after a scan.
+
 ## 0.16.22
 
 - Added structured review-plan outputs to the reusable GitHub Action:
