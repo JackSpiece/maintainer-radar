@@ -234,7 +234,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.19"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.20"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

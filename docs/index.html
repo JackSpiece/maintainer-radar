@@ -342,6 +342,57 @@
       font-size: 14px;
     }
 
+    .plan-preview {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+      padding: 13px 16px;
+    }
+
+    .plan-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+    }
+
+    .plan-head h3 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .plan-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .plan-row {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .plan-row strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .plan-row span {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
     .group-row td {
       background: #f8fafc;
       color: #2f3a4c;
@@ -497,6 +548,24 @@
           <div class="metric"><strong id="metric-blocked">1</strong><span>Maintainer blocked</span></div>
           <div class="metric"><strong id="metric-score">50</strong><span>Average score</span></div>
         </div>
+        <section class="plan-preview" aria-label="Review plan preview">
+          <div class="plan-head">
+            <h3 id="plan-title">30 minute review plan</h3>
+            <span id="plan-meta">17m active - 13m open</span>
+          </div>
+          <div class="plan-list" id="plan-body">
+            <div class="plan-row">
+              <span>1</span>
+              <strong>#42 Fix parser cache race</strong>
+              <span>review now - 12m</span>
+            </div>
+            <div class="plan-row">
+              <span>2</span>
+              <strong>#43 Add universal plugin system</strong>
+              <span>ask for CI fix - 5m</span>
+            </div>
+          </div>
+        </section>
         <table>
           <thead>
             <tr>

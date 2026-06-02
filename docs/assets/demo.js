@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.19";
+  const ACTION_VERSION = "v0.16.20";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -873,6 +873,42 @@
     body.innerHTML = rows.join("");
   }
 
+  function renderPlanPreview(items, budgetMinutes) {
+    const title = document.querySelector("#plan-title");
+    const meta = document.querySelector("#plan-meta");
+    const body = document.querySelector("#plan-body");
+    if (!title || !meta || !body) {
+      return;
+    }
+    try {
+      const plan = buildReviewPlan(items || [], budgetMinutes);
+      title.textContent = `${plan.budgetMinutes} minute review plan`;
+      meta.textContent = `${plan.plannedMinutes}m active - ${plan.remainingMinutes}m open`;
+      if (!plan.planned.length) {
+        body.innerHTML =
+          '<div class="plan-row"><span>0</span><strong>No active maintainer work</strong><span>watch only</span></div>';
+        return;
+      }
+      body.innerHTML = plan.planned
+        .slice(0, 3)
+        .map((entry, index) => {
+          const item = entry.item;
+          const label = `#${item.number} ${item.title}`;
+          return `<div class="plan-row">
+            <span>${index + 1}</span>
+            <strong>${escapeHtml(label)}</strong>
+            <span>${escapeHtml(item.action)} - ${entry.estimatedMinutes}m</span>
+          </div>`;
+        })
+        .join("");
+    } catch (error) {
+      title.textContent = "Review plan";
+      meta.textContent = error instanceof Error ? error.message : "Plan unavailable";
+      body.innerHTML =
+        '<div class="plan-row"><span>!</span><strong>Plan unavailable</strong><span>check minutes</span></div>';
+    }
+  }
+
   function setStatus(message) {
     const status = document.querySelector("#demo-status");
     if (status) {
@@ -969,6 +1005,7 @@
       try {
         const items = await fetchPreview(repository);
         renderPreview(items, repository, { groupByAction: groupToggle.checked });
+        renderPlanPreview(items, planMinutesInput.value);
         const shareUrl = updateLocation(repository);
         currentItems = items;
         currentShareUrl = shareUrl;
@@ -1076,7 +1113,14 @@
     groupToggle.addEventListener("change", () => {
       if (currentScanReady) {
         renderPreview(currentItems, currentRepository, { groupByAction: groupToggle.checked });
+        renderPlanPreview(currentItems, planMinutesInput.value);
         currentShareUrl = updateLocation(currentRepository);
+      }
+    });
+
+    planMinutesInput.addEventListener("input", () => {
+      if (currentScanReady) {
+        renderPlanPreview(currentItems, planMinutesInput.value);
       }
     });
 

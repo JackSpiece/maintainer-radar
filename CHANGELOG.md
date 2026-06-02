@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.20
+
+- Added a visible review-plan preview to the public browser demo, showing planned
+  PRs, estimated active time, and remaining time before copying Markdown.
+
 ## 0.16.19
 
 - Added Copy Plan to the public browser preview so visitors can copy a

@@ -39,6 +39,9 @@ Use **Copy Plan** to copy a time-boxed review plan for the scanned PRs. Set the
 plan minutes field first when you want something other than the default 30
 minute plan.
 
+The page also shows a compact review plan preview under the summary metrics so
+you can inspect the planned active time before copying Markdown.
+
 The summary metrics include PRs scanned, review-now count, follow-up count,
 Maintainer blocked count, and average score.
 
