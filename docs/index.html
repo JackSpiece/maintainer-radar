@@ -393,6 +393,89 @@
       white-space: nowrap;
     }
 
+    .draft-preview {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      padding: 13px 16px;
+    }
+
+    .draft-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+    }
+
+    .draft-head h3 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .draft-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .draft-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .draft-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 10px;
+    }
+
+    .draft-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .draft-title strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .draft-title button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 9px;
+      white-space: nowrap;
+    }
+
+    .draft-title button:hover {
+      background: #eef2f7;
+    }
+
+    .draft-preview pre {
+      margin: 0;
+      max-height: 168px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #243041;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .draft-empty {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
     .group-row td {
       background: #f8fafc;
       color: #2f3a4c;
@@ -565,6 +648,31 @@
               <strong>#43 Add universal plugin system</strong>
               <span>ask for CI fix - 5m</span>
             </div>
+          </div>
+        </section>
+        <section class="draft-preview" aria-label="Draft follow-ups">
+          <div class="draft-head">
+            <h3>Draft follow-ups</h3>
+            <span id="draft-meta">1 editable ask</span>
+          </div>
+          <div class="draft-list" id="draft-followup-body">
+            <article class="draft-item">
+              <div class="draft-title">
+                <strong>#43 Add universal plugin system</strong>
+                <button type="button" data-copy-target="demo-draft-follow-up-1" data-copy-label="#43">Copy Draft</button>
+              </div>
+              <pre id="demo-draft-follow-up-1">Thanks for the PR.
+
+Current triage suggests: **ask for CI fix**.
+Reviewability score: **0/100**.
+
+Before the next maintainer pass, please:
+- Get CI passing or explain why the failing check is unrelated.
+- Add a short validation or test plan to the PR body.
+- Consider splitting the PR or explaining why the current scope needs to stay together.
+
+_Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
+            </article>
           </div>
         </section>
         <table>

@@ -208,6 +208,23 @@ assert.equal(plan.plannedMinutes, 12);
 assert.deepEqual(plan.planned.map((entry) => entry.item.number), [42]);
 assert.deepEqual(plan.deferred.map((entry) => entry.item.number), [43]);
 assert.deepEqual(plan.waiting.map((entry) => entry.item.number), [45]);
+const followUps = demo.reviewPlanFollowUpEntries(plan);
+assert.deepEqual(followUps.map((entry) => entry.item.number), [43]);
+const draftNodes = {
+  "#draft-meta": { textContent: "" },
+  "#draft-followup-body": { innerHTML: "" },
+};
+global.document = {
+  querySelector(selector) {
+    return draftNodes[selector] || null;
+  },
+};
+demo.renderDraftFollowUpPreview([ready, risky, waitForCi], 30);
+assert.equal(draftNodes["#draft-meta"].textContent, "1 editable ask");
+assert.ok(draftNodes["#draft-followup-body"].innerHTML.includes("Copy Draft"));
+assert.ok(draftNodes["#draft-followup-body"].innerHTML.includes("demo-draft-follow-up-1"));
+assert.ok(draftNodes["#draft-followup-body"].innerHTML.includes("Get CI passing"));
+delete global.document;
 const planMarkdown = demo.renderReviewPlanMarkdown(
   [ready, risky, waitForCi],
   "example/project",
@@ -282,7 +299,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.30"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.31"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));
 assert.ok(workflow.includes("output: review-plan.md"));

@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.30";
+  const ACTION_VERSION = "v0.16.31";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -1072,6 +1072,46 @@
     }
   }
 
+  function renderDraftFollowUpPreview(items, budgetMinutes) {
+    const meta = document.querySelector("#draft-meta");
+    const body = document.querySelector("#draft-followup-body");
+    if (!meta || !body) {
+      return;
+    }
+    try {
+      const plan = buildReviewPlan(items || [], budgetMinutes);
+      const followUps = reviewPlanFollowUpEntries(plan, 3);
+      if (!followUps.length) {
+        meta.textContent = "0 editable asks";
+        body.innerHTML =
+          '<p class="draft-empty">No draft follow-ups for the current review plan.</p>';
+        return;
+      }
+      const askLabel = followUps.length === 1 ? "editable ask" : "editable asks";
+      meta.textContent = `${followUps.length} ${askLabel}`;
+      body.innerHTML = followUps
+        .map((entry, index) => {
+          const item = entry.item || {};
+          const label = `#${item.number} ${item.title || "Untitled"}`;
+          const copyId = `demo-draft-follow-up-${index + 1}`;
+          return `<article class="draft-item">
+              <div class="draft-title">
+                <strong>${escapeHtml(label)}</strong>
+                <button type="button" data-copy-target="${copyId}" data-copy-label="#${escapeHtml(
+                  item.number || index + 1
+                )}">Copy Draft</button>
+              </div>
+              <pre id="${copyId}">${escapeHtml(draftFollowUpComment(item))}</pre>
+            </article>`;
+        })
+        .join("");
+    } catch (error) {
+      meta.textContent = "unavailable";
+      body.innerHTML =
+        '<p class="draft-empty">Draft follow-ups are unavailable. Check plan minutes.</p>';
+    }
+  }
+
   function setStatus(message) {
     const status = document.querySelector("#demo-status");
     if (status) {
@@ -1092,6 +1132,7 @@
     const planMinutesInput = document.querySelector("#plan-minutes");
     const workflowButton = document.querySelector("#copy-workflow");
     const groupToggle = document.querySelector("#group-action");
+    const draftBody = document.querySelector("#draft-followup-body");
     if (
       !form ||
       !input ||
@@ -1104,7 +1145,8 @@
       !planJsonButton ||
       !planMinutesInput ||
       !workflowButton ||
-      !groupToggle
+      !groupToggle ||
+      !draftBody
     ) {
       return;
     }
@@ -1155,6 +1197,28 @@
       }
     }
 
+    draftBody.addEventListener("click", async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const draftButton = target.closest("[data-copy-target]");
+      if (!(draftButton instanceof HTMLButtonElement)) {
+        return;
+      }
+      const source = document.getElementById(draftButton.dataset.copyTarget || "");
+      if (!source) {
+        setStatus("Draft follow-up is unavailable.");
+        return;
+      }
+      const label = draftButton.dataset.copyLabel || "PR";
+      await copyText(
+        source.textContent || "",
+        `Copied draft follow-up for ${label}.`,
+        "Draft follow-up is ready, but clipboard access is unavailable."
+      );
+    });
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const repository = normalizeRepository(input.value);
@@ -1173,6 +1237,7 @@
         const items = await fetchPreview(repository);
         renderPreview(items, repository, { groupByAction: groupToggle.checked });
         renderPlanPreview(items, planMinutesInput.value);
+        renderDraftFollowUpPreview(items, planMinutesInput.value);
         const shareUrl = updateLocation(repository);
         currentItems = items;
         currentShareUrl = shareUrl;
@@ -1309,6 +1374,7 @@
       if (currentScanReady) {
         renderPreview(currentItems, currentRepository, { groupByAction: groupToggle.checked });
         renderPlanPreview(currentItems, planMinutesInput.value);
+        renderDraftFollowUpPreview(currentItems, planMinutesInput.value);
         currentShareUrl = updateLocation(currentRepository);
       }
     });
@@ -1316,6 +1382,7 @@
     planMinutesInput.addEventListener("input", () => {
       if (currentScanReady) {
         renderPlanPreview(currentItems, planMinutesInput.value);
+        renderDraftFollowUpPreview(currentItems, planMinutesInput.value);
         currentShareUrl = updateLocation(currentRepository);
       }
     });
@@ -1355,7 +1422,9 @@
     renderReviewPlanMarkdown,
     repositoryFromSearch,
     renderMarkdownReport,
+    renderDraftFollowUpPreview,
     renderActionWorkflow,
+    reviewPlanFollowUpEntries,
     shareUrlForRepository,
     summarizeCheckRuns,
     summarizeItems,

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.31
+
+- The public browser preview now shows a Draft Follow-ups panel under the review
+  plan preview.
+- Each visible draft has a Copy Draft button, so maintainers can copy one
+  editable author ask without first copying the whole review plan.
+
 ## 0.16.30
 
 - HTML review-plan artifacts now show Copy Draft buttons for generated draft

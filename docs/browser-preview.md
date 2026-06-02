@@ -40,13 +40,18 @@ plan minutes field first when you want something other than the default 30
 minute plan. The plan also includes draft follow-up comments for PRs that need
 author action. The current minutes value is preserved in copied demo links.
 
+The preview also shows a draft follow-up panel for the same planned, deferred,
+and watch-only entries. Use **Copy Draft** to copy one editable author ask at a
+time, then review and post it manually if it still fits the PR.
+
 Use **Copy JSON** to copy the same review plan as structured JSON with planned,
 deferred, and watch-only PR arrays plus `draft_follow_up_comment` fields. It is
 meant for dashboards, scripts, or handoff tooling that should not parse
 Markdown.
 
-The page also shows a compact review plan preview under the summary metrics so
-you can inspect the planned active time before copying Markdown.
+The page also shows a compact review plan preview and draft follow-up panel
+under the summary metrics so you can inspect the planned active time and author
+asks before copying Markdown.
 
 The summary metrics include PRs scanned, review-now count, follow-up count,
 Maintainer blocked count, and average score.
