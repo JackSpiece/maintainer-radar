@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.9";
+  const ACTION_VERSION = "v0.16.10";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -383,7 +383,44 @@
     return { total, reviewNow, followUp, average };
   }
 
-  function renderMarkdownReport(items, repository, shareUrl) {
+  function groupItemsByAction(items) {
+    const groups = [];
+    const byAction = new Map();
+    for (const item of items || []) {
+      const action = item.action || "needs triage";
+      if (!byAction.has(action)) {
+        const group = { action, items: [] };
+        byAction.set(action, group);
+        groups.push(group);
+      }
+      byAction.get(action).items.push(item);
+    }
+    return groups;
+  }
+
+  function renderMarkdownTable(lines, items) {
+    lines.push(
+      "| PR | Action | Next Step | Score | Risk Impact | Signals |",
+      "| --- | --- | --- | ---: | --- | --- |"
+    );
+    if (!items || !items.length) {
+      lines.push("| No open PRs found | n/a | n/a | 0 | n/a | n/a |");
+      return;
+    }
+    for (const item of items) {
+      const title = `#${item.number} ${item.title}`;
+      const label = item.url ? `[${markdownCell(title)}](${item.url})` : markdownCell(title);
+      lines.push(
+        `| ${label} | ${markdownCell(item.action)} | ${markdownCell(
+          item.nextStep
+        )} | ${item.reviewability} | ${markdownCell(formatImpact(item.scoreBreakdown))} | ${markdownCell(
+          formatSignals(item)
+        )} |`
+      );
+    }
+  }
+
+  function renderMarkdownReport(items, repository, shareUrl, options = {}) {
     const summary = summarizeItems(items || []);
     const lines = [
       `## Maintainer Radar Preview: ${repository}`,
@@ -396,26 +433,18 @@
     if (shareUrl) {
       lines.push(`- Demo link: ${shareUrl}`);
     }
-    lines.push(
-      "",
-      "| PR | Action | Next Step | Score | Risk Impact | Signals |",
-      "| --- | --- | --- | ---: | --- | --- |"
-    );
+    lines.push("");
 
-    if (!items || !items.length) {
-      lines.push("| No open PRs found | n/a | n/a | 0 | n/a | n/a |");
-    } else {
-      for (const item of items) {
-        const title = `#${item.number} ${item.title}`;
-        const label = item.url ? `[${markdownCell(title)}](${item.url})` : markdownCell(title);
-        lines.push(
-          `| ${label} | ${markdownCell(item.action)} | ${markdownCell(
-            item.nextStep
-          )} | ${item.reviewability} | ${markdownCell(
-            formatImpact(item.scoreBreakdown)
-          )} | ${markdownCell(formatSignals(item))} |`
-        );
+    if (options.groupByAction && items && items.length) {
+      for (const group of groupItemsByAction(items)) {
+        const count = group.items.length;
+        const label = count === 1 ? "PR" : "PRs";
+        lines.push(`### ${group.action} (${count} ${label})`, "");
+        renderMarkdownTable(lines, group.items);
+        lines.push("");
       }
+    } else {
+      renderMarkdownTable(lines, items || []);
     }
 
     lines.push(
@@ -456,6 +485,7 @@
       "          output: maintainer-radar.md",
       '          limit: "50"',
       "          sort: action",
+      "          group-by: action",
       '          hydrate: "true"',
       "      - uses: actions/upload-artifact@v4",
       "        with:",
@@ -526,7 +556,7 @@
       .replaceAll("'", "&#39;");
   }
 
-  function renderPreview(items, repository) {
+  function renderPreview(items, repository, options = {}) {
     const summary = summarizeItems(items);
 
     document.querySelector("#metric-total").textContent = String(summary.total);
@@ -542,22 +572,35 @@
       body.innerHTML = `<tr><td colspan="6">No open pull requests found for ${escapeHtml(repository)}.</td></tr>`;
       return;
     }
-    body.innerHTML = items
-      .map((item) => {
-        const label = `#${item.number} ${item.title}`;
-        const pr = item.url
-          ? `<a href="${escapeHtml(item.url)}">${escapeHtml(label)}</a>`
-          : escapeHtml(label);
-        return `<tr>
+    const rows = [];
+    const groups = options.groupByAction
+      ? groupItemsByAction(items).flatMap((group) => [
+          { group: group.action, count: group.items.length },
+          ...group.items,
+        ])
+      : items;
+    for (const item of groups) {
+      if (item.group) {
+        const label = item.count === 1 ? "PR" : "PRs";
+        rows.push(
+          `<tr class="group-row"><td colspan="6">${escapeHtml(item.group)} - ${item.count} ${label}</td></tr>`
+        );
+        continue;
+      }
+      const label = `#${item.number} ${item.title}`;
+      const pr = item.url
+        ? `<a href="${escapeHtml(item.url)}">${escapeHtml(label)}</a>`
+        : escapeHtml(label);
+      rows.push(`<tr>
           <td>${pr}</td>
           <td><span class="pill ${actionClass(item.action)}">${escapeHtml(item.action)}</span></td>
           <td>${escapeHtml(item.nextStep)}</td>
           <td class="score">${item.reviewability}</td>
           <td class="impact">${escapeHtml(formatImpact(item.scoreBreakdown))}</td>
           <td class="signals">${escapeHtml(formatSignals(item))}</td>
-        </tr>`;
-      })
-      .join("");
+        </tr>`);
+    }
+    body.innerHTML = rows.join("");
   }
 
   function setStatus(message) {
@@ -574,7 +617,16 @@
     const copyButton = document.querySelector("#copy-link");
     const markdownButton = document.querySelector("#copy-markdown");
     const workflowButton = document.querySelector("#copy-workflow");
-    if (!form || !input || !button || !copyButton || !markdownButton || !workflowButton) {
+    const groupToggle = document.querySelector("#group-action");
+    if (
+      !form ||
+      !input ||
+      !button ||
+      !copyButton ||
+      !markdownButton ||
+      !workflowButton ||
+      !groupToggle
+    ) {
       return;
     }
 
@@ -633,7 +685,7 @@
       setStatus(`Scanning ${repository} with public GitHub API data.`);
       try {
         const items = await fetchPreview(repository);
-        renderPreview(items, repository);
+        renderPreview(items, repository, { groupByAction: groupToggle.checked });
         const shareUrl = updateLocation(repository);
         currentItems = items;
         currentShareUrl = shareUrl;
@@ -664,7 +716,9 @@
         setStatus("Scan a repository before copying Markdown.");
         return;
       }
-      const markdown = renderMarkdownReport(currentItems, currentRepository, currentShareUrl);
+      const markdown = renderMarkdownReport(currentItems, currentRepository, currentShareUrl, {
+        groupByAction: groupToggle.checked,
+      });
       await copyText(
         markdown,
         `Copied Markdown brief for ${currentRepository}.`,
@@ -681,6 +735,12 @@
       );
     });
 
+    groupToggle.addEventListener("change", () => {
+      if (currentScanReady) {
+        renderPreview(currentItems, currentRepository, { groupByAction: groupToggle.checked });
+      }
+    });
+
     const initialRepository = repositoryFromSearch(window.location.search);
     if (initialRepository) {
       input.value = initialRepository;
@@ -693,6 +753,7 @@
     analyzePullRequest,
     chooseAction,
     formatImpact,
+    groupItemsByAction,
     normalizeRepository,
     recommendNextStep,
     repositoryFromSearch,

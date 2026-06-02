@@ -63,7 +63,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.9
+- uses: JackSpiece/maintainer-radar@v0.16.10
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}

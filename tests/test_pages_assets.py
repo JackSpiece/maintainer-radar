@@ -23,6 +23,8 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('id="copy-link"', html)
         self.assertIn('id="copy-markdown"', html)
         self.assertIn('id="copy-workflow"', html)
+        self.assertIn('id="group-action"', html)
+        self.assertIn("Group by action", html)
         self.assertIn('href="browser-preview.html"', html)
         self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
@@ -58,11 +60,12 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Copy Link", docs)
         self.assertIn("Copy Markdown", docs)
         self.assertIn("Copy Workflow", docs)
+        self.assertIn("Group by action", docs)
 
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.9", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.10", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)

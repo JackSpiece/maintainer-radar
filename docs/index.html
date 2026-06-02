@@ -151,6 +151,20 @@
       gap: 8px;
     }
 
+    .toggle-row {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toggle-row input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+    }
+
     .scan-form button {
       border: 1px solid #1d4ed8;
       border-radius: 8px;
@@ -314,6 +328,14 @@
       font-size: 14px;
     }
 
+    .group-row td {
+      background: #f8fafc;
+      color: #2f3a4c;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
     .asset {
       margin-top: 34px;
       border-top: 1px solid var(--line);
@@ -436,6 +458,10 @@
             <button class="secondary" id="copy-markdown" type="button" disabled>Copy Markdown</button>
             <button class="secondary" id="copy-workflow" type="button">Copy Workflow</button>
           </div>
+          <label class="toggle-row" for="group-action">
+            <input id="group-action" type="checkbox">
+            Group by action
+          </label>
         </form>
         <div class="status" id="demo-status" aria-live="polite">
           Sample output is shown below until you scan a public repository.

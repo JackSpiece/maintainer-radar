@@ -21,9 +21,12 @@ It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the
 preview.
 
+Turn on **Group by action** to split the preview and copied Markdown into
+review-now, CI, author follow-up, and triage sections.
+
 The **Copy Workflow** button copies a ready scheduled GitHub Action workflow that
 uses the latest Maintainer Radar release and uploads the generated report as an
-artifact.
+artifact. The copied workflow uses action-grouped Markdown output.
 
 ## What It Fetches
 

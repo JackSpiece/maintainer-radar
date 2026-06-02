@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.10
+
+- Added a Group by action toggle to the public browser preview and made copied Markdown respect the grouped view.
+- Updated the browser Copy Workflow output to include action-grouped reports.
+
 ## 0.16.9
 
 - Added optional `--group-by action` support for Markdown and HTML reports so queues can be split into action sections.
