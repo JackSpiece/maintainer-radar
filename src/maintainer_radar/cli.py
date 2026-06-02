@@ -236,6 +236,7 @@ def _emit(
     *,
     detail: bool = False,
     summary_only: bool = False,
+    group_by: str | None = None,
 ) -> None:
     if fmt == "json":
         if summary_only:
@@ -250,7 +251,7 @@ def _emit(
             print(render_csv(analyses), end="")
         return
     if fmt == "html":
-        print(render_html(analyses, summary_only=summary_only), end="")
+        print(render_html(analyses, summary_only=summary_only, group_by=group_by), end="")
         return
     if summary_only:
         print(render_summary_markdown(analyses), end="")
@@ -258,7 +259,7 @@ def _emit(
     if detail and len(analyses) == 1:
         print(render_detail(analyses[0]), end="")
     else:
-        print(render_markdown(analyses), end="")
+        print(render_markdown(analyses, group_by=group_by), end="")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -309,6 +310,13 @@ def build_parser() -> argparse.ArgumentParser:
             help="Only emit the first N PRs after filtering and sorting.",
         )
 
+    def add_group_by_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--group-by",
+            choices=["action"],
+            help="Group Markdown and HTML queue reports by a field.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -334,6 +342,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_sort_argument(repo)
     add_hydrate_argument(repo)
     add_top_argument(repo)
+    add_group_by_argument(repo)
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -365,6 +374,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_sort_argument(author)
     add_hydrate_argument(author)
     add_top_argument(author)
+    add_group_by_argument(author)
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
@@ -388,6 +398,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json.add_argument("--summary-only", action="store_true", help="Print only the queue summary.")
     add_sort_argument(from_json)
     add_top_argument(from_json)
+    add_group_by_argument(from_json)
 
     init_action = sub.add_parser(
         "init-action",
@@ -407,6 +418,11 @@ def build_parser() -> argparse.ArgumentParser:
     init_action.add_argument("--limit", type=int, default=50, help="Maximum PRs to scan.")
     init_action.add_argument("--sort", choices=SORT_CHOICES, default="action")
     init_action.add_argument("--top", type=int, help="Only include the first N PRs after sorting.")
+    init_action.add_argument(
+        "--group-by",
+        choices=["action"],
+        help="Group Markdown and HTML queue reports by a field in the workflow.",
+    )
     init_action.add_argument("--label", help="Only include PRs with this label in the workflow.")
     init_action.add_argument("--author", help="Only include PRs by this author in the workflow.")
     init_action.add_argument(
@@ -473,6 +489,7 @@ def main(argv: list[str] | None = None) -> int:
                 sort=args.sort,
                 hydrate=not args.no_hydrate,
                 top=args.top,
+                group_by=args.group_by,
                 label=args.label,
                 author=args.author,
                 stale_days=args.stale_days,
@@ -520,6 +537,7 @@ def main(argv: list[str] | None = None) -> int:
                 analyses,
                 args.format,
                 summary_only=args.summary_only,
+                group_by=args.group_by,
             )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
@@ -552,6 +570,7 @@ def main(argv: list[str] | None = None) -> int:
                 analyses,
                 args.format,
                 summary_only=args.summary_only,
+                group_by=args.group_by,
             )
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path), source=args.source)
@@ -570,6 +589,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.format,
                 detail=detail,
                 summary_only=args.summary_only,
+                group_by=args.group_by,
             )
         else:
             parser.error("unknown command")

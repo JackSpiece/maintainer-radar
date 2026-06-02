@@ -24,3 +24,10 @@ Supported sorts:
 
 Sorting runs after filters such as `--action`, `--min-score`, and `--max-risk`.
 Use `--top N` to keep only the first N items after sorting.
+
+For Markdown and HTML reports, use `--group-by action` after sorting to split
+the queue into action sections:
+
+```bash
+maintainer-radar repo owner/repo --sort action --group-by action
+```

@@ -34,6 +34,7 @@ def render_github_action_workflow(
     sort: str = "action",
     hydrate: bool = True,
     top: int | None = None,
+    group_by: str | None = None,
     label: str | None = None,
     author: str | None = None,
     stale_days: int | None = None,
@@ -65,6 +66,9 @@ def render_github_action_workflow(
     if clean_action_filter and clean_action_filter not in WORKFLOW_ACTION_FILTERS:
         actions = ", ".join(sorted(WORKFLOW_ACTION_FILTERS))
         raise ValueError(f"--action must be one of: {actions}")
+    clean_group_by = _clean_single_line(group_by, "--group-by")
+    if clean_group_by and clean_group_by != "action":
+        raise ValueError("--group-by must be action")
     clean_config = _clean_single_line(config, "--config")
     clean_label = _clean_single_line(label, "--label")
     clean_author = _clean_single_line(author, "--author")
@@ -87,6 +91,7 @@ def render_github_action_workflow(
             _yaml_input("min-score", min_score),
             _yaml_input("max-risk", max_risk),
             _yaml_input("top", top),
+            _yaml_input("group-by", clean_group_by),
             _yaml_input("config", clean_config),
         ]
     )

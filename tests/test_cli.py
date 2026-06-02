@@ -109,6 +109,17 @@ class CliTests(unittest.TestCase):
         self.assertEqual(author_args.top, 3)
         self.assertEqual(json_args.top, 1)
 
+    def test_group_by_flag_is_available_for_queue_commands(self) -> None:
+        repo_args = build_parser().parse_args(["repo", "owner/repo", "--group-by", "action"])
+        author_args = build_parser().parse_args(["author", "alice", "--group-by", "action"])
+        json_args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--group-by", "action"]
+        )
+
+        self.assertEqual(repo_args.group_by, "action")
+        self.assertEqual(author_args.group_by, "action")
+        self.assertEqual(json_args.group_by, "action")
+
     def test_comment_template_flag_is_available_for_pr_command(self) -> None:
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
 
@@ -128,6 +139,8 @@ class CliTests(unittest.TestCase):
                 "risk",
                 "--top",
                 "10",
+                "--group-by",
+                "action",
                 "--label",
                 "bug",
                 "--author",
@@ -158,6 +171,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.limit, 25)
         self.assertEqual(args.sort, "risk")
         self.assertEqual(args.top, 10)
+        self.assertEqual(args.group_by, "action")
         self.assertEqual(args.label, "bug")
         self.assertEqual(args.author, "alice")
         self.assertEqual(args.stale_days, 14)
@@ -186,6 +200,8 @@ class CliTests(unittest.TestCase):
                         "review-now",
                         "--min-score",
                         "80",
+                        "--group-by",
+                        "action",
                         "--path",
                         str(path),
                     ]
@@ -204,6 +220,8 @@ class CliTests(unittest.TestCase):
                         "review-now",
                         "--min-score",
                         "80",
+                        "--group-by",
+                        "action",
                         "--path",
                         str(path),
                         "--force",
@@ -220,6 +238,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("format: html", output)
         self.assertIn('action: "review-now"', output)
         self.assertIn('min-score: "80"', output)
+        self.assertIn('group-by: "action"', output)
         self.assertIn('config: ".maintainer-radar.json"', output)
         self.assertIn("maintainer-radar.html", output)
 

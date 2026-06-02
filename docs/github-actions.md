@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.8
+- uses: JackSpiece/maintainer-radar@v0.16.9
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -43,6 +43,7 @@ maintainer-radar init-action \
   --action review-now \
   --min-score 80 \
   --top 10 \
+  --group-by action \
   --path .github/workflows/review-ready.yml
 ```
 
@@ -88,7 +89,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.8
+        uses: JackSpiece/maintainer-radar@v0.16.9
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -111,7 +112,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.8
+  uses: JackSpiece/maintainer-radar@v0.16.9
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -121,6 +122,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
     action: review-now
     min-score: "80"
     top: "10"
+    group-by: action
     sort: score
     hydrate: "true"
 - uses: actions/upload-artifact@v4
@@ -136,7 +138,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.8
+  uses: JackSpiece/maintainer-radar@v0.16.9
   env:
     GH_TOKEN: ${{ github.token }}
   with:

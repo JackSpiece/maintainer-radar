@@ -63,7 +63,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.8
+- uses: JackSpiece/maintainer-radar@v0.16.9
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -94,7 +94,7 @@ maintainer-radar init-action --config .maintainer-radar.json --path .github/work
 For a smaller scheduled report, generate a focused review-ready workflow:
 
 ```bash
-maintainer-radar init-action --action review-now --min-score 80 --top 10 --path .github/workflows/review-ready.yml
+maintainer-radar init-action --action review-now --min-score 80 --top 10 --group-by action --path .github/workflows/review-ready.yml
 ```
 
 For local CLI use, install directly from GitHub:
@@ -173,6 +173,12 @@ Sort a queue for the review session:
 ```bash
 maintainer-radar repo owner/repo --sort action
 maintainer-radar from-json queue.json --sort risk
+```
+
+Group Markdown or HTML reports by action:
+
+```bash
+maintainer-radar repo owner/repo --sort action --group-by action
 ```
 
 Keep only the first results after filtering and sorting:

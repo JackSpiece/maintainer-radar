@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Build review-ready report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.8
+        uses: JackSpiece/maintainer-radar@v0.16.9
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -29,6 +29,7 @@ jobs:
           action: review-now
           min-score: "80"
           top: "10"
+          group-by: action
           sort: score
           hydrate: "true"
           step-summary: "true"

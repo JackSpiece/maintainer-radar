@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.8
+        uses: JackSpiece/maintainer-radar@v0.16.9
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -62,6 +62,7 @@ jobs:
 | `max-risk` | empty | Only include pull requests with risk less than or equal to N. |
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
+| `group-by` | empty | Group Markdown and HTML queue reports. Supported value: `action`. |
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |
@@ -119,6 +120,7 @@ with:
   action: review-now
   min-score: "80"
   top: "10"
+  group-by: action
 ```
 
 For stale follow-up sweeps:

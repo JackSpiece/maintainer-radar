@@ -11,10 +11,17 @@ maintainer-radar repo owner/repo --hydrate --sort action --format html > review-
 maintainer-radar from-json examples/sample-prs.json --format html > review-queue.html
 ```
 
+Use grouped sections for review-session artifacts:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort action --group-by action --format html > review-queue.html
+```
+
 The report includes:
 
 - summary metrics
 - a triage table
+- optional action-grouped sections
 - links back to pull requests when the URL is safe
 - action labels
 - next-step guidance for each pull request

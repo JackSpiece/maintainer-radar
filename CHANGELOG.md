@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.9
+
+- Added optional `--group-by action` support for Markdown and HTML reports so queues can be split into action sections.
+- Added `group-by` support to the reusable GitHub Action, generated workflows, review-ready examples, docs, and CI smoke coverage.
+
 ## 0.16.8
 
 - Added structured summary outputs to the reusable GitHub Action, including total, review-now, author-follow-up, CI, stale, and average-score counts.

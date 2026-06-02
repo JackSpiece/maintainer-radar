@@ -160,6 +160,18 @@ HTML_TEMPLATE = """<!doctype html>
       color: var(--muted);
       text-align: center;
     }}
+    .action-group {{
+      margin-top: 22px;
+    }}
+    .action-group h2 {{
+      margin: 0 0 8px;
+      font-size: 18px;
+    }}
+    .action-group h2 span {{
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }}
     pre {{
       white-space: pre-wrap;
       border: 1px solid var(--line);
@@ -278,10 +290,11 @@ def render_html(
     title: str = "Maintainer Radar Report",
     *,
     summary_only: bool = False,
+    group_by: str | None = None,
 ) -> str:
     safe_title = escape(title)
     summary_html = _render_html_summary(analyses)
-    table_html = "" if summary_only else _render_html_table(analyses)
+    table_html = "" if summary_only else _render_html_table(analyses, group_by=group_by)
     return HTML_TEMPLATE.format(title=safe_title, summary=summary_html, table=table_html)
 
 
@@ -348,11 +361,30 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
     return f'<section class="metrics">{items}</section>'
 
 
-def _render_html_table(analyses: list[dict[str, Any]]) -> str:
+def _render_html_table(analyses: list[dict[str, Any]], *, group_by: str | None = None) -> str:
     if not analyses:
         return '<p class="empty">No pull requests matched this report.</p>'
 
+    if group_by == "action":
+        groups = []
+        for action, items in _group_by_action(analyses):
+            heading = escape(action)
+            count = len(items)
+            label = "PR" if count == 1 else "PRs"
+            rows = "\n".join(_render_html_row(item) for item in items)
+            groups.append(
+                "<section class=\"action-group\">"
+                f"<h2>{heading} <span>{count} {label}</span></h2>"
+                f"{_render_html_table_shell(rows)}"
+                "</section>"
+            )
+        return "\n".join(groups)
+
     rows = "\n".join(_render_html_row(item) for item in analyses)
+    return _render_html_table_shell(rows)
+
+
+def _render_html_table_shell(rows: str) -> str:
     return (
         "<table>"
         "<thead><tr>"
@@ -402,27 +434,25 @@ def _action_class(action: str) -> str:
     return f"action-{slug}" if slug else "action-default"
 
 
-def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Radar Report") -> str:
+def render_markdown(
+    analyses: list[dict[str, Any]],
+    title: str = "Maintainer Radar Report",
+    *,
+    group_by: str | None = None,
+) -> str:
     lines = [
         render_summary_markdown(analyses, title=title).rstrip(),
         "",
-        "| PR | Action | Next Step | Score | Risk Impact | Signals |",
-        "| --- | --- | --- | ---: | --- | --- |",
     ]
-    for item in analyses:
-        number = item.get("number")
-        title_text = item.get("title") or "Untitled"
-        url = item.get("url")
-        label = f"#{number} {title_text}" if number else title_text
-        if url:
-            label = f"[{label}]({url})"
-        signals = item.get("signals") or []
-        flags = item.get("flags") or []
-        impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
-        signal_text = ", ".join([*signals, *flags]) or "no notable signals"
-        lines.append(
-            f"| {label} | {item.get('action')} | {_next_step(item)} | {item.get('reviewability')} | {impact_text} | {signal_text} |"
-        )
+    if group_by == "action" and analyses:
+        for action, items in _group_by_action(analyses):
+            count = len(items)
+            label = "PR" if count == 1 else "PRs"
+            lines.extend([f"### {action} ({count} {label})", ""])
+            _append_markdown_table(lines, items)
+            lines.append("")
+    else:
+        _append_markdown_table(lines, analyses)
 
     lines.extend(
         [
@@ -431,6 +461,46 @@ def render_markdown(analyses: list[dict[str, Any]], title: str = "Maintainer Rad
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _append_markdown_table(lines: list[str], analyses: list[dict[str, Any]]) -> None:
+    lines.extend(
+        [
+            "| PR | Action | Next Step | Score | Risk Impact | Signals |",
+            "| --- | --- | --- | ---: | --- | --- |",
+        ]
+    )
+    for item in analyses:
+        lines.append(_render_markdown_row(item))
+
+
+def _render_markdown_row(item: dict[str, Any]) -> str:
+    number = item.get("number")
+    title_text = item.get("title") or "Untitled"
+    url = item.get("url")
+    label = f"#{number} {title_text}" if number else title_text
+    if url:
+        label = f"[{label}]({url})"
+    signals = item.get("signals") or []
+    flags = item.get("flags") or []
+    impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
+    signal_text = ", ".join([*signals, *flags]) or "no notable signals"
+    return (
+        f"| {label} | {item.get('action')} | {_next_step(item)} | "
+        f"{item.get('reviewability')} | {impact_text} | {signal_text} |"
+    )
+
+
+def _group_by_action(analyses: list[dict[str, Any]]) -> list[tuple[str, list[dict[str, Any]]]]:
+    groups: list[tuple[str, list[dict[str, Any]]]] = []
+    by_action: dict[str, list[dict[str, Any]]] = {}
+    for item in analyses:
+        action = str(item.get("action") or "needs triage")
+        if action not in by_action:
+            by_action[action] = []
+            groups.append((action, by_action[action]))
+        by_action[action].append(item)
+    return groups
 
 
 def render_detail(item: dict[str, Any]) -> str:

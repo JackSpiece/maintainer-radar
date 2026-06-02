@@ -31,6 +31,7 @@ class WorkflowTests(unittest.TestCase):
             sort="risk",
             hydrate=False,
             top=10,
+            group_by="action",
             label="bug",
             author="alice",
             stale_days=14,
@@ -45,6 +46,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('limit: "25"', output)
         self.assertIn('hydrate: "false"', output)
         self.assertIn("sort: risk", output)
+        self.assertIn('group-by: "action"', output)
         self.assertIn('label: "bug"', output)
         self.assertIn('author: "alice"', output)
         self.assertIn('stale-days: "14"', output)
@@ -78,6 +80,8 @@ class WorkflowTests(unittest.TestCase):
             render_github_action_workflow(max_risk=-1)
         with self.assertRaises(ValueError):
             render_github_action_workflow(action_filter="review now")
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(group_by="label")
         with self.assertRaises(ValueError):
             render_github_action_workflow(label="bug\nname: injected")
         with self.assertRaises(ValueError):

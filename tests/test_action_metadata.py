@@ -20,6 +20,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("label:", action)
         self.assertIn("stale-days:", action)
         self.assertIn("min-score:", action)
+        self.assertIn("group-by:", action)
         self.assertIn("config:", action)
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
@@ -38,6 +39,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('command+=(--label "$INPUT_LABEL")', action)
         self.assertIn('command+=(--action "$INPUT_ACTION")', action)
         self.assertIn('command+=(--min-score "$INPUT_MIN_SCORE")', action)
+        self.assertIn('command+=(--group-by "$INPUT_GROUP_BY")', action)
         self.assertIn('summary_command+=(--label "$INPUT_LABEL")', action)
         self.assertIn('summary_command+=(--action "$INPUT_ACTION")', action)
         self.assertIn('summary_command+=(--min-score "$INPUT_MIN_SCORE")', action)
@@ -76,6 +78,7 @@ class ActionMetadataTests(unittest.TestCase):
             "max-risk",
             "sort",
             "top",
+            "group-by",
             "config",
             "hydrate",
             "step-summary",

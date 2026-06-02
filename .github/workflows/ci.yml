@@ -49,6 +49,7 @@ jobs:
           limit: "5"
           action: review-now
           min-score: "80"
+          group-by: action
           hydrate: "false"
       - name: Check action output
         run: |

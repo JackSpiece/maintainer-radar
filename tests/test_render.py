@@ -44,6 +44,36 @@ class RenderTests(unittest.TestCase):
         self.assertIn("CI passed (-8 risk)", output)
         self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
 
+    def test_markdown_can_group_queue_by_action(self) -> None:
+        output = render_markdown(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready",
+                    "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
+                    "reviewability": 90,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Fix CI",
+                    "action": "ask for CI fix",
+                    "next_step": "Ask the author to get failing checks green before deeper review.",
+                    "reviewability": 20,
+                    "signals": [],
+                    "flags": ["CI failing"],
+                },
+            ],
+            group_by="action",
+        )
+
+        self.assertIn("### review now (1 PR)", output)
+        self.assertIn("### ask for CI fix (1 PR)", output)
+        self.assertLess(output.index("### review now"), output.index("#1 Ready"))
+        self.assertLess(output.index("### ask for CI fix"), output.index("#2 Fix CI"))
+
     def test_summary_counts_actions(self) -> None:
         summary = summarize_report(
             [
@@ -171,6 +201,35 @@ class RenderTests(unittest.TestCase):
         self.assertIn("needs &lt;tests&gt;", output)
         self.assertIn("needs &lt;tests&gt; (+8 risk)", output)
         self.assertNotIn("javascript:alert", output)
+
+    def test_html_can_group_queue_by_action(self) -> None:
+        output = render_html(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready",
+                    "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
+                    "reviewability": 90,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Fix CI",
+                    "action": "ask for CI fix",
+                    "next_step": "Ask the author to get failing checks green before deeper review.",
+                    "reviewability": 20,
+                    "signals": [],
+                    "flags": ["CI failing"],
+                },
+            ],
+            group_by="action",
+        )
+
+        self.assertIn('class="action-group"', output)
+        self.assertIn("<h2>review now <span>1 PR</span></h2>", output)
+        self.assertIn("<h2>ask for CI fix <span>1 PR</span></h2>", output)
 
     def test_summary_html_output_omits_table(self) -> None:
         output = render_html(

@@ -57,6 +57,10 @@ inputs:
     description: Only include the first N pull requests after filtering and sorting.
     required: false
     default: ""
+  group-by:
+    description: Group Markdown and HTML queue reports by a field. Supported value: action.
+    required: false
+    default: ""
   config:
     description: Optional path to a Maintainer Radar config JSON file.
     required: false
@@ -125,6 +129,7 @@ runs:
         INPUT_MAX_RISK: ${{ inputs.max-risk }}
         INPUT_SORT: ${{ inputs.sort }}
         INPUT_TOP: ${{ inputs.top }}
+        INPUT_GROUP_BY: ${{ inputs.group-by }}
         INPUT_CONFIG: ${{ inputs.config }}
         INPUT_HYDRATE: ${{ inputs.hydrate }}
         INPUT_STEP_SUMMARY: ${{ inputs.step-summary }}
@@ -161,6 +166,9 @@ runs:
         fi
         if [ -n "$INPUT_TOP" ]; then
           command+=(--top "$INPUT_TOP")
+        fi
+        if [ -n "$INPUT_GROUP_BY" ]; then
+          command+=(--group-by "$INPUT_GROUP_BY")
         fi
         if [ -n "$INPUT_CONFIG" ]; then
           command+=(--config "$INPUT_CONFIG")
