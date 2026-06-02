@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.0
+
+- Added `maintainer-radar recommend owner/repo`, a short maintainer workflow
+  recommendation that prints the queue headline, attention level, workflow mode,
+  reason, next-session brief, and exact follow-up commands.
+- `recommend` accepts pasted GitHub repository URLs and supports Markdown or
+  JSON output. It hydrates PR details by default, with `--no-hydrate` available
+  for faster shallow scans.
+- README, quickstart, adoption, positioning, homepage, and examples now surface
+  `recommend` as the first local answer before opening a full report.
+
 ## 0.17.1
 
 - CLI repository commands now accept common GitHub repository URL shapes, such

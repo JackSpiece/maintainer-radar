@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: JackSpiece/maintainer-radar@v0.17.1
+      - uses: JackSpiece/maintainer-radar@v0.18.0
         id: radar
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,6 +71,7 @@ python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
 Then paste a repository URL:
 
 ```bash
+maintainer-radar recommend https://github.com/owner/repo/pulls
 maintainer-radar repo https://github.com/owner/repo/pulls --hydrate --sort action --summary-only
 ```
 
@@ -90,6 +91,8 @@ gh auth login
 
 Use the report to choose one concrete maintainer session:
 
+- Run `maintainer-radar recommend owner/repo` when you only want the next
+  workflow, attention level, and exact follow-up commands.
 - If `attention-level` is `blocked`, clear CI failures, conflicts, stale branch
   state, or unresolved maintainer blockers first.
 - If `workflow-mode` is `review-sprint`, review the highest-score PRs while

@@ -618,10 +618,12 @@
         <p class="lede">
           Maintainer Radar turns pull request metadata into a deterministic queue brief:
           what is ready for review, what is blocked by CI, and why each score changed.
-          One command can create a read-only GitHub Action report or a time-boxed review
-          plan that appears in the run summary, with no hosted service or model token.
+          One command can recommend the next maintainer workflow, create a read-only
+          GitHub Action report, or build a time-boxed review plan that appears in the
+          run summary, with no hosted service or model token.
         </p>
-        <pre class="command">maintainer-radar init-action --path .github/workflows/maintainer-radar.yml</pre>
+        <pre class="command">maintainer-radar recommend https://github.com/owner/repo/pulls
+maintainer-radar init-action --path .github/workflows/maintainer-radar.yml</pre>
         <div class="notes" aria-label="Project traits">
           <div class="note">
             <strong>Local-first</strong>

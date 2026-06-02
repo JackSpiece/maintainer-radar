@@ -19,6 +19,8 @@ from .render import (
     render_detail,
     render_html,
     render_markdown,
+    render_recommendation_json,
+    render_recommendation_markdown,
     render_review_plan_html,
     render_review_plan_json,
     render_review_plan_markdown,
@@ -331,6 +333,15 @@ def _emit(
         print(render_markdown(analyses, group_by=group_by), end="")
 
 
+def _emit_recommendation(analyses: list[dict[str, Any]], fmt: str, repository: str) -> None:
+    if fmt == "json":
+        print(render_recommendation_json(analyses, repository))
+        return
+    if fmt != "markdown":
+        raise ValueError("recommend currently supports --format markdown or json")
+    print(render_recommendation_markdown(analyses, repository), end="")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="maintainer-radar",
@@ -341,6 +352,18 @@ def build_parser() -> argparse.ArgumentParser:
         target.add_argument(
             "--format",
             choices=["markdown", "json", "csv", "html"],
+            default=default,
+            help="Output format. Default: markdown.",
+        )
+
+    def add_recommend_format_argument(
+        target: argparse.ArgumentParser,
+        *,
+        default: str | object,
+    ) -> None:
+        target.add_argument(
+            "--format",
+            choices=["markdown", "json"],
             default=default,
             help="Output format. Default: markdown.",
         )
@@ -420,6 +443,32 @@ def build_parser() -> argparse.ArgumentParser:
     add_top_argument(repo)
     add_group_by_argument(repo)
     add_review_plan_argument(repo)
+
+    recommend = sub.add_parser(
+        "recommend",
+        help="Recommend the next maintainer workflow for a repository queue.",
+    )
+    add_recommend_format_argument(recommend, default=argparse.SUPPRESS)
+    add_config_argument(recommend)
+    add_now_argument(recommend)
+    recommend.add_argument(
+        "repository",
+        help="Repository in owner/name form or a GitHub repository URL.",
+    )
+    recommend.add_argument("--state", default="open", choices=["open", "closed", "all"])
+    recommend.add_argument("--limit", type=int, default=30)
+    recommend.add_argument("--label", help="Only include PRs with this label.")
+    recommend.add_argument("--author", help="Only include PRs by this author.")
+    recommend.add_argument("--stale-days", type=int, help="Only include PRs quiet for at least N days.")
+    recommend.add_argument(
+        "--updated-since",
+        help="Only include PRs updated on or after this ISO date.",
+    )
+    recommend.add_argument(
+        "--no-hydrate",
+        action="store_true",
+        help="Skip full PR detail for a faster but shallower recommendation.",
+    )
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -609,7 +658,7 @@ def main(argv: list[str] | None = None) -> int:
                 updated_since=args.updated_since,
             )
             if args.hydrate:
-                prs = hydrate_prs(prs, repository=repository)
+                prs = hydrate_prs(prs, repository=repository, viewer=view_pr)
             analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,
@@ -626,6 +675,21 @@ def main(argv: list[str] | None = None) -> int:
                 group_by=args.group_by,
                 review_plan_minutes=args.review_plan_minutes,
             )
+        elif args.command == "recommend":
+            repository = _normalize_repository_arg(args.repository)
+            prs = list_repo_prs(repository, state=args.state, limit=args.limit)
+            prs = filter_prs(
+                prs,
+                label=args.label,
+                author=args.author,
+                stale_days=args.stale_days,
+                updated_since=args.updated_since,
+            )
+            if not args.no_hydrate:
+                prs = hydrate_prs(prs, repository=repository, viewer=view_pr)
+            analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
+            analyses = sort_analyses(analyses, "action")
+            _emit_recommendation(analyses, args.format, repository)
         elif args.command == "pr":
             repository, number = _parse_pr_reference(args.repository, args.number)
             pr = view_pr(repository, number)
@@ -644,7 +708,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
             if args.hydrate:
-                prs = hydrate_prs(prs)
+                prs = hydrate_prs(prs, viewer=view_pr)
             analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,

@@ -613,6 +613,84 @@ def _workflow_recommendation(summary: dict[str, int | str]) -> tuple[str, str]:
     return ("quiet", "No urgent maintainer workflow was found.")
 
 
+def render_recommendation_markdown(
+    analyses: list[dict[str, Any]],
+    repository: str,
+) -> str:
+    summary = summarize_report(analyses)
+    commands = build_recommendation_commands(repository, summary)
+    lines = [
+        "## Maintainer Radar Recommendation",
+        "",
+        str(summary["queue_headline"]),
+        "",
+        f"- Attention: `{summary['attention_level']}`",
+        f"- Workflow: `{summary['workflow_mode']}`",
+        f"- Why: {summary['attention_reason']}",
+        f"- Recommendation: {summary['workflow_recommendation']}",
+        f"- Next session: {summary['next_session_brief']}",
+        "",
+        "### Next Commands",
+        "",
+        f"- Focused report: `{commands['focused_report']}`",
+        f"- Review plan: `{commands['review_plan']}`",
+        f"- Scheduled workflow: `{commands['scheduled_workflow']}`",
+        "",
+        "Maintainer Radar is read-only. It does not approve, reject, merge, label, or comment.",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def render_recommendation_json(
+    analyses: list[dict[str, Any]],
+    repository: str,
+) -> str:
+    summary = summarize_report(analyses)
+    return json.dumps(
+        {
+            "repository": repository,
+            "queue_headline": summary["queue_headline"],
+            "attention_level": summary["attention_level"],
+            "attention_reason": summary["attention_reason"],
+            "workflow_mode": summary["workflow_mode"],
+            "workflow_recommendation": summary["workflow_recommendation"],
+            "next_session_brief": summary["next_session_brief"],
+            "commands": build_recommendation_commands(repository, summary),
+        },
+        indent=2,
+    )
+
+
+def build_recommendation_commands(
+    repository: str,
+    summary: dict[str, int | str],
+) -> dict[str, str]:
+    base = f"maintainer-radar repo {repository} --hydrate"
+    mode = str(summary.get("workflow_mode") or "")
+
+    if mode == "review-sprint":
+        focused = f"{base} --action review-now --min-score 80 --sort score --top 10"
+    elif mode == "stale-sweep":
+        focused = f"{base} --stale-days 7 --sort stale --group-by action"
+    elif mode == "author-follow-up":
+        focused = f"{base} --sort stale --group-by action"
+    elif mode == "triage-pass":
+        focused = f"{base} --sort risk --group-by action --top 15"
+    elif mode == "quiet":
+        focused = f"{base} --summary-only"
+    else:
+        focused = f"{base} --sort action --group-by action"
+
+    return {
+        "focused_report": focused,
+        "review_plan": f"{base} --sort action --review-plan-minutes 60",
+        "scheduled_workflow": (
+            "maintainer-radar init-action --sort action --group-by action "
+            "--review-plan-minutes 60 --path .github/workflows/maintainer-radar.yml"
+        ),
+    }
+
+
 def render_summary_markdown(
     analyses: list[dict[str, Any]],
     title: str = "Maintainer Radar Summary",

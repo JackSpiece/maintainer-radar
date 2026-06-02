@@ -52,6 +52,11 @@ action, CI fixes, smaller scope, or a ready-for-review update. Maintainer Radar
 still does not post anything; it gives maintainers copy they can edit during a
 handoff or review session.
 
+The `recommend` command turns a queue scan into one maintainer decision:
+attention level, workflow mode, reason, next-session brief, and the next command
+to run. That keeps the project from becoming another broad dashboard where the
+maintainer still has to infer the next move.
+
 This is intentionally small. It makes the review queue easier to scan without a
 bot account, webhook, hosted database, or SaaS subscription.
 

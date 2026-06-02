@@ -14,6 +14,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Try a public repo", html)
         self.assertIn("maintainer-radar init-action", html)
+        self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", html)
         self.assertIn("GitHub Action", html)
         self.assertIn('href="quickstart.html"', html)
         self.assertIn('href="adoption.html"', html)
@@ -78,11 +79,12 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Two Minute Quickstart", docs)
         self.assertIn("?repo=owner/repo", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.17.1", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.18.0", docs)
         self.assertIn("workflow_dispatch", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)
         self.assertIn("GH_TOKEN: ${{ github.token }}", docs)
+        self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", docs)
         self.assertIn("maintainer-radar repo https://github.com/owner/repo/pulls", docs)
         self.assertIn("maintainer-radar pr https://github.com/owner/repo/pull/123", docs)
         self.assertIn("attention-level", docs)
@@ -119,7 +121,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("steps.radar.outputs.attention-level != 'quiet'", docs)
         self.assertIn("steps.radar.outputs.attention-level == 'blocked'", docs)
         self.assertIn("stale-days", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.17.1", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.18.0", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_adoption_guide_has_copy_paste_workflows(self) -> None:
@@ -128,10 +130,13 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Adoption Guide", docs)
         self.assertIn("Daily Queue Brief", docs)
         self.assertIn("Review-Ready Queue", docs)
+        self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", docs)
+        self.assertIn("exact report or workflow command", docs)
+        self.assertIn("to run\nnext", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
         self.assertIn("Merge Readiness Watch", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.17.1", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.18.0", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("merge-conflicts", docs)
         self.assertIn("branch-behind", docs)
@@ -173,9 +178,11 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Use AI reviewers to inspect code", readme)
         self.assertIn("time-boxed review plan", readme)
+        self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", readme)
         self.assertIn("docs/attention-workflows.md", readme)
         self.assertIn("Before-review workflow", readme)
         self.assertIn("Where should a maintainer spend review attention first?", docs)
+        self.assertIn("The `recommend` command turns a queue scan into one maintainer decision", docs)
         self.assertIn("What It Refuses To Do", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
@@ -239,7 +246,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.17.1", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.18.0", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)

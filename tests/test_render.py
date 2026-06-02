@@ -4,6 +4,7 @@ import json
 import unittest
 
 from maintainer_radar.render import (
+    build_recommendation_commands,
     build_review_plan,
     estimate_review_minutes,
     render_comment_csv,
@@ -13,6 +14,8 @@ from maintainer_radar.render import (
     render_detail,
     render_html,
     render_markdown,
+    render_recommendation_json,
+    render_recommendation_markdown,
     render_review_plan_html,
     render_review_plan_json,
     render_review_plan_markdown,
@@ -222,6 +225,71 @@ class RenderTests(unittest.TestCase):
 
                 self.assertEqual(summary["workflow_mode"], mode)
                 self.assertEqual(summary["workflow_recommendation"], recommendation)
+
+    def test_recommendation_markdown_turns_summary_into_next_commands(self) -> None:
+        output = render_recommendation_markdown(
+            [
+                {
+                    "number": 1,
+                    "title": "Fix parser",
+                    "action": "review now",
+                    "reviewability": 90,
+                    "stale_days": 0,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                }
+            ],
+            "owner/repo",
+        )
+
+        self.assertIn("Maintainer Radar Recommendation", output)
+        self.assertIn("1 PR scanned: 1 ready for review.", output)
+        self.assertIn("- Attention: `review`", output)
+        self.assertIn("- Workflow: `review-sprint`", output)
+        self.assertIn("Start a focused review block with the ready PRs.", output)
+        self.assertIn(
+            "maintainer-radar repo owner/repo --hydrate --action review-now --min-score 80 --sort score --top 10",
+            output,
+        )
+        self.assertIn("maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 60", output)
+        self.assertIn("maintainer-radar init-action --sort action --group-by action", output)
+        self.assertIn("does not approve, reject, merge, label, or comment", output)
+
+    def test_recommendation_json_exposes_automation_fields(self) -> None:
+        output = json.loads(
+            render_recommendation_json(
+                [
+                    {
+                        "number": 2,
+                        "title": "Fix CI",
+                        "action": "ask for CI fix",
+                        "reviewability": 20,
+                        "stale_days": 0,
+                        "flags": ["CI failing"],
+                    }
+                ],
+                "owner/repo",
+            )
+        )
+
+        self.assertEqual(output["repository"], "owner/repo")
+        self.assertEqual(output["attention_level"], "blocked")
+        self.assertEqual(output["workflow_mode"], "blocker-sweep")
+        self.assertIn("failing CI", output["attention_reason"])
+        self.assertIn("--sort action --group-by action", output["commands"]["focused_report"])
+
+    def test_recommendation_commands_are_tailored_to_workflow_mode(self) -> None:
+        review_commands = build_recommendation_commands(
+            "owner/repo",
+            {"workflow_mode": "review-sprint"},
+        )
+        stale_commands = build_recommendation_commands(
+            "owner/repo",
+            {"workflow_mode": "stale-sweep"},
+        )
+
+        self.assertIn("--action review-now", review_commands["focused_report"])
+        self.assertIn("--stale-days 7", stale_commands["focused_report"])
 
     def test_review_plan_builds_budgeted_maintainer_session(self) -> None:
         analyses = [

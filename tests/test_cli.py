@@ -149,6 +149,73 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.repository, "https://github.com/owner/repo/pull/123")
         self.assertIsNone(args.number)
 
+    def test_recommend_command_accepts_repo_url_and_defaults_to_hydration(self) -> None:
+        args = build_parser().parse_args(
+            ["recommend", "https://github.com/owner/repo/pulls", "--limit", "5"]
+        )
+
+        self.assertEqual(args.command, "recommend")
+        self.assertEqual(args.repository, "https://github.com/owner/repo/pulls")
+        self.assertEqual(args.limit, 5)
+        self.assertFalse(args.no_hydrate)
+
+    def test_recommend_command_emits_markdown_next_commands(self) -> None:
+        with patch(
+            "maintainer_radar.cli.list_repo_prs",
+            return_value=[{"number": 1, "title": "Fix parser"}],
+        ) as list_repo_prs, patch(
+            "maintainer_radar.cli.view_pr",
+            return_value={"number": 1, "body": "Test plan: unit tests."},
+        ) as view_pr, patch(
+            "maintainer_radar.cli.analyze_pr",
+            return_value={
+                "number": 1,
+                "title": "Fix parser",
+                "action": "review now",
+                "reviewability": 90,
+                "risk": 10,
+                "stale_days": 0,
+                "signals": ["CI passed"],
+                "flags": [],
+            },
+        ), patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(["recommend", "https://github.com/owner/repo/pulls"])
+
+        output = stdout.getvalue()
+
+        self.assertEqual(result, 0)
+        list_repo_prs.assert_called_once_with("owner/repo", state="open", limit=30)
+        view_pr.assert_called_once_with("owner/repo", 1)
+        self.assertIn("Maintainer Radar Recommendation", output)
+        self.assertIn("Workflow: `review-sprint`", output)
+        self.assertIn("maintainer-radar repo owner/repo --hydrate --action review-now", output)
+
+    def test_recommend_command_can_skip_hydration_and_emit_json(self) -> None:
+        with patch(
+            "maintainer_radar.cli.list_repo_prs",
+            return_value=[{"number": 2, "title": "Fix CI"}],
+        ) as list_repo_prs, patch("maintainer_radar.cli.view_pr") as view_pr, patch(
+            "maintainer_radar.cli.analyze_pr",
+            return_value={
+                "number": 2,
+                "title": "Fix CI",
+                "action": "ask for CI fix",
+                "reviewability": 20,
+                "risk": 80,
+                "stale_days": 0,
+                "flags": ["CI failing"],
+            },
+        ), patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(["recommend", "owner/repo", "--no-hydrate", "--format", "json"])
+
+        output = json.loads(stdout.getvalue())
+
+        self.assertEqual(result, 0)
+        list_repo_prs.assert_called_once_with("owner/repo", state="open", limit=30)
+        view_pr.assert_not_called()
+        self.assertEqual(output["workflow_mode"], "blocker-sweep")
+        self.assertIn("--sort action --group-by action", output["commands"]["focused_report"])
+
     def test_repository_arg_accepts_common_github_url_shapes(self) -> None:
         cases = {
             "owner/repo": "owner/repo",

@@ -14,6 +14,12 @@ fits in the next 60 minutes before opening a report artifact.
 
 Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpython>
 
+First local recommendation:
+
+```bash
+maintainer-radar recommend https://github.com/owner/repo/pulls
+```
+
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
 
 Two minute quickstart: [docs/quickstart.md](docs/quickstart.md)
@@ -90,7 +96,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.17.1
+- uses: JackSpiece/maintainer-radar@v0.18.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -131,6 +137,7 @@ For local CLI use, install directly from GitHub:
 
 ```bash
 python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+maintainer-radar recommend https://github.com/owner/repo/pulls
 maintainer-radar repo owner/repo --hydrate --sort action --top 10
 ```
 
@@ -170,6 +177,13 @@ Analyze open PRs in a repository:
 
 ```bash
 maintainer-radar repo owner/repo --limit 20
+```
+
+Ask for the next maintainer workflow before opening the full report:
+
+```bash
+maintainer-radar recommend owner/repo
+maintainer-radar recommend https://github.com/owner/repo/pulls --format json
 ```
 
 Pasted GitHub repository URLs work too:
