@@ -27,6 +27,10 @@ Use **Copy Badge** to copy a static Markdown badge that links to the current
 browser preview. It is intended for a README, maintainer handoff issue, or
 project docs page.
 
+Use **Copy CLI** to copy the matching local command for the current repository.
+When **Group by action** is on, the copied command includes
+`--group-by action`.
+
 It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the
 preview.

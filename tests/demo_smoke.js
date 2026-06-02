@@ -45,6 +45,15 @@ assert.equal(
 );
 assert.equal(demo.renderBadgeMarkdown("not a repo", "https://example.test/"), "");
 assert.equal(demo.renderBadgeMarkdown("python/cpython", ""), "");
+assert.equal(
+  demo.renderCliCommand("python/cpython"),
+  "maintainer-radar repo python/cpython --hydrate --sort action"
+);
+assert.equal(
+  demo.renderCliCommand("python/cpython", { groupByAction: true }),
+  "maintainer-radar repo python/cpython --hydrate --sort action --group-by action"
+);
+assert.equal(demo.renderCliCommand("not a repo"), "");
 
 const ready = demo.analyzePullRequest(
   {
@@ -137,7 +146,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.12"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.13"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

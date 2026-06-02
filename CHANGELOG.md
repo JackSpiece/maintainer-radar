@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.13
+
+- Added a Copy CLI button to the public browser preview for copying the local
+  command matching the current repository and grouped view.
+
 ## 0.16.12
 
 - Added a Copy Badge button to the public browser preview for sharing a static

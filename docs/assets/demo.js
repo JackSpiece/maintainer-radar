@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.12";
+  const ACTION_VERSION = "v0.16.13";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -92,6 +92,18 @@
     }
     const badgeUrl = "https://img.shields.io/badge/Maintainer%20Radar-PR%20triage-1d4ed8";
     return `[![Maintainer Radar PR triage](${badgeUrl})](${shareUrl})`;
+  }
+
+  function renderCliCommand(repository, options = {}) {
+    const normalized = normalizeRepository(repository);
+    if (!normalized) {
+      return "";
+    }
+    const parts = ["maintainer-radar", "repo", normalized, "--hydrate", "--sort", "action"];
+    if (options.groupByAction) {
+      parts.push("--group-by", "action");
+    }
+    return parts.join(" ");
   }
 
   function summarizeFiles(files) {
@@ -637,6 +649,7 @@
     const button = document.querySelector("#repo-submit");
     const copyButton = document.querySelector("#copy-link");
     const badgeButton = document.querySelector("#copy-badge");
+    const cliButton = document.querySelector("#copy-cli");
     const markdownButton = document.querySelector("#copy-markdown");
     const workflowButton = document.querySelector("#copy-workflow");
     const groupToggle = document.querySelector("#group-action");
@@ -646,6 +659,7 @@
       !button ||
       !copyButton ||
       !badgeButton ||
+      !cliButton ||
       !markdownButton ||
       !workflowButton ||
       !groupToggle
@@ -662,6 +676,7 @@
       currentRepository = normalizeRepository(repository);
       copyButton.disabled = !currentRepository;
       badgeButton.disabled = !currentRepository;
+      cliButton.disabled = !currentRepository;
       markdownButton.disabled = !currentRepository || !currentScanReady;
     }
 
@@ -756,6 +771,20 @@
       );
     });
 
+    cliButton.addEventListener("click", async () => {
+      const repository = currentRepository || normalizeRepository(input.value);
+      const command = renderCliCommand(repository, { groupByAction: groupToggle.checked });
+      if (!command) {
+        setStatus("Enter a repository before copying a CLI command.");
+        return;
+      }
+      await copyText(
+        command,
+        `Copied CLI command for ${repository}.`,
+        `CLI command: ${command}`
+      );
+    });
+
     markdownButton.addEventListener("click", async () => {
       if (!currentRepository || !currentScanReady) {
         setStatus("Scan a repository before copying Markdown.");
@@ -805,6 +834,7 @@
     normalizeRepository,
     recommendNextStep,
     renderBadgeMarkdown,
+    renderCliCommand,
     repositoryFromSearch,
     renderMarkdownReport,
     renderActionWorkflow,

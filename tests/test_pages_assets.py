@@ -23,6 +23,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
         self.assertIn('id="copy-badge"', html)
+        self.assertIn('id="copy-cli"', html)
         self.assertIn('id="copy-markdown"', html)
         self.assertIn('id="copy-workflow"', html)
         self.assertIn('id="group-action"', html)
@@ -42,7 +43,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Daily Queue Brief", docs)
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.12", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.13", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
@@ -82,6 +83,8 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("?repo=python/cpython", docs)
         self.assertIn("Copy Link", docs)
         self.assertIn("Copy Badge", docs)
+        self.assertIn("Copy CLI", docs)
+        self.assertIn("--group-by action", docs)
         self.assertIn("static Markdown badge", docs)
         self.assertIn("Copy Markdown", docs)
         self.assertIn("Copy Workflow", docs)
@@ -91,7 +94,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.12", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.13", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)
