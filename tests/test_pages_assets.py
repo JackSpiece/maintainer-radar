@@ -62,7 +62,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('href="browser-preview.html"', html)
         self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
         self.assertIn('<script src="assets/demo.js"></script>', html)
-        self.assertIn("Read-only PR triage reports and review plans for maintainers", html)
+        self.assertIn("recommend the next maintainer workflow", html)
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
@@ -165,8 +165,10 @@ class PagesAssetTests(unittest.TestCase):
         svg = (ROOT / "docs" / "assets" / "social-preview.svg").read_text(encoding="utf-8")
 
         self.assertIn("Maintainer Radar", svg)
-        self.assertIn("Read-only PR triage + review plans", svg)
-        self.assertIn("Copy draft asks", svg)
+        self.assertIn("PR triage that recommends the next workflow", svg)
+        self.assertIn("Blocker sweep, review sprint, or follow-up pass.", svg)
+        self.assertIn("blocker-sweep", svg)
+        self.assertIn("review-sprint", svg)
         self.assertIn("uses: JackSpiece/maintainer-radar", svg)
         self.assertIn("jackspiece.github.io/maintainer-radar", svg)
 
