@@ -339,6 +339,15 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
     stale_count = sum(1 for item in analyses if (item.get("stale_days") or 0) >= 7)
     ci_blocked = sum(1 for item in analyses if "CI failing" in (item.get("flags") or []))
     ci_pending = sum(1 for item in analyses if "CI pending" in (item.get("flags") or []))
+    merge_conflicts = sum(1 for item in analyses if "merge conflicts" in (item.get("flags") or []))
+    branch_behind = sum(1 for item in analyses if "branch behind base" in (item.get("flags") or []))
+    merge_gated = sum(
+        1
+        for item in analyses
+        if "merge blocked by repo rules" in (item.get("flags") or [])
+        or "merge checks unstable" in (item.get("flags") or [])
+    )
+    review_requested = sum(1 for item in analyses if int(item.get("review_requests") or 0) > 0)
     maintainer_blocked = sum(
         1
         for item in analyses
@@ -351,6 +360,10 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
         "author_follow_up": actions.count("needs author follow-up"),
         "ci_blocked": ci_blocked,
         "ci_pending": ci_pending,
+        "merge_conflicts": merge_conflicts,
+        "branch_behind": branch_behind,
+        "merge_gated": merge_gated,
+        "review_requested": review_requested,
         "maintainer_blocked": maintainer_blocked,
         "large_or_triage": actions.count("request smaller PR") + actions.count("needs triage"),
         "stale": stale_count,
@@ -370,6 +383,10 @@ def render_summary_markdown(
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",
         f"- CI blocked or pending: {summary['ci_blocked'] + summary['ci_pending']}",
+        f"- Merge conflicts: {summary['merge_conflicts']}",
+        f"- Branch behind base: {summary['branch_behind']}",
+        f"- Merge gated: {summary['merge_gated']}",
+        f"- Review requested: {summary['review_requested']}",
         f"- Maintainer blocked: {summary['maintainer_blocked']}",
         f"- Large or needs triage: {summary['large_or_triage']}",
         f"- Stale 7+ days: {summary['stale']}",
@@ -689,6 +706,9 @@ def _render_plan_html_summary(plan: dict[str, Any], summary: dict[str, int]) -> 
         ("Open time", f"{plan['remaining_minutes']} minutes"),
         ("Queue scanned", summary["total"]),
         ("Review now", summary["review_now"]),
+        ("Merge conflicts", summary["merge_conflicts"]),
+        ("Branch behind", summary["branch_behind"]),
+        ("Merge gated", summary["merge_gated"]),
         ("Maintainer blocked", summary["maintainer_blocked"]),
     ]
     items = "\n".join(
@@ -877,6 +897,10 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
         ("Review now", summary["review_now"]),
         ("Author follow-up", summary["author_follow_up"]),
         ("CI blocked", summary["ci_blocked"] + summary["ci_pending"]),
+        ("Merge conflicts", summary["merge_conflicts"]),
+        ("Branch behind", summary["branch_behind"]),
+        ("Merge gated", summary["merge_gated"]),
+        ("Review requested", summary["review_requested"]),
         ("Maintainer blocked", summary["maintainer_blocked"]),
         ("Large or triage", summary["large_or_triage"]),
         ("Stale 7+ days", summary["stale"]),

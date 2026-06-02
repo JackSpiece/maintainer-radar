@@ -63,7 +63,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.32", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.33", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
@@ -130,7 +130,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.32", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.33", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
@@ -181,8 +181,16 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("maintainer_blocked", json_docs)
         self.assertIn("merge_state_status", json_docs)
         self.assertIn("review_requests", json_docs)
+        self.assertIn("merge_conflicts", json_docs)
+        self.assertIn("branch_behind", json_docs)
+        self.assertIn("merge_gated", json_docs)
+        self.assertIn("review_requested", json_docs)
         self.assertIn("PRs blocked by maintainer feedback or labels", json_docs)
         self.assertIn("maintainer_blocked", csv_docs)
+        self.assertIn("merge_conflicts", csv_docs)
+        self.assertIn("branch_behind", csv_docs)
+        self.assertIn("merge_gated", csv_docs)
+        self.assertIn("review_requested", csv_docs)
 
     def test_heuristics_docs_explain_label_blockers(self) -> None:
         docs = (ROOT / "docs" / "heuristics.md").read_text(encoding="utf-8")

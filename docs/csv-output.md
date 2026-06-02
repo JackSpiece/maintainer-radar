@@ -46,6 +46,10 @@ Summary output returns one row with the same fields as JSON summary output:
 - `author_follow_up`
 - `ci_blocked`
 - `ci_pending`
+- `merge_conflicts`
+- `branch_behind`
+- `merge_gated`
+- `review_requested`
 - `maintainer_blocked`
 - `large_or_triage`
 - `stale`

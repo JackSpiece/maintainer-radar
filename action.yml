@@ -100,6 +100,18 @@ outputs:
   ci-pending:
     description: Number of pull requests waiting for CI.
     value: ${{ steps.build.outputs.ci-pending }}
+  merge-conflicts:
+    description: Number of pull requests with merge conflicts.
+    value: ${{ steps.build.outputs.merge-conflicts }}
+  branch-behind:
+    description: Number of pull requests behind the base branch.
+    value: ${{ steps.build.outputs.branch-behind }}
+  merge-gated:
+    description: Number of pull requests blocked by repository merge gates.
+    value: ${{ steps.build.outputs.merge-gated }}
+  review-requested:
+    description: Number of pull requests with requested reviewers or teams.
+    value: ${{ steps.build.outputs.review-requested }}
   maintainer-blocked:
     description: Number of pull requests blocked by maintainer feedback or labels.
     value: ${{ steps.build.outputs.maintainer-blocked }}
@@ -292,6 +304,10 @@ runs:
             "author-follow-up": "author_follow_up",
             "ci-blocked": "ci_blocked",
             "ci-pending": "ci_pending",
+            "merge-conflicts": "merge_conflicts",
+            "branch-behind": "branch_behind",
+            "merge-gated": "merge_gated",
+            "review-requested": "review_requested",
             "maintainer-blocked": "maintainer_blocked",
             "large-or-triage": "large_or_triage",
             "stale": "stale",

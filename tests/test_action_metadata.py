@@ -26,12 +26,20 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
         self.assertIn("summary-json:", action)
+        self.assertIn("merge-conflicts:", action)
+        self.assertIn("branch-behind:", action)
+        self.assertIn("merge-gated:", action)
+        self.assertIn("review-requested:", action)
         self.assertIn("maintainer-blocked:", action)
         self.assertIn("average-score:", action)
         self.assertIn("planned-prs:", action)
         self.assertIn("planned-minutes:", action)
         self.assertIn("watch-only-prs:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.merge-conflicts }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.branch-behind }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.merge-gated }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.review-requested }}", action)
         self.assertIn("value: ${{ steps.build.outputs.maintainer-blocked }}", action)
         self.assertIn("value: ${{ steps.build.outputs.average-score }}", action)
         self.assertIn("value: ${{ steps.build.outputs.planned-prs }}", action)
@@ -54,6 +62,10 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('summary_json="$("${summary_command[@]}" --format json)"', action)
         self.assertIn('summary-json<<MAINTAINER_RADAR_SUMMARY', action)
         self.assertIn('"average-score": "average_score"', action)
+        self.assertIn('"merge-conflicts": "merge_conflicts"', action)
+        self.assertIn('"branch-behind": "branch_behind"', action)
+        self.assertIn('"merge-gated": "merge_gated"', action)
+        self.assertIn('"review-requested": "review_requested"', action)
         self.assertIn('"maintainer-blocked": "maintainer_blocked"', action)
         self.assertIn('"planned-minutes": "planned_minutes"', action)
         self.assertIn("summarize_review_plan", action)
@@ -105,6 +117,10 @@ class ActionMetadataTests(unittest.TestCase):
             "step-summary",
             "report-path",
             "summary-json",
+            "merge-conflicts",
+            "branch-behind",
+            "merge-gated",
+            "review-requested",
             "maintainer-blocked",
             "average-score",
             "plan-budget-minutes",

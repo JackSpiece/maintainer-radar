@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.32
+        uses: JackSpiece/maintainer-radar@v0.16.33
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -79,6 +79,10 @@ jobs:
 | `author-follow-up` | Number of pull requests needing author follow-up. |
 | `ci-blocked` | Number of pull requests with failing CI. |
 | `ci-pending` | Number of pull requests waiting for CI. |
+| `merge-conflicts` | Number of pull requests with merge conflicts. |
+| `branch-behind` | Number of pull requests behind the base branch. |
+| `merge-gated` | Number of pull requests blocked by repository merge gates. |
+| `review-requested` | Number of pull requests with requested reviewers or teams. |
 | `maintainer-blocked` | Number of pull requests blocked by maintainer feedback or labels. |
 | `large-or-triage` | Number of pull requests that are too large or need triage. |
 | `stale` | Number of pull requests quiet for 7 or more days. |
@@ -98,6 +102,10 @@ Use summary outputs in later workflow steps:
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.
+
+Use `merge-conflicts`, `branch-behind`, and `merge-gated` when a dashboard or
+notification should separate author-fixable merge readiness work from ordinary
+review queue work.
 
 For review-plan workflows, use `planned-prs`, `planned-minutes`,
 `remaining-minutes`, `deferred-prs`, and `watch-only-prs` in later notification

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.33
+
+- Summary output now includes merge readiness counts for merge conflicts, branch
+  behind base, repository merge gates, and PRs with requested reviewers.
+- The reusable GitHub Action now exposes those counts as `merge-conflicts`,
+  `branch-behind`, `merge-gated`, and `review-requested` outputs.
+- Markdown, JSON, CSV, HTML, and review-plan summaries now surface the same
+  merge readiness totals.
+
 ## 0.16.32
 
 - Hydrated scans now include merge readiness signals from GitHub, including
