@@ -63,8 +63,13 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
+        self.assertIn("Merge Readiness Watch", docs)
         self.assertIn("JackSpiece/maintainer-radar@v0.16.33", docs)
         self.assertIn("review-plan-minutes", docs)
+        self.assertIn("merge-conflicts", docs)
+        self.assertIn("branch-behind", docs)
+        self.assertIn("merge-gated", docs)
+        self.assertIn("review-requested", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 

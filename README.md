@@ -98,8 +98,9 @@ This writes a workflow that scans the current repository's PR queue and uploads
 a Markdown triage artifact. The report also appears in the GitHub Actions run
 summary, so maintainers do not have to download the artifact just to read the
 queue. The Action also exposes summary outputs such as `review-now`,
-`ci-blocked`, `maintainer-blocked`, and `average-score` for later workflow
-steps. It refuses to overwrite an existing file unless you pass `--force`.
+`ci-blocked`, `merge-conflicts`, `branch-behind`, `maintainer-blocked`, and
+`average-score` for later workflow steps. It refuses to overwrite an existing
+file unless you pass `--force`.
 
 If your project uses custom thresholds, include them in the generated workflow:
 

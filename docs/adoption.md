@@ -129,6 +129,35 @@ Use this when the team needs to clear old contributor threads:
 Read the next-step column before writing replies. Maintainer Radar drafts
 priorities, not decisions.
 
+## Merge Readiness Watch
+
+Use Action outputs when maintainers want a dashboard or notification to separate
+author-fixable branch work from normal review work:
+
+```yaml
+- name: Build queue brief
+  id: radar
+  uses: JackSpiece/maintainer-radar@v0.16.33
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: markdown
+    output: maintainer-radar.md
+    sort: action
+    hydrate: "true"
+
+- name: Print merge readiness totals
+  run: |
+    echo "Merge conflicts: ${{ steps.radar.outputs.merge-conflicts }}"
+    echo "Branch behind: ${{ steps.radar.outputs.branch-behind }}"
+    echo "Merge gated: ${{ steps.radar.outputs.merge-gated }}"
+    echo "Review requested: ${{ steps.radar.outputs.review-requested }}"
+```
+
+This keeps merge conflicts, stale branches, repository merge gates, and reviewer
+requests visible without parsing the report artifact.
+
 ## First Run Checklist
 
 - Run the workflow manually with `workflow_dispatch`.
