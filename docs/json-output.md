@@ -64,7 +64,9 @@ Example:
   "large_or_triage": 4,
   "stale": 9,
   "average_score": 72,
-  "queue_headline": "30 PRs scanned: 8 ready for review; 6 need author follow-up; 5 blocked or waiting on CI; 1 with merge conflict; 2 behind base; 3 blocked by merge gates; 5 have unresolved maintainer blockers."
+  "queue_headline": "30 PRs scanned: 8 ready for review; 6 need author follow-up; 5 blocked or waiting on CI; 1 with merge conflict; 2 behind base; 3 blocked by merge gates; 5 PRs have unresolved maintainer blockers.",
+  "attention_level": "blocked",
+  "attention_reason": "5 PRs have unresolved maintainer blockers."
 }
 ```
 
@@ -86,6 +88,8 @@ Summary fields:
 | `stale` | integer | PRs quiet for 7+ days |
 | `average_score` | integer | Average reviewability score |
 | `queue_headline` | string | One-line human summary of the queue state |
+| `attention_level` | string | Queue attention level: `quiet`, `review`, `triage`, `follow-up`, or `blocked` |
+| `attention_reason` | string | One-line reason for the queue attention level |
 
 ## Script Example
 

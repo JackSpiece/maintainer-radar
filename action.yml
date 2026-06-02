@@ -88,6 +88,12 @@ outputs:
   queue-headline:
     description: One-line human summary of the queue state.
     value: ${{ steps.build.outputs.queue-headline }}
+  attention-level:
+    description: "Queue attention level: quiet, review, triage, follow-up, or blocked."
+    value: ${{ steps.build.outputs.attention-level }}
+  attention-reason:
+    description: One-line reason for the queue attention level.
+    value: ${{ steps.build.outputs.attention-reason }}
   total:
     description: Number of pull requests in the report after filters.
     value: ${{ steps.build.outputs.total }}
@@ -318,7 +324,14 @@ runs:
         }
         for output_name, summary_key in outputs.items():
             print(f"{output_name}={int(summary.get(summary_key) or 0)}")
-        print(f"queue-headline={summary.get('queue_headline') or ''}")
+        text_outputs = {
+            "queue-headline": "queue_headline",
+            "attention-level": "attention_level",
+            "attention-reason": "attention_reason",
+        }
+        for output_name, summary_key in text_outputs.items():
+            value = str(summary.get(summary_key) or "").replace("\n", " ")
+            print(f"{output_name}={value}")
         PY
 
         if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
@@ -393,6 +406,8 @@ runs:
             "",
             str(summary.get("queue_headline") or ""),
             "",
+            f"- Attention level: {summary.get('attention_level') or 'quiet'}",
+            f"- Attention reason: {summary.get('attention_reason') or ''}",
             f"- PRs scanned: {int(summary.get('total') or 0)}",
             f"- Review now: {int(summary.get('review_now') or 0)}",
             f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",

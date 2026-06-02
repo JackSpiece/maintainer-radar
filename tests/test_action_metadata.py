@@ -27,6 +27,8 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("report-path:", action)
         self.assertIn("summary-json:", action)
         self.assertIn("queue-headline:", action)
+        self.assertIn("attention-level:", action)
+        self.assertIn("attention-reason:", action)
         self.assertIn("merge-conflicts:", action)
         self.assertIn("branch-behind:", action)
         self.assertIn("merge-gated:", action)
@@ -38,6 +40,8 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("watch-only-prs:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
         self.assertIn("value: ${{ steps.build.outputs.queue-headline }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.attention-level }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.attention-reason }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-conflicts }}", action)
         self.assertIn("value: ${{ steps.build.outputs.branch-behind }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-gated }}", action)
@@ -69,7 +73,8 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('"merge-gated": "merge_gated"', action)
         self.assertIn('"review-requested": "review_requested"', action)
         self.assertIn('"maintainer-blocked": "maintainer_blocked"', action)
-        self.assertIn("queue-headline=", action)
+        self.assertIn('"attention-level": "attention_level"', action)
+        self.assertIn('"attention-reason": "attention_reason"', action)
         self.assertIn('"planned-minutes": "planned_minutes"', action)
         self.assertIn("summarize_review_plan", action)
         self.assertIn("Maintainer blocked:", action)
@@ -121,6 +126,8 @@ class ActionMetadataTests(unittest.TestCase):
             "report-path",
             "summary-json",
             "queue-headline",
+            "attention-level",
+            "attention-reason",
             "merge-conflicts",
             "branch-behind",
             "merge-gated",
@@ -141,9 +148,13 @@ class ActionMetadataTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
 
         self.assertIn("QUEUE_HEADLINE: ${{ steps.radar.outputs.queue-headline }}", workflow)
+        self.assertIn("ATTENTION_LEVEL: ${{ steps.radar.outputs.attention-level }}", workflow)
+        self.assertIn("ATTENTION_REASON: ${{ steps.radar.outputs.attention-reason }}", workflow)
         self.assertIn("cat > summary.json <<'JSON'", workflow)
         self.assertIn("${{ steps.radar.outputs.summary-json }}", workflow)
         self.assertIn('assert "queue_headline" in summary', workflow)
+        self.assertIn('assert "attention_level" in summary', workflow)
+        self.assertIn('assert "attention_reason" in summary', workflow)
         self.assertNotIn('test -n "${{ steps.radar.outputs.summary-json }}"', workflow)
 
 

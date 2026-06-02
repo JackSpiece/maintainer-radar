@@ -55,3 +55,5 @@ Summary output returns one row with the same fields as JSON summary output:
 - `stale`
 - `average_score`
 - `queue_headline`
+- `attention_level`
+- `attention_reason`

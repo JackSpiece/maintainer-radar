@@ -121,7 +121,12 @@ class RenderTests(unittest.TestCase):
             summary["queue_headline"],
             "4 PRs scanned: 2 ready for review; 1 blocked or waiting on CI; "
             "1 with merge conflict; 1 behind base; 1 blocked by merge gates; "
-            "2 have unresolved maintainer blockers.",
+            "2 PRs have unresolved maintainer blockers.",
+        )
+        self.assertEqual(summary["attention_level"], "blocked")
+        self.assertEqual(
+            summary["attention_reason"],
+            "2 PRs have unresolved maintainer blockers.",
         )
 
     def test_summary_counts_ci_flags_even_when_action_differs(self) -> None:
@@ -137,6 +142,35 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertEqual(summary["ci_blocked"], 1)
+        self.assertEqual(summary["attention_level"], "blocked")
+        self.assertEqual(summary["attention_reason"], "1 PR has failing CI.")
+
+    def test_summary_attention_level_routes_common_queue_states(self) -> None:
+        cases = [
+            ([], "quiet", "No pull requests matched this scan."),
+            (
+                [{"action": "review now", "reviewability": 90}],
+                "review",
+                "1 PR is ready for review.",
+            ),
+            (
+                [{"action": "needs triage", "reviewability": 20}],
+                "triage",
+                "1 PR needs triage or scope reduction.",
+            ),
+            (
+                [{"action": "needs author follow-up", "reviewability": 35}],
+                "follow-up",
+                "1 PR needs author follow-up.",
+            ),
+        ]
+
+        for analyses, level, reason in cases:
+            with self.subTest(level=level):
+                summary = summarize_report(analyses)
+
+                self.assertEqual(summary["attention_level"], level)
+                self.assertEqual(summary["attention_reason"], reason)
 
     def test_review_plan_builds_budgeted_maintainer_session(self) -> None:
         analyses = [
@@ -493,13 +527,14 @@ class RenderTests(unittest.TestCase):
             "merge_conflicts,branch_behind,merge_gated,review_requested",
             output,
         )
-        self.assertIn("average_score,queue_headline", output)
+        self.assertIn("average_score,queue_headline,attention_level,attention_reason", output)
         self.assertIn("2,1,0,1,0,1,0,0,1,0,0,1,60", output)
         self.assertIn(
             "2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; "
             "1 with merge conflict.",
             output,
         )
+        self.assertIn("blocked,1 PR has merge conflicts.", output)
 
     def test_comment_csv_output_quotes_multiline_comment(self) -> None:
         output = render_comment_csv("Thanks.\nPlease add tests.")

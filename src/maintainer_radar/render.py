@@ -370,6 +370,9 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int | str]:
         "average_score": round(sum(scores) / len(scores)) if scores else 0,
     }
     summary["queue_headline"] = _queue_headline(summary)
+    attention_level, attention_reason = _attention_signal(summary)
+    summary["attention_level"] = attention_level
+    summary["attention_reason"] = attention_reason
     return summary
 
 
@@ -398,7 +401,7 @@ def _queue_headline(summary: dict[str, int | str]) -> str:
         count = _int_value(summary.get("maintainer_blocked"))
         verb = "has" if count == 1 else "have"
         blocker = "blocker" if count == 1 else "blockers"
-        parts.append(f"{count} {verb} unresolved maintainer {blocker}")
+        parts.append(f"{_pr_count(count)} {verb} unresolved maintainer {blocker}")
 
     if not parts:
         parts.append("no urgent blocker signals")
@@ -413,6 +416,116 @@ def _needs_phrase(count: int, noun: str) -> str:
     return f"{count} {'needs' if count == 1 else 'need'} {noun}"
 
 
+def _attention_signal(summary: dict[str, int | str]) -> tuple[str, str]:
+    if _int_value(summary.get("total")) == 0:
+        return ("quiet", "No pull requests matched this scan.")
+    if _int_value(summary.get("maintainer_blocked")):
+        return (
+            "blocked",
+            _attention_reason(
+                _int_value(summary.get("maintainer_blocked")),
+                "has unresolved maintainer blocker",
+                "have unresolved maintainer blockers",
+            ),
+        )
+    if _int_value(summary.get("merge_conflicts")):
+        return (
+            "blocked",
+            _attention_reason(
+                _int_value(summary.get("merge_conflicts")),
+                "has merge conflicts",
+                "have merge conflicts",
+            ),
+        )
+    if _int_value(summary.get("ci_blocked")):
+        return (
+            "blocked",
+            _attention_reason(
+                _int_value(summary.get("ci_blocked")),
+                "has failing CI",
+                "have failing CI",
+            ),
+        )
+    if _int_value(summary.get("merge_gated")):
+        return (
+            "blocked",
+            _attention_reason(
+                _int_value(summary.get("merge_gated")),
+                "is blocked by repository merge gates",
+                "are blocked by repository merge gates",
+            ),
+        )
+    if _int_value(summary.get("author_follow_up")):
+        return (
+            "follow-up",
+            _attention_reason(
+                _int_value(summary.get("author_follow_up")),
+                "needs author follow-up",
+                "need author follow-up",
+            ),
+        )
+    if _int_value(summary.get("branch_behind")):
+        return (
+            "follow-up",
+            _attention_reason(
+                _int_value(summary.get("branch_behind")),
+                "is behind base",
+                "are behind base",
+            ),
+        )
+    if _int_value(summary.get("ci_pending")):
+        return (
+            "follow-up",
+            _attention_reason(
+                _int_value(summary.get("ci_pending")),
+                "is waiting on CI",
+                "are waiting on CI",
+            ),
+        )
+    if _int_value(summary.get("review_now")):
+        return (
+            "review",
+            _attention_reason(
+                _int_value(summary.get("review_now")),
+                "is ready for review",
+                "are ready for review",
+            ),
+        )
+    if _int_value(summary.get("large_or_triage")):
+        return (
+            "triage",
+            _attention_reason(
+                _int_value(summary.get("large_or_triage")),
+                "needs triage or scope reduction",
+                "need triage or scope reduction",
+            ),
+        )
+    if _int_value(summary.get("stale")):
+        return (
+            "follow-up",
+            _attention_reason(
+                _int_value(summary.get("stale")),
+                "is stale",
+                "are stale",
+            ),
+        )
+    if _int_value(summary.get("review_requested")):
+        return (
+            "review",
+            _attention_reason(
+                _int_value(summary.get("review_requested")),
+                "has requested reviewers",
+                "have requested reviewers",
+            ),
+        )
+    return ("quiet", "No urgent maintainer attention signal was found.")
+
+
+def _attention_reason(count: int, singular: str, plural: str) -> str:
+    phrase = singular if count == 1 else plural
+    return f"{_pr_count(count)} {phrase}."
+
+
 def render_summary_markdown(
     analyses: list[dict[str, Any]],
     title: str = "Maintainer Radar Summary",
@@ -423,6 +536,8 @@ def render_summary_markdown(
         "",
         str(summary["queue_headline"]),
         "",
+        f"- Attention level: {summary['attention_level']}",
+        f"- Attention reason: {summary['attention_reason']}",
         f"- PRs scanned: {summary['total']}",
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",

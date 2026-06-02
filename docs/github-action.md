@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.35
+        uses: JackSpiece/maintainer-radar@v0.16.36
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -77,6 +77,8 @@ jobs:
 | `report-path` | Path to the generated report file. Use it with `actions/upload-artifact`. |
 | `summary-json` | JSON summary for the generated report. |
 | `queue-headline` | One-line human summary of the queue state. |
+| `attention-level` | Queue attention level: `quiet`, `review`, `triage`, `follow-up`, or `blocked`. |
+| `attention-reason` | One-line reason for the queue attention level. |
 | `total` | Number of pull requests in the report after filters. |
 | `review-now` | Number of pull requests ready for review. |
 | `author-follow-up` | Number of pull requests needing author follow-up. |
@@ -102,12 +104,14 @@ Use summary outputs in later workflow steps:
 {% raw %}
 ```yaml
 - run: echo "${{ steps.radar.outputs.queue-headline }}"
+- run: echo "${{ steps.radar.outputs.attention-level }}: ${{ steps.radar.outputs.attention-reason }}"
 - run: echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
 {% endraw %}
 
 Use `queue-headline` when a later workflow step needs a concise notification
-line without parsing `summary-json`.
+line without parsing `summary-json`. Use `attention-level` when a workflow needs
+to decide whether to notify humans.
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.

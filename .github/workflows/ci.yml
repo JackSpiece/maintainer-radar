@@ -58,6 +58,8 @@ jobs:
           TOTAL: ${{ steps.radar.outputs.total }}
           AVERAGE_SCORE: ${{ steps.radar.outputs.average-score }}
           QUEUE_HEADLINE: ${{ steps.radar.outputs.queue-headline }}
+          ATTENTION_LEVEL: ${{ steps.radar.outputs.attention-level }}
+          ATTENTION_REASON: ${{ steps.radar.outputs.attention-reason }}
           PLAN_BUDGET_MINUTES: ${{ steps.radar.outputs.plan-budget-minutes }}
           PLANNED_PRS: ${{ steps.radar.outputs.planned-prs }}
           PLANNED_MINUTES: ${{ steps.radar.outputs.planned-minutes }}
@@ -68,6 +70,8 @@ jobs:
           test -n "$TOTAL"
           test -n "$AVERAGE_SCORE"
           test -n "$QUEUE_HEADLINE"
+          test -n "$ATTENTION_LEVEL"
+          test -n "$ATTENTION_REASON"
           test -n "$PLAN_BUDGET_MINUTES"
           test -n "$PLANNED_PRS"
           test -n "$PLANNED_MINUTES"
@@ -81,4 +85,6 @@ jobs:
 
           summary = json.loads(Path("summary.json").read_text())
           assert "queue_headline" in summary
+          assert "attention_level" in summary
+          assert "attention_reason" in summary
           PY
