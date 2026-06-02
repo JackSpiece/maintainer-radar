@@ -64,6 +64,12 @@ Example:
   "large_or_triage": 4,
   "stale": 9,
   "average_score": 72,
+  "next_session_prs": 6,
+  "next_session_minutes": 55,
+  "next_session_deferred": 7,
+  "quick_unblocks": 3,
+  "watch_only": 4,
+  "next_session_brief": "Next 60 minutes: handle 6 PRs in about 55 minutes; 3 quick unblocks; 7 PRs deferred by the session budget; 4 PRs watch-only.",
   "queue_headline": "30 PRs scanned: 8 ready for review; 6 need author follow-up; 5 blocked or waiting on CI; 1 with merge conflict; 2 behind base; 3 blocked by merge gates; 5 PRs have unresolved maintainer blockers.",
   "attention_level": "blocked",
   "attention_reason": "5 PRs have unresolved maintainer blockers.",
@@ -89,6 +95,12 @@ Summary fields:
 | `large_or_triage` | integer | PRs that are too large or need triage |
 | `stale` | integer | PRs quiet for 7+ days |
 | `average_score` | integer | Average reviewability score |
+| `next_session_prs` | integer | PRs that fit in the default 60-minute maintainer session digest |
+| `next_session_minutes` | integer | Estimated active maintainer minutes in that default session |
+| `next_session_deferred` | integer | PRs deferred by the default session budget |
+| `quick_unblocks` | integer | PRs that only need a quick unblock action |
+| `watch_only` | integer | PRs waiting for CI or author action |
+| `next_session_brief` | string | One-line 60-minute maintainer session digest |
 | `queue_headline` | string | One-line human summary of the queue state |
 | `attention_level` | string | Queue attention level: `quiet`, `review`, `triage`, `follow-up`, or `blocked` |
 | `attention_reason` | string | One-line reason for the queue attention level |

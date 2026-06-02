@@ -9,7 +9,8 @@ Demo: <https://jackspiece.github.io/maintainer-radar/> includes a no-install
 browser preview for public repositories.
 
 The demo shows a review plan and copyable draft follow-ups before you install
-anything.
+anything. It also shows a next-session digest, so a maintainer can see what
+fits in the next 60 minutes before opening a report artifact.
 
 Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpython>
 
@@ -31,7 +32,7 @@ Maintainer Radar turns GitHub pull request metadata into a short, deterministic
 review brief: which PRs are ready to review, which ones need author follow-up,
 which ones are blocked by CI, and which ones are too risky to merge without more
 evidence. It can also turn the queue into a time-boxed review plan for the next
-maintainer session.
+maintainer session, with a default 60-minute session brief in every summary.
 
 Use AI reviewers to inspect code. Use Maintainer Radar before that to decide
 which pull requests deserve maintainer attention first.
@@ -72,6 +73,8 @@ dashboards. Maintainer Radar is different on purpose:
   test evidence and unresolved maintainer feedback.
 - **Handoff-ready:** review plans include editable draft follow-ups for PRs that
   need author action, while staying read-only.
+- **Session-aware:** summaries say what fits in the next 60 maintainer minutes,
+  how many items are quick unblocks, and what should stay on watch.
 - **Markdown-native:** output can be pasted into issues, PR comments, worklogs,
   release notes, or maintainer handoff docs.
 
@@ -85,7 +88,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.37
+- uses: JackSpiece/maintainer-radar@v0.17.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -106,8 +109,9 @@ summary, so maintainers do not have to download the artifact just to read the
 queue. The Action also exposes summary outputs such as `review-now`,
 `ci-blocked`, `merge-conflicts`, `branch-behind`, `maintainer-blocked`, and
 `attention-level`, plus `workflow-mode` and `workflow-recommendation` for later
-handoff or notification steps. It refuses to overwrite an existing file unless
-you pass `--force`.
+handoff or notification steps. The `next-session-brief` output gives a concise
+60-minute maintainer digest for notifications or dashboards. It refuses to
+overwrite an existing file unless you pass `--force`.
 
 If your project uses custom thresholds, include them in the generated workflow:
 

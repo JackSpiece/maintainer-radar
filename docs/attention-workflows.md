@@ -16,6 +16,11 @@ Use these when the full report is useful, but the first question is:
 | `attention-reason` | One-line reason for the attention level |
 | `workflow-mode` | Suggested maintainer session shape |
 | `workflow-recommendation` | One-line recommendation for the next maintainer workflow |
+| `next-session-brief` | One-line digest of what fits in the next 60 maintainer minutes |
+| `next-session-prs` | PRs that fit in the default 60-minute session digest |
+| `next-session-minutes` | Estimated active maintainer minutes in that default session |
+| `quick-unblocks` | PRs that only need quick unblock action |
+| `watch-only` | PRs waiting for CI or author action |
 
 The levels are ordered for maintainer urgency:
 
@@ -36,6 +41,7 @@ The levels are ordered for maintainer urgency:
     echo "${{ steps.radar.outputs.attention-reason }}"
     echo "Workflow: ${{ steps.radar.outputs.workflow-mode }}"
     echo "${{ steps.radar.outputs.workflow-recommendation }}"
+    echo "${{ steps.radar.outputs.next-session-brief }}"
 ```
 {% endraw %}
 
@@ -81,7 +87,7 @@ decides attention level for stale PRs:
 
 {% raw %}
 ```yaml
-- uses: JackSpiece/maintainer-radar@v0.16.37
+- uses: JackSpiece/maintainer-radar@v0.17.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}

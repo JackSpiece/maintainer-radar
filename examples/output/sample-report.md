@@ -6,6 +6,7 @@
 - Attention reason: 1 PR has unresolved maintainer blocker.
 - Workflow mode: blocker-sweep
 - Workflow recommendation: Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.
+- Next session: Next 60 minutes: handle 2 PRs in about 17 minutes; 1 quick unblock.
 - PRs scanned: 2
 - Review now: 1
 - Needs author follow-up: 0
@@ -17,6 +18,11 @@
 - Maintainer blocked: 1
 - Large or needs triage: 0
 - Stale 7+ days: 1
+- Quick unblocks: 1
+- Watch only: 0
+- Next-session PRs: 2
+- Next-session active time: 17 minutes
+- Next-session deferred: 0
 - Average reviewability: 50/100
 
 | PR | Action | Next Step | Score | Risk Impact | Signals |

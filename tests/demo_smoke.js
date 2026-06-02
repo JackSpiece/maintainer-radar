@@ -194,6 +194,12 @@ assert.deepEqual(demo.summarizeItems([ready, risky, labelBlocked]), {
   largeOrTriage: 0,
   stale: 1,
   average: 66,
+  nextSessionPrs: 3,
+  nextSessionMinutes: 22,
+  nextSessionDeferred: 0,
+  quickUnblocks: 2,
+  watchOnly: 0,
+  nextSessionBrief: "Next 60 minutes: handle 3 PRs in about 22 minutes; 2 quick unblocks.",
   queueHeadline:
     "3 PRs scanned: 1 ready for review; 1 needs author follow-up; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.",
   attentionLevel: "blocked",
@@ -339,6 +345,11 @@ assert.equal(planJson.queue_summary.attention_level, "blocked");
 assert.equal(planJson.queue_summary.attention_reason, "1 PR has failing CI.");
 assert.equal(planJson.queue_summary.workflow_mode, "blocker-sweep");
 assert.ok(planJson.queue_summary.workflow_recommendation.includes("Clear maintainer blockers"));
+assert.ok(planJson.queue_summary.next_session_brief.includes("Next 60 minutes"));
+assert.equal(planJson.queue_summary.next_session_prs, 2);
+assert.equal(planJson.queue_summary.next_session_minutes, 17);
+assert.equal(planJson.queue_summary.quick_unblocks, 1);
+assert.equal(planJson.queue_summary.watch_only, 1);
 assert.ok(planJson.queue_summary.queue_headline.includes("2 blocked or waiting on CI"));
 assert.deepEqual(planJson.planned.map((entry) => entry.number), [42, 43]);
 assert.deepEqual(planJson.watch_only.map((entry) => entry.number), [45]);
@@ -359,6 +370,9 @@ assert.ok(markdown.includes("Attention level: blocked"));
 assert.ok(markdown.includes("Attention reason: 1 PR has failing CI."));
 assert.ok(markdown.includes("Workflow mode: blocker-sweep"));
 assert.ok(markdown.includes("Workflow recommendation: Clear maintainer blockers"));
+assert.ok(markdown.includes("Next session: Next 60 minutes"));
+assert.ok(markdown.includes("- Quick unblocks: 1"));
+assert.ok(markdown.includes("- Next-session active time: 17 minutes"));
 assert.ok(markdown.includes("- PRs scanned: 2"));
 assert.ok(markdown.includes("- Maintainer blocked: 0"));
 assert.ok(markdown.includes("| PR | Action | Next Step | Score | Risk Impact | Signals |"));
@@ -390,7 +404,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.37"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.17.0"));
 assert.ok(workflow.includes("uses: actions/upload-artifact@v7"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));

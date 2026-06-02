@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.17.0
+
+- Summary output now includes a default 60-minute next-session digest, with
+  planned PR count, estimated active minutes, deferred PR count, quick unblock
+  count, watch-only count, and a one-line `next_session_brief`.
+- The reusable GitHub Action now exposes the same digest as
+  `next-session-brief`, `next-session-prs`, `next-session-minutes`,
+  `next-session-deferred`, `quick-unblocks`, and `watch-only` outputs.
+- The browser preview, README preview image, docs, generated samples, and social
+  preview now emphasize next-session planning as the project's core
+  differentiator.
+
 ## 0.16.33
 
 - Summary output now includes merge readiness counts for merge conflicts, branch

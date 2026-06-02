@@ -45,6 +45,8 @@ FOLLOW_UP_ACTIONS = {
     "wait for author",
 }
 
+DEFAULT_SESSION_MINUTES = 60
+
 HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
@@ -369,6 +371,7 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int | str]:
         "stale": stale_count,
         "average_score": round(sum(scores) / len(scores)) if scores else 0,
     }
+    summary.update(_next_session_summary(analyses, DEFAULT_SESSION_MINUTES))
     summary["queue_headline"] = _queue_headline(summary)
     attention_level, attention_reason = _attention_signal(summary)
     summary["attention_level"] = attention_level
@@ -377,6 +380,48 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int | str]:
     summary["workflow_mode"] = workflow_mode
     summary["workflow_recommendation"] = workflow_recommendation
     return summary
+
+
+def _next_session_summary(analyses: list[dict[str, Any]], budget_minutes: int) -> dict[str, int | str]:
+    plan = build_review_plan(analyses, budget_minutes)
+    quick_unblocks = sum(1 for item in analyses if estimate_review_minutes(item) == 5)
+    watch_only = sum(1 for item in analyses if estimate_review_minutes(item) == 0)
+    summary: dict[str, int | str] = {
+        "next_session_prs": len(plan["planned"]),
+        "next_session_minutes": plan["planned_minutes"],
+        "next_session_deferred": len(plan["deferred"]),
+        "quick_unblocks": quick_unblocks,
+        "watch_only": watch_only,
+    }
+    summary["next_session_brief"] = _next_session_brief(summary, budget_minutes)
+    return summary
+
+
+def _next_session_brief(summary: dict[str, int | str], budget_minutes: int) -> str:
+    planned = _int_value(summary.get("next_session_prs"))
+    minutes = _int_value(summary.get("next_session_minutes"))
+    deferred = _int_value(summary.get("next_session_deferred"))
+    quick_unblocks = _int_value(summary.get("quick_unblocks"))
+    watch_only = _int_value(summary.get("watch_only"))
+
+    if not planned and not deferred and not quick_unblocks and not watch_only:
+        return f"Next {budget_minutes} minutes: no matching PRs need maintainer time."
+
+    if not planned:
+        return (
+            f"Next {budget_minutes} minutes: no active review work fits yet; "
+            f"keep {_pr_count(watch_only)} on watch."
+        )
+
+    parts = [f"handle {_pr_count(planned)} in about {minutes} minutes"]
+    if quick_unblocks:
+        label = "quick unblock" if quick_unblocks == 1 else "quick unblocks"
+        parts.append(f"{quick_unblocks} {label}")
+    if deferred:
+        parts.append(f"{_pr_count(deferred)} deferred by the session budget")
+    if watch_only:
+        parts.append(f"{_pr_count(watch_only)} watch-only")
+    return f"Next {budget_minutes} minutes: {'; '.join(parts)}."
 
 
 def _queue_headline(summary: dict[str, int | str]) -> str:
@@ -582,6 +627,7 @@ def render_summary_markdown(
         f"- Attention reason: {summary['attention_reason']}",
         f"- Workflow mode: {summary['workflow_mode']}",
         f"- Workflow recommendation: {summary['workflow_recommendation']}",
+        f"- Next session: {summary['next_session_brief']}",
         f"- PRs scanned: {summary['total']}",
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",
@@ -593,6 +639,11 @@ def render_summary_markdown(
         f"- Maintainer blocked: {summary['maintainer_blocked']}",
         f"- Large or needs triage: {summary['large_or_triage']}",
         f"- Stale 7+ days: {summary['stale']}",
+        f"- Quick unblocks: {summary['quick_unblocks']}",
+        f"- Watch only: {summary['watch_only']}",
+        f"- Next-session PRs: {summary['next_session_prs']}",
+        f"- Next-session active time: {summary['next_session_minutes']} minutes",
+        f"- Next-session deferred: {summary['next_session_deferred']}",
         f"- Average reviewability: {summary['average_score']}/100",
         "",
     ]
@@ -1105,6 +1156,10 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
     summary = summarize_report(analyses)
     metrics = [
         ("PRs scanned", summary["total"]),
+        ("Next-session PRs", summary["next_session_prs"]),
+        ("Next-session time", f"{summary['next_session_minutes']} minutes"),
+        ("Quick unblocks", summary["quick_unblocks"]),
+        ("Watch only", summary["watch_only"]),
         ("Review now", summary["review_now"]),
         ("Author follow-up", summary["author_follow_up"]),
         ("CI blocked", summary["ci_blocked"] + summary["ci_pending"]),
@@ -1127,7 +1182,8 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
         f"{escape(str(summary['workflow_recommendation']))}"
         "</p>"
     )
-    return f'{workflow}<section class="metrics">{items}</section>'
+    session = f'<p class="notice">{escape(str(summary["next_session_brief"]))}</p>'
+    return f'{workflow}{session}<section class="metrics">{items}</section>'
 
 
 def _render_html_table(analyses: list[dict[str, Any]], *, group_by: str | None = None) -> str:

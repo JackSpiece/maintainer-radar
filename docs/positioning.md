@@ -42,6 +42,11 @@ GitHub Action, or a no-install browser preview:
 Each PR includes a score breakdown and a next step, so the report explains both
 why a PR was routed and what a maintainer should do next.
 
+Every summary also includes a default 60-minute session digest: how many PRs fit
+now, how much active maintainer time that represents, how many are quick
+unblocks, and how many should stay on watch. That keeps the project focused on
+attention budgeting instead of generic repository activity.
+
 Review plans can also include editable draft follow-ups for PRs that need author
 action, CI fixes, smaller scope, or a ready-for-review update. Maintainer Radar
 still does not post anything; it gives maintainers copy they can edit during a

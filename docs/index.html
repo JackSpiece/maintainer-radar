@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Maintainer Radar</title>
-  <meta name="description" content="Read-only PR triage reports that recommend the next maintainer workflow, with a no-install public repo preview.">
+  <meta name="description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
   <meta property="og:title" content="Maintainer Radar">
-  <meta property="og:description" content="Read-only PR triage reports that recommend the next maintainer workflow, with a no-install public repo preview.">
+  <meta property="og:description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jackspiece.github.io/maintainer-radar/">
   <meta property="og:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
@@ -14,7 +14,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Maintainer Radar">
-  <meta name="twitter:description" content="Read-only PR triage reports that recommend the next maintainer workflow, with a no-install public repo preview.">
+  <meta name="twitter:description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
   <meta name="twitter:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
   <style>
     :root {
@@ -263,7 +263,7 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
       gap: 1px;
       background: var(--line);
     }
@@ -679,11 +679,14 @@
           <strong id="attention-headline">2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.</strong>
           <p id="attention-reason">1 PR has unresolved maintainer blocker.</p>
           <p><span class="attention-label" id="workflow-mode">Workflow: blocker-sweep</span><span id="workflow-recommendation">Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.</span></p>
+          <p id="next-session-brief">Next 60 minutes: handle 2 PRs in about 17 minutes; 1 quick unblock.</p>
         </section>
         <div class="metrics">
           <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
+          <div class="metric"><strong id="metric-session">2</strong><span>Next session</span></div>
           <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
           <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
+          <div class="metric"><strong id="metric-quick">1</strong><span>Quick unblock</span></div>
           <div class="metric"><strong id="metric-blocked">1</strong><span>Maintainer blocked</span></div>
           <div class="metric"><strong id="metric-score">50</strong><span>Average score</span></div>
         </div>

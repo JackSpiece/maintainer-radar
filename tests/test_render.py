@@ -117,6 +117,15 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(summary["maintainer_blocked"], 2)
         self.assertEqual(summary["large_or_triage"], 1)
         self.assertEqual(summary["stale"], 1)
+        self.assertEqual(summary["next_session_prs"], 4)
+        self.assertEqual(summary["next_session_minutes"], 37)
+        self.assertEqual(summary["next_session_deferred"], 0)
+        self.assertEqual(summary["quick_unblocks"], 1)
+        self.assertEqual(summary["watch_only"], 0)
+        self.assertEqual(
+            summary["next_session_brief"],
+            "Next 60 minutes: handle 4 PRs in about 37 minutes; 1 quick unblock.",
+        )
         self.assertEqual(
             summary["queue_headline"],
             "4 PRs scanned: 2 ready for review; 1 blocked or waiting on CI; "
@@ -515,6 +524,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Review now: 1", output)
         self.assertIn("Workflow mode: review-sprint", output)
         self.assertIn("Workflow recommendation: Start a focused review block", output)
+        self.assertIn("Next session: Next 60 minutes: handle 1 PR in about 12 minutes.", output)
+        self.assertIn("Next-session active time: 12 minutes", output)
         self.assertIn("Merge conflicts: 0", output)
         self.assertIn("Branch behind base: 0", output)
         self.assertIn("Merge gated: 0", output)
@@ -576,11 +587,16 @@ class RenderTests(unittest.TestCase):
             output,
         )
         self.assertIn(
-            "average_score,queue_headline,attention_level,attention_reason,"
-            "workflow_mode,workflow_recommendation",
+            "average_score,next_session_prs,next_session_minutes,next_session_deferred,"
+            "quick_unblocks,watch_only,next_session_brief,queue_headline,"
+            "attention_level,attention_reason,workflow_mode,workflow_recommendation",
             output,
         )
-        self.assertIn("2,1,0,1,0,1,0,0,1,0,0,1,60", output)
+        self.assertIn("2,1,0,1,0,1,0,0,1,0,0,1,60,2,17,0,1,0", output)
+        self.assertIn(
+            "Next 60 minutes: handle 2 PRs in about 17 minutes; 1 quick unblock.",
+            output,
+        )
         self.assertIn(
             "2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; "
             "1 with merge conflict.",

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
   <title id="title">Maintainer Radar terminal preview</title>
-  <desc id="desc">A terminal preview showing a pull request triage summary and review queue table.</desc>
+  <desc id="desc">A terminal preview showing a pull request triage summary, next-session digest, and review queue table.</desc>
   <rect width="960" height="520" rx="14" fill="#0f172a"/>
   <rect x="0" y="0" width="960" height="44" rx="14" fill="#111827"/>
   <circle cx="28" cy="22" r="7" fill="#ef4444"/>
@@ -15,15 +15,15 @@
     <text x="36" y="216" fill="#e5e7eb">- CI blocked or pending: 5</text>
     <text x="36" y="246" fill="#e5e7eb">- Large or needs triage: 4</text>
     <text x="36" y="276" fill="#e5e7eb">- Stale 7+ days: 9</text>
-    <text x="36" y="306" fill="#e5e7eb">- Average reviewability: 72/100</text>
-    <text x="36" y="360" fill="#a7f3d0">review now</text>
-    <text x="182" y="360" fill="#e5e7eb">#42 Fix parser cache race</text>
-    <text x="36" y="394" fill="#fde68a">wait for CI</text>
-    <text x="182" y="394" fill="#e5e7eb">#43 Update dependency graph</text>
-    <text x="36" y="428" fill="#fca5a5">follow-up</text>
-    <text x="182" y="428" fill="#e5e7eb">#44 Preview is not working</text>
-    <text x="36" y="462" fill="#bfdbfe">split PR</text>
-    <text x="182" y="462" fill="#e5e7eb">#45 Add universal plugin system</text>
+    <text x="36" y="306" fill="#e5e7eb">- Next session: 6 PRs in about 55 minutes</text>
+    <text x="36" y="336" fill="#e5e7eb">- Average reviewability: 72/100</text>
+    <text x="36" y="390" fill="#a7f3d0">review now</text>
+    <text x="182" y="390" fill="#e5e7eb">#42 Fix parser cache race</text>
+    <text x="36" y="424" fill="#fde68a">wait for CI</text>
+    <text x="182" y="424" fill="#e5e7eb">#43 Update dependency graph</text>
+    <text x="36" y="458" fill="#fca5a5">follow-up</text>
+    <text x="182" y="458" fill="#e5e7eb">#44 Preview is not working</text>
+    <text x="36" y="492" fill="#bfdbfe">split PR</text>
+    <text x="182" y="492" fill="#e5e7eb">#45 Add universal plugin system</text>
   </g>
 </svg>
-

@@ -1,6 +1,7 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.37";
+  const ACTION_VERSION = "v0.17.0";
+  const DEFAULT_SESSION_MINUTES = 60;
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -793,6 +794,7 @@
     const average = total
       ? Math.round(items.reduce((sum, item) => sum + item.reviewability, 0) / total)
       : 0;
+    const nextSession = nextSessionSummary(items, DEFAULT_SESSION_MINUTES);
     const summary = {
       total,
       reviewNow,
@@ -808,6 +810,7 @@
       largeOrTriage,
       stale,
       average,
+      ...nextSession,
     };
     summary.queueHeadline = queueHeadline(summary);
     const attention = attentionSignal(summary);
@@ -817,6 +820,50 @@
     summary.workflowMode = workflow.mode;
     summary.workflowRecommendation = workflow.recommendation;
     return summary;
+  }
+
+  function nextSessionSummary(items, budgetMinutes) {
+    const plan = buildReviewPlan(items || [], budgetMinutes);
+    const quickUnblocks = (items || []).filter((item) => estimateReviewMinutes(item) === 5).length;
+    const watchOnly = (items || []).filter((item) => estimateReviewMinutes(item) === 0).length;
+    const summary = {
+      nextSessionPrs: plan.planned.length,
+      nextSessionMinutes: plan.plannedMinutes,
+      nextSessionDeferred: plan.deferred.length,
+      quickUnblocks,
+      watchOnly,
+    };
+    summary.nextSessionBrief = nextSessionBrief(summary, budgetMinutes);
+    return summary;
+  }
+
+  function nextSessionBrief(summary, budgetMinutes) {
+    const planned = intValue(summary.nextSessionPrs);
+    const minutes = intValue(summary.nextSessionMinutes);
+    const deferred = intValue(summary.nextSessionDeferred);
+    const quickUnblocks = intValue(summary.quickUnblocks);
+    const watchOnly = intValue(summary.watchOnly);
+
+    if (!planned && !deferred && !quickUnblocks && !watchOnly) {
+      return `Next ${budgetMinutes} minutes: no matching PRs need maintainer time.`;
+    }
+    if (!planned) {
+      return `Next ${budgetMinutes} minutes: no active review work fits yet; keep ${prCount(
+        watchOnly
+      )} on watch.`;
+    }
+
+    const parts = [`handle ${prCount(planned)} in about ${minutes} minutes`];
+    if (quickUnblocks) {
+      parts.push(`${quickUnblocks} ${quickUnblocks === 1 ? "quick unblock" : "quick unblocks"}`);
+    }
+    if (deferred) {
+      parts.push(`${prCount(deferred)} deferred by the session budget`);
+    }
+    if (watchOnly) {
+      parts.push(`${prCount(watchOnly)} watch-only`);
+    }
+    return `Next ${budgetMinutes} minutes: ${parts.join("; ")}.`;
   }
 
   function hasFlag(item, flag) {
@@ -1076,9 +1123,15 @@
       `- Attention reason: ${summary.attentionReason}`,
       `- Workflow mode: ${summary.workflowMode}`,
       `- Workflow recommendation: ${summary.workflowRecommendation}`,
+      `- Next session: ${summary.nextSessionBrief}`,
       `- PRs scanned: ${summary.total}`,
       `- Review now: ${summary.reviewNow}`,
       `- Follow-up: ${summary.followUp}`,
+      `- Quick unblocks: ${summary.quickUnblocks}`,
+      `- Watch only: ${summary.watchOnly}`,
+      `- Next-session PRs: ${summary.nextSessionPrs}`,
+      `- Next-session active time: ${summary.nextSessionMinutes} minutes`,
+      `- Next-session deferred: ${summary.nextSessionDeferred}`,
       `- Maintainer blocked: ${summary.maintainerBlocked}`,
       `- Average reviewability: ${summary.average}/100`,
     ];
@@ -1229,6 +1282,12 @@
           attention_reason: summary.attentionReason,
           workflow_mode: summary.workflowMode,
           workflow_recommendation: summary.workflowRecommendation,
+          next_session_brief: summary.nextSessionBrief,
+          next_session_prs: summary.nextSessionPrs,
+          next_session_minutes: summary.nextSessionMinutes,
+          next_session_deferred: summary.nextSessionDeferred,
+          quick_unblocks: summary.quickUnblocks,
+          watch_only: summary.watchOnly,
         },
         planned: plan.planned.map(reviewPlanJsonEntry),
         deferred: plan.deferred.map(reviewPlanJsonEntry),
@@ -1349,8 +1408,10 @@
     const summary = summarizeItems(items);
 
     document.querySelector("#metric-total").textContent = String(summary.total);
+    document.querySelector("#metric-session").textContent = String(summary.nextSessionPrs);
     document.querySelector("#metric-review").textContent = String(summary.reviewNow);
     document.querySelector("#metric-followup").textContent = String(summary.followUp);
+    document.querySelector("#metric-quick").textContent = String(summary.quickUnblocks);
     document.querySelector("#metric-blocked").textContent = String(summary.maintainerBlocked);
     document.querySelector("#metric-score").textContent = String(summary.average);
     const attentionCard = document.querySelector("#attention-card");
@@ -1359,13 +1420,15 @@
     const attentionReason = document.querySelector("#attention-reason");
     const workflowMode = document.querySelector("#workflow-mode");
     const workflowRecommendation = document.querySelector("#workflow-recommendation");
+    const nextSessionBrief = document.querySelector("#next-session-brief");
     if (
       attentionCard &&
       attentionLevel &&
       attentionHeadline &&
       attentionReason &&
       workflowMode &&
-      workflowRecommendation
+      workflowRecommendation &&
+      nextSessionBrief
     ) {
       attentionCard.dataset.level = summary.attentionLevel;
       attentionLevel.textContent = summary.attentionLevel;
@@ -1373,6 +1436,7 @@
       attentionReason.textContent = summary.attentionReason;
       workflowMode.textContent = `Workflow: ${summary.workflowMode}`;
       workflowRecommendation.textContent = summary.workflowRecommendation;
+      nextSessionBrief.textContent = summary.nextSessionBrief;
     }
 
     const body = document.querySelector("#queue-body");

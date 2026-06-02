@@ -100,6 +100,9 @@ outputs:
   workflow-recommendation:
     description: One-line recommended maintainer workflow for the scanned queue.
     value: ${{ steps.build.outputs.workflow-recommendation }}
+  next-session-brief:
+    description: One-line digest of what fits in the next 60 maintainer minutes.
+    value: ${{ steps.build.outputs.next-session-brief }}
   total:
     description: Number of pull requests in the report after filters.
     value: ${{ steps.build.outputs.total }}
@@ -136,6 +139,21 @@ outputs:
   stale:
     description: Number of pull requests quiet for 7 or more days.
     value: ${{ steps.build.outputs.stale }}
+  quick-unblocks:
+    description: Number of pull requests that only need quick maintainer unblock action.
+    value: ${{ steps.build.outputs.quick-unblocks }}
+  watch-only:
+    description: Number of pull requests waiting for CI or author action.
+    value: ${{ steps.build.outputs.watch-only }}
+  next-session-prs:
+    description: Number of pull requests that fit in the default 60-minute session digest.
+    value: ${{ steps.build.outputs.next-session-prs }}
+  next-session-minutes:
+    description: Estimated active maintainer minutes in the default 60-minute session digest.
+    value: ${{ steps.build.outputs.next-session-minutes }}
+  next-session-deferred:
+    description: Number of pull requests deferred by the default 60-minute session digest.
+    value: ${{ steps.build.outputs.next-session-deferred }}
   average-score:
     description: Average reviewability score for the report.
     value: ${{ steps.build.outputs.average-score }}
@@ -326,6 +344,11 @@ runs:
             "maintainer-blocked": "maintainer_blocked",
             "large-or-triage": "large_or_triage",
             "stale": "stale",
+            "quick-unblocks": "quick_unblocks",
+            "watch-only": "watch_only",
+            "next-session-prs": "next_session_prs",
+            "next-session-minutes": "next_session_minutes",
+            "next-session-deferred": "next_session_deferred",
             "average-score": "average_score",
         }
         for output_name, summary_key in outputs.items():
@@ -336,6 +359,7 @@ runs:
             "attention-reason": "attention_reason",
             "workflow-mode": "workflow_mode",
             "workflow-recommendation": "workflow_recommendation",
+            "next-session-brief": "next_session_brief",
         }
         for output_name, summary_key in text_outputs.items():
             value = str(summary.get(summary_key) or "").replace("\n", " ")
@@ -418,6 +442,7 @@ runs:
             f"- Attention reason: {summary.get('attention_reason') or ''}",
             f"- Workflow mode: {summary.get('workflow_mode') or 'quiet'}",
             f"- Workflow recommendation: {summary.get('workflow_recommendation') or ''}",
+            f"- Next session: {summary.get('next_session_brief') or ''}",
             f"- PRs scanned: {int(summary.get('total') or 0)}",
             f"- Review now: {int(summary.get('review_now') or 0)}",
             f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",
@@ -425,6 +450,11 @@ runs:
             f"- Maintainer blocked: {int(summary.get('maintainer_blocked') or 0)}",
             f"- Large or needs triage: {int(summary.get('large_or_triage') or 0)}",
             f"- Stale 7+ days: {int(summary.get('stale') or 0)}",
+            f"- Quick unblocks: {int(summary.get('quick_unblocks') or 0)}",
+            f"- Watch only: {int(summary.get('watch_only') or 0)}",
+            f"- Next-session PRs: {int(summary.get('next_session_prs') or 0)}",
+            f"- Next-session active time: {int(summary.get('next_session_minutes') or 0)} minutes",
+            f"- Next-session deferred: {int(summary.get('next_session_deferred') or 0)}",
             f"- Average reviewability: {int(summary.get('average_score') or 0)}/100",
             "",
         ]

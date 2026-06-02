@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
   <title id="title">Maintainer Radar social preview</title>
-  <desc id="desc">Read-only PR triage reports with workflow recommendations for maintainers.</desc>
+  <desc id="desc">Read-only PR triage reports with workflow and next-session recommendations for maintainers.</desc>
   <rect width="1200" height="630" fill="#f7f8fb"/>
   <rect x="56" y="54" width="1088" height="522" rx="24" fill="#ffffff" stroke="#d8dee9" stroke-width="2"/>
   <text x="102" y="136" fill="#172033" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="66" font-weight="800">Maintainer Radar</text>
-  <text x="106" y="190" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30">PR triage that recommends the next workflow</text>
-  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Blocker sweep, review sprint, or follow-up pass.</text>
+  <text x="106" y="190" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30">PR triage for the next maintainer session</text>
+  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Blocker sweep, review sprint, or 60-minute digest.</text>
 
   <rect x="104" y="306" width="520" height="74" rx="14" fill="#101827"/>
   <text x="132" y="352" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">uses: JackSpiece/maintainer-radar</text>
@@ -28,7 +28,7 @@
       <rect width="150" height="44" rx="22" fill="#d1fae5"/>
       <text x="18" y="29" fill="#047857" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700">review-sprint</text>
       <text x="178" y="29" fill="#172033" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="22" font-weight="700">ready PRs</text>
-      <text x="300" y="29" fill="#6d28d9" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">30m plan</text>
+      <text x="300" y="29" fill="#6d28d9" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18">60m digest</text>
     </g>
   </g>
 

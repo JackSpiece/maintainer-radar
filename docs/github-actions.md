@@ -20,7 +20,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.37
+- uses: JackSpiece/maintainer-radar@v0.17.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -74,8 +74,10 @@ action usage, if you only want uploaded artifacts.
 
 The reusable Action also exposes summary outputs such as `queue-headline`,
 `attention-level`, `attention-reason`, `workflow-mode`,
-`workflow-recommendation`, `review-now`, `ci-blocked`, `maintainer-blocked`,
-`stale`, and `average-score` for later workflow steps.
+`workflow-recommendation`, `next-session-brief`, `next-session-prs`,
+`next-session-minutes`, `quick-unblocks`, `watch-only`, `review-now`,
+`ci-blocked`, `maintainer-blocked`, `stale`, and `average-score` for later
+workflow steps.
 
 When `review-plan-minutes` is set, it also exposes plan outputs such as
 `planned-prs`, `planned-minutes`, `remaining-minutes`, `deferred-prs`, and
@@ -112,7 +114,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.37
+        uses: JackSpiece/maintainer-radar@v0.17.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -137,7 +139,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -166,7 +168,7 @@ session, use Markdown when you want the plan in the run summary:
 ```yaml
 - name: Build 30 minute review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -189,7 +191,7 @@ Use HTML when you want a browser-friendly plan artifact:
 ```yaml
 - name: Build HTML review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -212,7 +214,7 @@ Use JSON when a dashboard or later workflow step should consume the plan:
 ```yaml
 - name: Build JSON review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -237,7 +239,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:

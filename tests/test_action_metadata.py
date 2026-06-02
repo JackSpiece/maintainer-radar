@@ -31,11 +31,17 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("attention-reason:", action)
         self.assertIn("workflow-mode:", action)
         self.assertIn("workflow-recommendation:", action)
+        self.assertIn("next-session-brief:", action)
         self.assertIn("merge-conflicts:", action)
         self.assertIn("branch-behind:", action)
         self.assertIn("merge-gated:", action)
         self.assertIn("review-requested:", action)
         self.assertIn("maintainer-blocked:", action)
+        self.assertIn("quick-unblocks:", action)
+        self.assertIn("watch-only:", action)
+        self.assertIn("next-session-prs:", action)
+        self.assertIn("next-session-minutes:", action)
+        self.assertIn("next-session-deferred:", action)
         self.assertIn("average-score:", action)
         self.assertIn("planned-prs:", action)
         self.assertIn("planned-minutes:", action)
@@ -46,11 +52,17 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("value: ${{ steps.build.outputs.attention-reason }}", action)
         self.assertIn("value: ${{ steps.build.outputs.workflow-mode }}", action)
         self.assertIn("value: ${{ steps.build.outputs.workflow-recommendation }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.next-session-brief }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-conflicts }}", action)
         self.assertIn("value: ${{ steps.build.outputs.branch-behind }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-gated }}", action)
         self.assertIn("value: ${{ steps.build.outputs.review-requested }}", action)
         self.assertIn("value: ${{ steps.build.outputs.maintainer-blocked }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.quick-unblocks }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.watch-only }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.next-session-prs }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.next-session-minutes }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.next-session-deferred }}", action)
         self.assertIn("value: ${{ steps.build.outputs.average-score }}", action)
         self.assertIn("value: ${{ steps.build.outputs.planned-prs }}", action)
 
@@ -81,11 +93,18 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('"attention-reason": "attention_reason"', action)
         self.assertIn('"workflow-mode": "workflow_mode"', action)
         self.assertIn('"workflow-recommendation": "workflow_recommendation"', action)
+        self.assertIn('"next-session-brief": "next_session_brief"', action)
+        self.assertIn('"quick-unblocks": "quick_unblocks"', action)
+        self.assertIn('"watch-only": "watch_only"', action)
+        self.assertIn('"next-session-prs": "next_session_prs"', action)
+        self.assertIn('"next-session-minutes": "next_session_minutes"', action)
+        self.assertIn('"next-session-deferred": "next_session_deferred"', action)
         self.assertIn('"planned-minutes": "planned_minutes"', action)
         self.assertIn("summarize_review_plan", action)
         self.assertIn("Maintainer blocked:", action)
         self.assertIn("Workflow mode:", action)
         self.assertIn("Workflow recommendation:", action)
+        self.assertIn("Next session:", action)
         self.assertIn("Maintainer Radar Review Plan", action)
         self.assertIn("Estimated active time:", action)
         self.assertIn("Deferred by budget:", action)
@@ -138,11 +157,17 @@ class ActionMetadataTests(unittest.TestCase):
             "attention-reason",
             "workflow-mode",
             "workflow-recommendation",
+            "next-session-brief",
             "merge-conflicts",
             "branch-behind",
             "merge-gated",
             "review-requested",
             "maintainer-blocked",
+            "quick-unblocks",
+            "watch-only",
+            "next-session-prs",
+            "next-session-minutes",
+            "next-session-deferred",
             "average-score",
             "plan-budget-minutes",
             "planned-prs",
@@ -165,6 +190,7 @@ class ActionMetadataTests(unittest.TestCase):
             "WORKFLOW_RECOMMENDATION: ${{ steps.radar.outputs.workflow-recommendation }}",
             workflow,
         )
+        self.assertIn("NEXT_SESSION_BRIEF: ${{ steps.radar.outputs.next-session-brief }}", workflow)
         self.assertIn("cat > summary.json <<'JSON'", workflow)
         self.assertIn("${{ steps.radar.outputs.summary-json }}", workflow)
         self.assertIn('assert "queue_headline" in summary', workflow)
@@ -172,6 +198,9 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('assert "attention_reason" in summary', workflow)
         self.assertIn('assert "workflow_mode" in summary', workflow)
         self.assertIn('assert "workflow_recommendation" in summary', workflow)
+        self.assertIn('assert "next_session_brief" in summary', workflow)
+        self.assertIn('assert "next_session_prs" in summary', workflow)
+        self.assertIn('assert "next_session_minutes" in summary', workflow)
         self.assertNotIn('test -n "${{ steps.radar.outputs.summary-json }}"', workflow)
 
 

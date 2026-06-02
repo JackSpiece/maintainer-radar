@@ -40,7 +40,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.37
+        uses: JackSpiece/maintainer-radar@v0.17.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -70,7 +70,7 @@ worth reviewing now:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -96,7 +96,7 @@ Use this when maintainers want a concrete plan for a short review block:
 ```yaml
 - name: Build 30 minute review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -112,6 +112,11 @@ Use this when maintainers want a concrete plan for a short review block:
 The plan estimates active maintainer time, lists PRs that fit the budget, and
 keeps wait-for-CI or wait-for-author items in a watch-only section.
 
+Every summary also includes a default next-session digest for the next 60
+minutes, even when a custom review plan is not requested. Use that for quick
+notifications where maintainers only need to know whether review time is worth
+spending now.
+
 ## Stale Follow-Up Queue
 
 Use this when the team needs to clear old contributor threads:
@@ -120,7 +125,7 @@ Use this when the team needs to clear old contributor threads:
 ```yaml
 - name: Build stale follow-up report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -146,7 +151,7 @@ author-fixable branch work from normal review work:
 ```yaml
 - name: Build queue brief
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.37
+  uses: JackSpiece/maintainer-radar@v0.17.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -163,6 +168,7 @@ author-fixable branch work from normal review work:
     echo "${{ steps.radar.outputs.attention-reason }}"
     echo "Workflow: ${{ steps.radar.outputs.workflow-mode }}"
     echo "${{ steps.radar.outputs.workflow-recommendation }}"
+    echo "${{ steps.radar.outputs.next-session-brief }}"
     echo "Merge conflicts: ${{ steps.radar.outputs.merge-conflicts }}"
     echo "Branch behind: ${{ steps.radar.outputs.branch-behind }}"
     echo "Merge gated: ${{ steps.radar.outputs.merge-gated }}"

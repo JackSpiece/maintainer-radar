@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.37
+        uses: JackSpiece/maintainer-radar@v0.17.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -81,6 +81,7 @@ jobs:
 | `attention-reason` | One-line reason for the queue attention level. |
 | `workflow-mode` | Recommended maintainer workflow mode, such as `blocker-sweep`, `review-sprint`, or `author-follow-up`. |
 | `workflow-recommendation` | One-line recommended maintainer workflow for the scanned queue. |
+| `next-session-brief` | One-line digest of what fits in the next 60 maintainer minutes. |
 | `total` | Number of pull requests in the report after filters. |
 | `review-now` | Number of pull requests ready for review. |
 | `author-follow-up` | Number of pull requests needing author follow-up. |
@@ -93,6 +94,11 @@ jobs:
 | `maintainer-blocked` | Number of pull requests blocked by maintainer feedback or labels. |
 | `large-or-triage` | Number of pull requests that are too large or need triage. |
 | `stale` | Number of pull requests quiet for 7 or more days. |
+| `quick-unblocks` | Number of pull requests that only need quick maintainer unblock action. |
+| `watch-only` | Number of pull requests waiting for CI or author action. |
+| `next-session-prs` | Number of pull requests that fit in the default 60-minute session digest. |
+| `next-session-minutes` | Estimated active maintainer minutes in the default 60-minute session digest. |
+| `next-session-deferred` | Number of pull requests deferred by the default 60-minute session digest. |
 | `average-score` | Average reviewability score for the report. |
 | `plan-budget-minutes` | Review-plan budget in minutes when `review-plan-minutes` is set. |
 | `planned-prs` | Number of pull requests included in the review plan. |
@@ -111,6 +117,7 @@ Use summary outputs in later workflow steps:
     echo "${{ steps.radar.outputs.attention-reason }}"
     echo "Workflow: ${{ steps.radar.outputs.workflow-mode }}"
     echo "${{ steps.radar.outputs.workflow-recommendation }}"
+    echo "${{ steps.radar.outputs.next-session-brief }}"
     echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
 {% endraw %}
@@ -119,6 +126,12 @@ Use `queue-headline` when a later workflow step needs a concise notification
 line without parsing `summary-json`. Use `attention-level` when a workflow needs
 to decide whether to notify humans. Use `workflow-mode` when a workflow or
 handoff note needs to choose the next maintainer session shape.
+
+Use `next-session-brief` when a notification should tell maintainers what can
+fit in the next hour without opening the full artifact. Use
+`next-session-prs`, `next-session-minutes`, `next-session-deferred`,
+`quick-unblocks`, and `watch-only` when a dashboard needs the same digest as
+structured numbers.
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.

@@ -54,6 +54,12 @@ Summary output returns one row with the same fields as JSON summary output:
 - `large_or_triage`
 - `stale`
 - `average_score`
+- `next_session_prs`
+- `next_session_minutes`
+- `next_session_deferred`
+- `quick_unblocks`
+- `watch_only`
+- `next_session_brief`
 - `queue_headline`
 - `attention_level`
 - `attention_reason`

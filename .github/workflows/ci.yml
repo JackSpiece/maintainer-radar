@@ -62,6 +62,9 @@ jobs:
           ATTENTION_REASON: ${{ steps.radar.outputs.attention-reason }}
           WORKFLOW_MODE: ${{ steps.radar.outputs.workflow-mode }}
           WORKFLOW_RECOMMENDATION: ${{ steps.radar.outputs.workflow-recommendation }}
+          NEXT_SESSION_BRIEF: ${{ steps.radar.outputs.next-session-brief }}
+          NEXT_SESSION_PRS: ${{ steps.radar.outputs.next-session-prs }}
+          NEXT_SESSION_MINUTES: ${{ steps.radar.outputs.next-session-minutes }}
           PLAN_BUDGET_MINUTES: ${{ steps.radar.outputs.plan-budget-minutes }}
           PLANNED_PRS: ${{ steps.radar.outputs.planned-prs }}
           PLANNED_MINUTES: ${{ steps.radar.outputs.planned-minutes }}
@@ -76,6 +79,9 @@ jobs:
           test -n "$ATTENTION_REASON"
           test -n "$WORKFLOW_MODE"
           test -n "$WORKFLOW_RECOMMENDATION"
+          test -n "$NEXT_SESSION_BRIEF"
+          test -n "$NEXT_SESSION_PRS"
+          test -n "$NEXT_SESSION_MINUTES"
           test -n "$PLAN_BUDGET_MINUTES"
           test -n "$PLANNED_PRS"
           test -n "$PLANNED_MINUTES"
@@ -93,4 +99,7 @@ jobs:
           assert "attention_reason" in summary
           assert "workflow_mode" in summary
           assert "workflow_recommendation" in summary
+          assert "next_session_brief" in summary
+          assert "next_session_prs" in summary
+          assert "next_session_minutes" in summary
           PY

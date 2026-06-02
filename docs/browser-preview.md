@@ -53,8 +53,9 @@ The page also shows a compact review plan preview and draft follow-up panel
 under the summary metrics so you can inspect the planned active time and author
 asks before copying Markdown.
 
-The summary metrics include PRs scanned, review-now count, follow-up count,
-Maintainer blocked count, and average score.
+The summary metrics include PRs scanned, next-session count, review-now count,
+follow-up count, quick-unblock count, maintainer blocked count, and average
+score.
 
 The attention card above those metrics gives a one-line queue headline plus an
 attention level, such as `blocked`, `follow-up`, `triage`, `review`, or `quiet`.
@@ -64,6 +65,10 @@ human notification before reading the full table.
 The same card includes a workflow recommendation, such as `blocker-sweep` or
 `review-sprint`, so a maintainer can decide what kind of review session to run
 before reading individual rows.
+
+It also includes a default next-session line for the next 60 minutes, such as
+how many PRs fit, how much active maintainer time they need, and what should
+stay on watch.
 
 Turn on **Group by action** to split the preview and copied Markdown into
 review-now, CI, author follow-up, and triage sections.
