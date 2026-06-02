@@ -12,6 +12,14 @@ maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 3
 The plan is Markdown so it can go directly into a terminal, GitHub Actions run
 summary, issue, or maintainer handoff note.
 
+You can also try this without installing anything in the browser preview:
+
+```text
+https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
+```
+
+Scan a public repository, set the plan minutes, and use **Copy Plan**.
+
 ## What The Plan Includes
 
 - the time budget

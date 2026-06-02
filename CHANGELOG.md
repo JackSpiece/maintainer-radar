@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.19
+
+- Added Copy Plan to the public browser preview so visitors can copy a
+  time-boxed review plan without installing the CLI.
+- Added a plan-minutes control to the browser preview and documented the
+  no-install review-plan flow.
+
 ## 0.16.18
 
 - Added `--review-plan-minutes` for Markdown review-session plans that turn a

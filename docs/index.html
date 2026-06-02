@@ -128,7 +128,7 @@
       background: #fbfcfe;
     }
 
-    .scan-form label {
+    .scan-form > label:not(.toggle-row):not(.plan-control) {
       position: absolute;
       width: 1px;
       height: 1px;
@@ -143,6 +143,20 @@
       padding: 10px 11px;
       color: var(--text);
       font: inherit;
+    }
+
+    .plan-control {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .plan-control input {
+      width: 76px;
+      padding: 8px 9px;
     }
 
     .scan-actions {
@@ -461,8 +475,13 @@
             <button class="secondary" id="copy-badge" type="button" disabled>Copy Badge</button>
             <button class="secondary" id="copy-cli" type="button" disabled>Copy CLI</button>
             <button class="secondary" id="copy-markdown" type="button" disabled>Copy Markdown</button>
+            <button class="secondary" id="copy-plan" type="button" disabled>Copy Plan</button>
             <button class="secondary" id="copy-workflow" type="button">Copy Workflow</button>
           </div>
+          <label class="plan-control" for="plan-minutes">
+            Plan minutes
+            <input id="plan-minutes" type="number" min="1" max="240" step="5" value="30">
+          </label>
           <label class="toggle-row" for="group-action">
             <input id="group-action" type="checkbox">
             Group by action

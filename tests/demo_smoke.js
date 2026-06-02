@@ -157,6 +157,47 @@ assert.deepEqual(demo.summarizeItems([ready, risky, labelBlocked]), {
 const pending = demo.summarizeCheckRuns([{ status: "IN_PROGRESS", conclusion: null }]);
 assert.deepEqual(pending, { passed: 0, failed: 0, pending: 1, skipped: 0, total: 1 });
 
+const waitForCi = demo.analyzePullRequest(
+  {
+    number: 45,
+    title: "Refresh generated docs",
+    html_url: "https://example.test/pull/45",
+    body: "Validation: generated docs preview.",
+    updated_at: "2026-06-01T00:00:00Z",
+    additions: 12,
+    deletions: 4,
+    changed_files: 1,
+    draft: false,
+  },
+  [{ filename: "docs/generated.md" }],
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [{ status: "IN_PROGRESS", conclusion: null }],
+  }
+);
+
+assert.equal(demo.estimateReviewMinutes(ready), 12);
+assert.equal(demo.estimateReviewMinutes(risky), 5);
+assert.equal(demo.estimateReviewMinutes(waitForCi), 0);
+const plan = demo.buildReviewPlan([ready, risky, waitForCi], 15);
+assert.equal(plan.plannedMinutes, 12);
+assert.deepEqual(plan.planned.map((entry) => entry.item.number), [42]);
+assert.deepEqual(plan.deferred.map((entry) => entry.item.number), [43]);
+assert.deepEqual(plan.waiting.map((entry) => entry.item.number), [45]);
+const planMarkdown = demo.renderReviewPlanMarkdown(
+  [ready, risky, waitForCi],
+  "example/project",
+  30,
+  "https://jackspiece.github.io/maintainer-radar/?repo=example%2Fproject"
+);
+assert.ok(planMarkdown.includes("## Maintainer Radar Review Plan: example/project"));
+assert.ok(planMarkdown.includes("- Time budget: 30 minutes"));
+assert.ok(planMarkdown.includes("| Order | PR | Action | Est. | Next Step | Why |"));
+assert.ok(planMarkdown.includes("[#42 Fix parser cache race](https://example.test/pull/42)"));
+assert.ok(planMarkdown.includes("12m"));
+assert.ok(planMarkdown.includes("### Watch Only"));
+assert.ok(planMarkdown.includes("#45 Refresh generated docs"));
+
 const markdown = demo.renderMarkdownReport(
   [ready, risky],
   "example/project",
@@ -193,7 +234,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.18"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.19"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

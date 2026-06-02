@@ -35,6 +35,10 @@ It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the
 preview.
 
+Use **Copy Plan** to copy a time-boxed review plan for the scanned PRs. Set the
+plan minutes field first when you want something other than the default 30
+minute plan.
+
 The summary metrics include PRs scanned, review-now count, follow-up count,
 Maintainer blocked count, and average score.
 
@@ -85,7 +89,7 @@ For deeper scans, use the CLI:
 
 ```bash
 python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
-maintainer-radar repo owner/repo --hydrate --sort action --top 10
+maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
 ```
 
 The CLI can use your authenticated `gh` session, inspect richer PR context, and
