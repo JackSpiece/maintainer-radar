@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.24
+- uses: JackSpiece/maintainer-radar@v0.16.25
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -59,6 +59,9 @@ maintainer-radar init-action \
 The command prints YAML to stdout when `--path` is omitted. When `--path` is
 provided, it creates parent directories and refuses to overwrite an existing
 workflow unless `--force` is passed.
+
+Generated review-plan workflows use `review-plan.md` or `review-plan.html` as
+the artifact path so the uploaded file is easy to identify.
 
 The action publishes Markdown output to the GitHub Actions run summary by
 default. For HTML, JSON, and CSV artifacts, it also publishes a compact Markdown
@@ -104,7 +107,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.24
+        uses: JackSpiece/maintainer-radar@v0.16.25
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -127,7 +130,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.24
+  uses: JackSpiece/maintainer-radar@v0.16.25
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -154,7 +157,7 @@ session, use Markdown when you want the plan in the run summary:
 ```yaml
 - name: Build 30 minute review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.24
+  uses: JackSpiece/maintainer-radar@v0.16.25
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -175,7 +178,7 @@ Use HTML when you want a browser-friendly plan artifact:
 ```yaml
 - name: Build HTML review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.24
+  uses: JackSpiece/maintainer-radar@v0.16.25
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -198,7 +201,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.24
+  uses: JackSpiece/maintainer-radar@v0.16.25
   env:
     GH_TOKEN: ${{ github.token }}
   with:

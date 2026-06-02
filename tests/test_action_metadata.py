@@ -70,6 +70,9 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('html) default_output="maintainer-radar.html"', action)
         self.assertIn('json) default_output="maintainer-radar.json"', action)
         self.assertIn('csv) default_output="maintainer-radar.csv"', action)
+        self.assertIn('if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then', action)
+        self.assertIn('markdown) default_output="review-plan.md"', action)
+        self.assertIn('html) default_output="review-plan.html"', action)
         self.assertIn('output="${INPUT_OUTPUT:-$default_output}"', action)
         self.assertIn('echo "report-path=$output" >> "$GITHUB_OUTPUT"', action)
 

@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.24
+        uses: JackSpiece/maintainer-radar@v0.16.25
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -51,7 +51,7 @@ jobs:
 | --- | --- | --- |
 | `repository` | current workflow repository | Repository to scan in `owner/name` form. |
 | `format` | `markdown` | Report format: `markdown`, `html`, `json`, or `csv`. |
-| `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`. |
+| `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`; review plans default to `review-plan.md` or `review-plan.html`. |
 | `limit` | `50` | Maximum pull requests to scan. |
 | `label` | empty | Only include pull requests with this label. |
 | `author` | empty | Only include pull requests by this author. |

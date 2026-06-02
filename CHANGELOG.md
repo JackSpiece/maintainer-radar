@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.25
+
+- Generated review-plan workflows now default to `review-plan.md` or
+  `review-plan.html` instead of generic `maintainer-radar` artifact paths.
+- Direct Action usage with `review-plan-minutes` now gets the same review-plan
+  default output paths when no `output` is set.
+
 ## 0.16.24
 
 - Added HTML review-plan output for `--review-plan-minutes --format html`.

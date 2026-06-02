@@ -68,15 +68,21 @@ class WorkflowTests(unittest.TestCase):
     def test_render_github_action_workflow_supports_review_plan_minutes(self) -> None:
         output = render_github_action_workflow(review_plan_minutes=30)
 
+        self.assertIn("name: Maintainer Radar Review Plan", output)
+        self.assertIn("Build 30 minute review plan", output)
         self.assertIn('review-plan-minutes: "30"', output)
         self.assertIn("format: markdown", output)
+        self.assertIn("output: review-plan.md", output)
+        self.assertIn("name: review-plan", output)
 
     def test_render_github_action_workflow_supports_html_review_plan(self) -> None:
         output = render_github_action_workflow(report_format="html", review_plan_minutes=45)
 
+        self.assertIn("Build 45 minute review plan", output)
         self.assertIn('review-plan-minutes: "45"', output)
         self.assertIn("format: html", output)
-        self.assertIn("maintainer-radar.html", output)
+        self.assertIn("output: review-plan.html", output)
+        self.assertIn("name: review-plan-html", output)
 
     def test_render_github_action_workflow_rejects_invalid_values(self) -> None:
         with self.assertRaises(ValueError):

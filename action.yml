@@ -177,6 +177,12 @@ runs:
             exit 2
             ;;
         esac
+        if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
+          case "$INPUT_FORMAT" in
+            markdown) default_output="review-plan.md" ;;
+            html) default_output="review-plan.html" ;;
+          esac
+        fi
         output="${INPUT_OUTPUT:-$default_output}"
         mkdir -p "$(dirname "$output")"
         echo "report-path=$output" >> "$GITHUB_OUTPUT"

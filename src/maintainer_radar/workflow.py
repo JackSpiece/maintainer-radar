@@ -83,8 +83,19 @@ def render_github_action_workflow(
         raise ValueError("--schedule must be a single-line cron expression")
 
     extension = REPORT_EXTENSIONS[report_format]
-    output_path = f"maintainer-radar.{extension}"
-    artifact_name = f"maintainer-radar-{report_format}"
+    is_review_plan = review_plan_minutes is not None
+    output_stem = "review-plan" if is_review_plan else "maintainer-radar"
+    output_path = f"{output_stem}.{extension}"
+    if is_review_plan and report_format == "markdown":
+        artifact_name = "review-plan"
+    else:
+        artifact_name = f"{output_stem}-{report_format}"
+    workflow_name = "Maintainer Radar Review Plan" if is_review_plan else "Maintainer Radar Report"
+    step_name = (
+        f"Build {review_plan_minutes} minute review plan"
+        if is_review_plan
+        else f"Build {report_format} report"
+    )
     action = action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
     filter_inputs = "".join(
         [
@@ -103,7 +114,7 @@ def render_github_action_workflow(
     )
 
     escaped_schedule = clean_schedule.replace('"', '\\"')
-    return f"""name: Maintainer Radar Report
+    return f"""name: {workflow_name}
 
 on:
   workflow_dispatch:
@@ -121,7 +132,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Build {report_format} report
+      - name: {step_name}
         id: radar
         uses: {action}
         env:
