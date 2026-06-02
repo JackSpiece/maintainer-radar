@@ -469,6 +469,116 @@ class CliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         load_config.assert_not_called()
 
+    def test_init_repo_command_accepts_setup_options(self) -> None:
+        args = build_parser().parse_args(
+            [
+                "init-repo",
+                "--profile",
+                "strict",
+                "--config-path",
+                ".maintainer-radar.json",
+                "--workflow-path",
+                ".github/workflows/radar.yml",
+                "--report-format",
+                "html",
+                "--schedule",
+                "0 9 * * 1",
+                "--limit",
+                "25",
+                "--sort",
+                "risk",
+                "--group-by",
+                "action",
+                "--no-hydrate",
+                "--no-step-summary",
+                "--force",
+            ]
+        )
+
+        self.assertEqual(args.command, "init-repo")
+        self.assertEqual(args.profile, "strict")
+        self.assertEqual(args.report_format, "html")
+        self.assertEqual(args.schedule, "0 9 * * 1")
+        self.assertEqual(args.limit, 25)
+        self.assertEqual(args.sort, "risk")
+        self.assertEqual(args.group_by, "action")
+        self.assertTrue(args.no_hydrate)
+        self.assertTrue(args.no_step_summary)
+        self.assertTrue(args.force)
+
+    def test_init_repo_writes_config_and_workflow(self) -> None:
+        with TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / ".maintainer-radar.json"
+            workflow_path = Path(tmp) / ".github" / "workflows" / "maintainer-radar.yml"
+
+            with patch("sys.stdout", new=StringIO()) as stdout:
+                result = main(
+                    [
+                        "init-repo",
+                        "--profile",
+                        "strict",
+                        "--config-path",
+                        str(config_path),
+                        "--workflow-path",
+                        str(workflow_path),
+                    ]
+                )
+
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            workflow = workflow_path.read_text(encoding="utf-8")
+
+        self.assertEqual(result, 0)
+        self.assertIn(f"Wrote {config_path}", stdout.getvalue())
+        self.assertIn(f"Wrote {workflow_path}", stdout.getvalue())
+        self.assertEqual(config["large_diff_lines"], 300)
+        self.assertIn("contents: read", workflow)
+        self.assertIn("pull-requests: read", workflow)
+        self.assertIn('config: "', workflow)
+        self.assertIn(str(config_path), workflow)
+        self.assertIn('group-by: "action"', workflow)
+        self.assertIn('hydrate: "true"', workflow)
+
+    def test_init_repo_protects_existing_files_without_partial_write(self) -> None:
+        with TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / ".maintainer-radar.json"
+            workflow_path = Path(tmp) / ".github" / "workflows" / "maintainer-radar.yml"
+            workflow_path.parent.mkdir(parents=True)
+            workflow_path.write_text("existing workflow", encoding="utf-8")
+
+            with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()):
+                result = main(
+                    [
+                        "init-repo",
+                        "--profile",
+                        "strict",
+                        "--config-path",
+                        str(config_path),
+                        "--workflow-path",
+                        str(workflow_path),
+                    ]
+                )
+
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+            self.assertEqual(workflow_path.read_text(encoding="utf-8"), "existing workflow")
+
+    def test_init_repo_does_not_load_scoring_config(self) -> None:
+        with TemporaryDirectory() as tmp, patch(
+            "maintainer_radar.cli.load_config"
+        ) as load_config, patch("sys.stdout", new=StringIO()):
+            result = main(
+                [
+                    "init-repo",
+                    "--config-path",
+                    str(Path(tmp) / ".maintainer-radar.json"),
+                    "--workflow-path",
+                    str(Path(tmp) / ".github" / "workflows" / "maintainer-radar.yml"),
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        load_config.assert_not_called()
+
     def test_as_pr_list_accepts_common_shapes(self) -> None:
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])

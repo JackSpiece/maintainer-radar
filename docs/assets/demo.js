@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.19.0";
+  const ACTION_VERSION = "v0.20.0";
   const DEFAULT_SESSION_MINUTES = 60;
   const CODE_EXTENSIONS = [
     ".c",

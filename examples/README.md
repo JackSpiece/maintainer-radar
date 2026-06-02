@@ -13,6 +13,12 @@ Generate a fresh config profile with:
 maintainer-radar init-config --profile strict --path .maintainer-radar.json
 ```
 
+Generate both the config and scheduled workflow with:
+
+```bash
+maintainer-radar init-repo --profile balanced
+```
+
 ## GitHub Actions
 
 - `github-actions/daily-markdown-report.yml`: scheduled Markdown artifact

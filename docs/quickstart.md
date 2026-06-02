@@ -17,7 +17,17 @@ GitHub token, does not post comments, and does not install anything.
 
 ## First GitHub Action Run
 
-For a real maintainer queue report, add this workflow and run it manually:
+For a real maintainer queue report, generate the config and workflow:
+
+```bash
+maintainer-radar init-repo --profile balanced
+```
+
+This writes `.maintainer-radar.json` and
+`.github/workflows/maintainer-radar.yml`. It refuses to overwrite existing files
+unless you pass `--force`.
+
+Or add this workflow manually and run it from the Actions tab:
 
 {% raw %}
 ```yaml
@@ -37,7 +47,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: JackSpiece/maintainer-radar@v0.19.0
+      - uses: JackSpiece/maintainer-radar@v0.20.0
         id: radar
         env:
           GH_TOKEN: ${{ github.token }}

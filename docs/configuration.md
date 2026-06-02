@@ -15,6 +15,15 @@ maintainer-radar init-config --profile large-repo --path .maintainer-radar.json
 
 `init-config` refuses to overwrite an existing file unless you pass `--force`.
 
+If you also want the scheduled GitHub Actions workflow, use `init-repo`:
+
+```bash
+maintainer-radar init-repo --profile balanced
+```
+
+This writes both `.maintainer-radar.json` and
+`.github/workflows/maintainer-radar.yml`.
+
 ## Profiles
 
 | Profile | Best For | Behavior |
@@ -73,7 +82,13 @@ with:
 ```
 {% endraw %}
 
-Or generate that workflow locally:
+Generate both files locally:
+
+```bash
+maintainer-radar init-repo --profile balanced
+```
+
+Or keep config and workflow generation separate:
 
 ```bash
 maintainer-radar init-config --profile balanced --path .maintainer-radar.json

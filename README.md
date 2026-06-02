@@ -96,7 +96,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.19.0
+- uses: JackSpiece/maintainer-radar@v0.20.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -105,11 +105,15 @@ For most maintainers, the fastest path is the reusable GitHub Action:
     format: markdown
 ```
 
-Or generate a complete scheduled workflow:
+Or write both the config and scheduled workflow in one step:
 
 ```bash
-maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
+maintainer-radar init-repo --profile balanced
 ```
+
+This writes `.maintainer-radar.json` and
+`.github/workflows/maintainer-radar.yml`. It refuses to overwrite existing files
+unless you pass `--force`.
 
 This writes a workflow that scans the current repository's PR queue and uploads
 a Markdown triage artifact. The report also appears in the GitHub Actions run
@@ -306,6 +310,7 @@ maintainer-radar repo owner/repo --hydrate --sort action --format html > review-
 Bootstrap a repository workflow without copying YAML by hand:
 
 ```bash
+maintainer-radar init-repo --profile strict
 maintainer-radar init-action --report-format html --path .github/workflows/maintainer-radar.yml
 ```
 

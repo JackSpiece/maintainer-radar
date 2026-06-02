@@ -342,6 +342,19 @@ def _emit_recommendation(analyses: list[dict[str, Any]], fmt: str, repository: s
     print(render_recommendation_markdown(analyses, repository), end="")
 
 
+def _ensure_paths_writable(paths: list[Path], *, force: bool) -> None:
+    if force:
+        return
+    for path in paths:
+        if path.exists():
+            raise ValueError(f"{path} already exists; pass --force to overwrite")
+
+
+def _write_output_file(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="maintainer-radar",
@@ -626,6 +639,61 @@ def build_parser() -> argparse.ArgumentParser:
         help="Overwrite --path when it already exists.",
     )
 
+    init_repo = sub.add_parser(
+        "init-repo",
+        help="Write a tuned config and read-only GitHub Actions workflow.",
+    )
+    init_repo.add_argument(
+        "--profile",
+        choices=sorted(CONFIG_PROFILES),
+        default="balanced",
+        help="Config profile to write. Default: balanced.",
+    )
+    init_repo.add_argument(
+        "--config-path",
+        default=".maintainer-radar.json",
+        help="Config path to write and reference in the workflow.",
+    )
+    init_repo.add_argument(
+        "--workflow-path",
+        default=".github/workflows/maintainer-radar.yml",
+        help="Workflow path to write.",
+    )
+    init_repo.add_argument(
+        "--report-format",
+        choices=["markdown", "html", "json", "csv"],
+        default="markdown",
+        help="Report artifact format. Default: markdown.",
+    )
+    init_repo.add_argument(
+        "--schedule",
+        default="0 8 * * 1-5",
+        help='Cron schedule for the report. Default: "0 8 * * 1-5".',
+    )
+    init_repo.add_argument("--limit", type=int, default=50, help="Maximum PRs to scan.")
+    init_repo.add_argument("--sort", choices=SORT_CHOICES, default="action")
+    init_repo.add_argument(
+        "--group-by",
+        choices=["action"],
+        default="action",
+        help="Group Markdown and HTML reports by a field. Default: action.",
+    )
+    init_repo.add_argument(
+        "--no-hydrate",
+        action="store_true",
+        help="Skip full PR hydration for a faster but shallower workflow.",
+    )
+    init_repo.add_argument(
+        "--no-step-summary",
+        action="store_true",
+        help="Skip publishing a Markdown report or summary to the Actions run summary.",
+    )
+    init_repo.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite generated files when they already exist.",
+    )
+
     return parser
 
 
@@ -656,10 +724,8 @@ def main(argv: list[str] | None = None) -> int:
             )
             if args.path:
                 output_path = Path(args.path)
-                if output_path.exists() and not args.force:
-                    raise ValueError(f"{output_path} already exists; pass --force to overwrite")
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                output_path.write_text(workflow, encoding="utf-8")
+                _ensure_paths_writable([output_path], force=args.force)
+                _write_output_file(output_path, workflow)
                 print(f"Wrote {output_path}")
             else:
                 print(workflow, end="")
@@ -669,13 +735,32 @@ def main(argv: list[str] | None = None) -> int:
             rendered_config = render_config_profile(args.profile)
             if args.path:
                 output_path = Path(args.path)
-                if output_path.exists() and not args.force:
-                    raise ValueError(f"{output_path} already exists; pass --force to overwrite")
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                output_path.write_text(rendered_config, encoding="utf-8")
+                _ensure_paths_writable([output_path], force=args.force)
+                _write_output_file(output_path, rendered_config)
                 print(f"Wrote {output_path}")
             else:
                 print(rendered_config, end="")
+            return 0
+
+        if args.command == "init-repo":
+            config_path = Path(args.config_path)
+            workflow_path = Path(args.workflow_path)
+            _ensure_paths_writable([config_path, workflow_path], force=args.force)
+            rendered_config = render_config_profile(args.profile)
+            workflow = render_github_action_workflow(
+                report_format=args.report_format,
+                schedule=args.schedule,
+                limit=args.limit,
+                sort=args.sort,
+                hydrate=not args.no_hydrate,
+                group_by=args.group_by,
+                config=args.config_path,
+                step_summary=not args.no_step_summary,
+            )
+            _write_output_file(config_path, rendered_config)
+            _write_output_file(workflow_path, workflow)
+            print(f"Wrote {config_path}")
+            print(f"Wrote {workflow_path}")
             return 0
 
         config = load_config(getattr(args, "config", None))

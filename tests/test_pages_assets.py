@@ -13,7 +13,7 @@ class PagesAssetTests(unittest.TestCase):
         html = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
 
         self.assertIn("Try a public repo", html)
-        self.assertIn("maintainer-radar init-action", html)
+        self.assertIn("maintainer-radar init-repo --profile balanced", html)
         self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", html)
         self.assertIn("GitHub Action", html)
         self.assertIn('href="quickstart.html"', html)
@@ -79,11 +79,12 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Two Minute Quickstart", docs)
         self.assertIn("?repo=owner/repo", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.19.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
         self.assertIn("workflow_dispatch", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)
         self.assertIn("GH_TOKEN: ${{ github.token }}", docs)
+        self.assertIn("maintainer-radar init-repo --profile balanced", docs)
         self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", docs)
         self.assertIn("maintainer-radar init-config --profile strict", docs)
         self.assertIn("maintainer-radar init-config --profile large-repo", docs)
@@ -123,7 +124,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("steps.radar.outputs.attention-level != 'quiet'", docs)
         self.assertIn("steps.radar.outputs.attention-level == 'blocked'", docs)
         self.assertIn("stale-days", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.19.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_adoption_guide_has_copy_paste_workflows(self) -> None:
@@ -137,10 +138,11 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("to run\nnext", docs)
         self.assertIn("maintainer-radar init-config --profile strict", docs)
         self.assertIn("maintainer-radar init-config --profile large-repo", docs)
+        self.assertIn("maintainer-radar init-repo --profile balanced", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
         self.assertIn("Merge Readiness Watch", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.19.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("merge-conflicts", docs)
         self.assertIn("branch-behind", docs)
@@ -250,7 +252,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.19.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
@@ -287,11 +289,14 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("maintainer-radar init-config --profile balanced", docs)
         self.assertIn("maintainer-radar init-config --profile strict", docs)
         self.assertIn("maintainer-radar init-config --profile large-repo", docs)
+        self.assertIn("maintainer-radar init-repo --profile balanced", docs)
         self.assertIn("refuses to overwrite an existing file", docs)
         self.assertIn("Small teams or high-signal queues", docs)
         self.assertIn("High-volume repositories", docs)
         self.assertIn("maintainer-radar init-config --profile strict", examples)
         self.assertIn("maintainer-radar init-config --profile strict", readme)
+        self.assertIn("maintainer-radar init-repo --profile balanced", examples)
+        self.assertIn("maintainer-radar init-repo --profile balanced", readme)
 
     def test_review_plan_docs_explain_time_boxed_workflow(self) -> None:
         docs = (ROOT / "docs" / "review-plan.md").read_text(encoding="utf-8")

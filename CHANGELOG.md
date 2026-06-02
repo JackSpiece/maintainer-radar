@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.20.0
+
+- Added `maintainer-radar init-repo`, a one-command setup path that writes both
+  `.maintainer-radar.json` and a read-only scheduled GitHub Actions workflow.
+- `init-repo` references the generated config from the workflow, defaults to
+  grouped action-sorted reports, and refuses partial setup when either target
+  file already exists unless `--force` is passed.
+- Updated the homepage, README, quickstart, adoption, configuration, and
+  examples docs to make one-command setup the default path.
+
 ## 0.19.0
 
 - Added `maintainer-radar init-config`, which prints or writes a
