@@ -166,6 +166,8 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("queue-headline", docs)
         self.assertIn("attention-level", docs)
         self.assertIn("attention-reason", docs)
+        self.assertIn('echo "Attention: ${{ steps.radar.outputs.attention-level }}"', docs)
+        self.assertNotIn('echo "${{ steps.radar.outputs.attention-level }}:', docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)

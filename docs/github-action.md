@@ -103,9 +103,11 @@ Use summary outputs in later workflow steps:
 
 {% raw %}
 ```yaml
-- run: echo "${{ steps.radar.outputs.queue-headline }}"
-- run: echo "${{ steps.radar.outputs.attention-level }}: ${{ steps.radar.outputs.attention-reason }}"
-- run: echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
+- run: |
+    echo "${{ steps.radar.outputs.queue-headline }}"
+    echo "Attention: ${{ steps.radar.outputs.attention-level }}"
+    echo "${{ steps.radar.outputs.attention-reason }}"
+    echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
 {% endraw %}
 
