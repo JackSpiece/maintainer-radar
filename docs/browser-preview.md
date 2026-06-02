@@ -56,6 +56,11 @@ asks before copying Markdown.
 The summary metrics include PRs scanned, review-now count, follow-up count,
 Maintainer blocked count, and average score.
 
+The attention card above those metrics gives a one-line queue headline plus an
+attention level, such as `blocked`, `follow-up`, `triage`, `review`, or `quiet`.
+It mirrors the Action outputs so maintainers can decide whether a queue needs a
+human notification before reading the full table.
+
 Turn on **Group by action** to split the preview and copied Markdown into
 review-now, CI, author follow-up, and triage sections.
 

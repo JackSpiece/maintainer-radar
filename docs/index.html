@@ -284,6 +284,49 @@
       font-size: 12px;
     }
 
+    .attention-card {
+      border-bottom: 1px solid var(--line);
+      padding: 13px 16px;
+      background: #fbfcfe;
+    }
+
+    .attention-card[data-level="blocked"] {
+      border-left: 4px solid var(--red);
+    }
+
+    .attention-card[data-level="follow-up"],
+    .attention-card[data-level="triage"] {
+      border-left: 4px solid var(--amber);
+    }
+
+    .attention-card[data-level="review"] {
+      border-left: 4px solid var(--green);
+    }
+
+    .attention-card[data-level="quiet"] {
+      border-left: 4px solid var(--blue);
+    }
+
+    .attention-label {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      font-weight: 750;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .attention-card strong {
+      display: block;
+      line-height: 1.35;
+    }
+
+    .attention-card p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 4px 0 0;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -625,6 +668,11 @@
         <div class="status" id="demo-status" aria-live="polite">
           Sample output is shown below until you scan a public repository.
         </div>
+        <section class="attention-card" id="attention-card" data-level="blocked" aria-label="Queue attention">
+          <span class="attention-label" id="attention-level">blocked</span>
+          <strong id="attention-headline">2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.</strong>
+          <p id="attention-reason">1 PR has unresolved maintainer blocker.</p>
+        </section>
         <div class="metrics">
           <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
           <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>

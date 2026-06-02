@@ -183,8 +183,21 @@ assert.deepEqual(demo.summarizeItems([ready, risky, labelBlocked]), {
   total: 3,
   reviewNow: 1,
   followUp: 2,
+  authorFollowUp: 1,
+  ciBlocked: 1,
+  ciPending: 0,
+  mergeConflicts: 0,
+  branchBehind: 0,
+  mergeGated: 0,
+  reviewRequested: 0,
   maintainerBlocked: 1,
+  largeOrTriage: 0,
+  stale: 1,
   average: 66,
+  queueHeadline:
+    "3 PRs scanned: 1 ready for review; 1 needs author follow-up; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.",
+  attentionLevel: "blocked",
+  attentionReason: "1 PR has unresolved maintainer blocker.",
 });
 
 const pending = demo.summarizeCheckRuns([{ status: "IN_PROGRESS", conclusion: null }]);
@@ -319,6 +332,9 @@ assert.equal(planJson.demo_link, "https://jackspiece.github.io/maintainer-radar/
 assert.equal(planJson.budget_minutes, 30);
 assert.equal(planJson.planned_minutes, 17);
 assert.equal(planJson.queue_summary.total, 3);
+assert.equal(planJson.queue_summary.attention_level, "blocked");
+assert.equal(planJson.queue_summary.attention_reason, "1 PR has failing CI.");
+assert.ok(planJson.queue_summary.queue_headline.includes("2 blocked or waiting on CI"));
 assert.deepEqual(planJson.planned.map((entry) => entry.number), [42, 43]);
 assert.deepEqual(planJson.watch_only.map((entry) => entry.number), [45]);
 assert.equal(planJson.planned[0].estimated_minutes, 12);
@@ -334,6 +350,8 @@ const markdown = demo.renderMarkdownReport(
   "https://jackspiece.github.io/maintainer-radar/?repo=example%2Fproject"
 );
 assert.ok(markdown.includes("## Maintainer Radar Preview: example/project"));
+assert.ok(markdown.includes("Attention level: blocked"));
+assert.ok(markdown.includes("Attention reason: 1 PR has failing CI."));
 assert.ok(markdown.includes("- PRs scanned: 2"));
 assert.ok(markdown.includes("- Maintainer blocked: 0"));
 assert.ok(markdown.includes("| PR | Action | Next Step | Score | Risk Impact | Signals |"));

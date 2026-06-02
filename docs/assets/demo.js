@@ -477,6 +477,7 @@
       additions,
       deletions,
       changedFiles,
+      staleDays,
       mergeStateStatus: mergeState,
       mergeable,
       reviewRequests,
@@ -775,11 +776,192 @@
     const total = items.length;
     const reviewNow = items.filter((item) => item.action === "review now").length;
     const followUp = items.filter((item) => item.action !== "review now").length;
+    const authorFollowUp = items.filter((item) => item.action === "needs author follow-up").length;
+    const ciBlocked = items.filter((item) => hasFlag(item, "CI failing")).length;
+    const ciPending = items.filter((item) => hasFlag(item, "CI pending")).length;
+    const mergeConflicts = items.filter((item) => hasFlag(item, "merge conflicts")).length;
+    const branchBehind = items.filter((item) => hasFlag(item, "branch behind base")).length;
+    const mergeGated = items.filter(
+      (item) => hasFlag(item, "merge blocked by repo rules") || hasFlag(item, "merge checks unstable")
+    ).length;
+    const reviewRequested = items.filter((item) => intValue(item.reviewRequests) > 0).length;
     const maintainerBlocked = items.filter(isMaintainerBlocked).length;
+    const largeOrTriage = items.filter(
+      (item) => item.action === "request smaller PR" || item.action === "needs triage"
+    ).length;
+    const stale = items.filter((item) => intValue(item.staleDays) >= 7).length;
     const average = total
       ? Math.round(items.reduce((sum, item) => sum + item.reviewability, 0) / total)
       : 0;
-    return { total, reviewNow, followUp, maintainerBlocked, average };
+    const summary = {
+      total,
+      reviewNow,
+      followUp,
+      authorFollowUp,
+      ciBlocked,
+      ciPending,
+      mergeConflicts,
+      branchBehind,
+      mergeGated,
+      reviewRequested,
+      maintainerBlocked,
+      largeOrTriage,
+      stale,
+      average,
+    };
+    summary.queueHeadline = queueHeadline(summary);
+    const attention = attentionSignal(summary);
+    summary.attentionLevel = attention.level;
+    summary.attentionReason = attention.reason;
+    return summary;
+  }
+
+  function hasFlag(item, flag) {
+    return (item.flags || []).includes(flag);
+  }
+
+  function queueHeadline(summary) {
+    if (!summary.total) {
+      return "No pull requests matched this scan.";
+    }
+    const parts = [];
+    const ciTotal = summary.ciBlocked + summary.ciPending;
+    if (summary.reviewNow) {
+      parts.push(`${summary.reviewNow} ready for review`);
+    }
+    if (summary.authorFollowUp) {
+      parts.push(needsPhrase(summary.authorFollowUp, "author follow-up"));
+    }
+    if (ciTotal) {
+      parts.push(`${ciTotal} blocked or waiting on CI`);
+    }
+    if (summary.mergeConflicts) {
+      parts.push(
+        `${summary.mergeConflicts} with merge ${
+          summary.mergeConflicts === 1 ? "conflict" : "conflicts"
+        }`
+      );
+    }
+    if (summary.branchBehind) {
+      parts.push(`${summary.branchBehind} behind base`);
+    }
+    if (summary.mergeGated) {
+      parts.push(`${summary.mergeGated} blocked by merge gates`);
+    }
+    if (summary.maintainerBlocked) {
+      const verb = summary.maintainerBlocked === 1 ? "has" : "have";
+      const blocker = summary.maintainerBlocked === 1 ? "blocker" : "blockers";
+      parts.push(`${prCount(summary.maintainerBlocked)} ${verb} unresolved maintainer ${blocker}`);
+    }
+    if (!parts.length) {
+      parts.push("no urgent blocker signals");
+    }
+    return `${prCount(summary.total)} scanned: ${parts.join("; ")}.`;
+  }
+
+  function attentionSignal(summary) {
+    if (!summary.total) {
+      return { level: "quiet", reason: "No pull requests matched this scan." };
+    }
+    if (summary.maintainerBlocked) {
+      return {
+        level: "blocked",
+        reason: attentionReason(
+          summary.maintainerBlocked,
+          "has unresolved maintainer blocker",
+          "have unresolved maintainer blockers"
+        ),
+      };
+    }
+    if (summary.mergeConflicts) {
+      return {
+        level: "blocked",
+        reason: attentionReason(summary.mergeConflicts, "has merge conflicts", "have merge conflicts"),
+      };
+    }
+    if (summary.ciBlocked) {
+      return {
+        level: "blocked",
+        reason: attentionReason(summary.ciBlocked, "has failing CI", "have failing CI"),
+      };
+    }
+    if (summary.mergeGated) {
+      return {
+        level: "blocked",
+        reason: attentionReason(
+          summary.mergeGated,
+          "is blocked by repository merge gates",
+          "are blocked by repository merge gates"
+        ),
+      };
+    }
+    if (summary.authorFollowUp) {
+      return {
+        level: "follow-up",
+        reason: attentionReason(
+          summary.authorFollowUp,
+          "needs author follow-up",
+          "need author follow-up"
+        ),
+      };
+    }
+    if (summary.branchBehind) {
+      return {
+        level: "follow-up",
+        reason: attentionReason(summary.branchBehind, "is behind base", "are behind base"),
+      };
+    }
+    if (summary.ciPending) {
+      return {
+        level: "follow-up",
+        reason: attentionReason(summary.ciPending, "is waiting on CI", "are waiting on CI"),
+      };
+    }
+    if (summary.reviewNow) {
+      return {
+        level: "review",
+        reason: attentionReason(summary.reviewNow, "is ready for review", "are ready for review"),
+      };
+    }
+    if (summary.largeOrTriage) {
+      return {
+        level: "triage",
+        reason: attentionReason(
+          summary.largeOrTriage,
+          "needs triage or scope reduction",
+          "need triage or scope reduction"
+        ),
+      };
+    }
+    if (summary.stale) {
+      return {
+        level: "follow-up",
+        reason: attentionReason(summary.stale, "is stale", "are stale"),
+      };
+    }
+    if (summary.reviewRequested) {
+      return {
+        level: "review",
+        reason: attentionReason(
+          summary.reviewRequested,
+          "has requested reviewers",
+          "have requested reviewers"
+        ),
+      };
+    }
+    return { level: "quiet", reason: "No urgent maintainer attention signal was found." };
+  }
+
+  function prCount(count) {
+    return `${count} ${count === 1 ? "PR" : "PRs"}`;
+  }
+
+  function needsPhrase(count, noun) {
+    return `${count} ${count === 1 ? "needs" : "need"} ${noun}`;
+  }
+
+  function attentionReason(count, singular, plural) {
+    return `${prCount(count)} ${count === 1 ? singular : plural}.`;
   }
 
   function groupItemsByAction(items) {
@@ -824,6 +1006,10 @@
     const lines = [
       `## Maintainer Radar Preview: ${repository}`,
       "",
+      summary.queueHeadline,
+      "",
+      `- Attention level: ${summary.attentionLevel}`,
+      `- Attention reason: ${summary.attentionReason}`,
       `- PRs scanned: ${summary.total}`,
       `- Review now: ${summary.reviewNow}`,
       `- Follow-up: ${summary.followUp}`,
@@ -864,6 +1050,8 @@
       `- Planned PRs: ${plan.planned.length}`,
       `- Estimated active time: ${plan.plannedMinutes} minutes`,
       `- Left for interrupts: ${plan.remainingMinutes} minutes`,
+      `- Attention level: ${summary.attentionLevel}`,
+      `- Attention reason: ${summary.attentionReason}`,
       `- Queue scanned: ${summary.total} PRs`,
       `- Review now: ${summary.reviewNow}`,
       `- Maintainer blocked: ${summary.maintainerBlocked}`,
@@ -968,6 +1156,9 @@
           follow_up: summary.followUp,
           maintainer_blocked: summary.maintainerBlocked,
           average_score: summary.average,
+          queue_headline: summary.queueHeadline,
+          attention_level: summary.attentionLevel,
+          attention_reason: summary.attentionReason,
         },
         planned: plan.planned.map(reviewPlanJsonEntry),
         deferred: plan.deferred.map(reviewPlanJsonEntry),
@@ -1092,6 +1283,16 @@
     document.querySelector("#metric-followup").textContent = String(summary.followUp);
     document.querySelector("#metric-blocked").textContent = String(summary.maintainerBlocked);
     document.querySelector("#metric-score").textContent = String(summary.average);
+    const attentionCard = document.querySelector("#attention-card");
+    const attentionLevel = document.querySelector("#attention-level");
+    const attentionHeadline = document.querySelector("#attention-headline");
+    const attentionReason = document.querySelector("#attention-reason");
+    if (attentionCard && attentionLevel && attentionHeadline && attentionReason) {
+      attentionCard.dataset.level = summary.attentionLevel;
+      attentionLevel.textContent = summary.attentionLevel;
+      attentionHeadline.textContent = summary.queueHeadline;
+      attentionReason.textContent = summary.attentionReason;
+    }
 
     const body = document.querySelector("#queue-body");
     if (!body) {
