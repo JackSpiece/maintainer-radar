@@ -37,6 +37,7 @@ Example:
 - changes requested
 - stale update window
 - maintainer blocker language
+- maintainer blocking label
 - no test plan found for code changes
 - code changed without tests
 - generated or lockfile changes
@@ -56,6 +57,19 @@ Blocker detection intentionally looks for plain maintainer feedback patterns:
 
 This is not sentiment analysis. The goal is to catch comments that usually mean
 "do not spend full review time until the author follows up."
+
+## Maintainer Blocking Labels
+
+Label detection looks for labels that usually mean the PR is not ready for
+review:
+
+- blocked
+- do not merge
+- changes requested
+- needs tests
+- waiting on author
+
+These labels route the PR to author follow-up even when CI is green.
 
 ## Fixture Corpus
 

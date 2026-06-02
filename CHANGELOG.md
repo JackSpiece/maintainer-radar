@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.14
+
+- Added label-aware blocker scoring for labels like blocked, do not merge,
+  needs tests, changes requested, and waiting on author.
+- Mirrored the label-aware blocker rule in the browser preview.
+
 ## 0.16.13
 
 - Added a Copy CLI button to the public browser preview for copying the local

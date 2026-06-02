@@ -115,6 +115,34 @@ assert.ok(risky.flags.includes("no test plan found"));
 assert.ok(risky.flags.includes("code changed without tests"));
 assert.ok(demo.formatImpact(risky.scoreBreakdown).includes("very large diff (+30 risk)"));
 
+const labelBlocked = demo.analyzePullRequest(
+  {
+    number: 44,
+    title: "Add parser fast path",
+    html_url: "https://example.test/pull/44",
+    body: "Test plan: unit tests.",
+    updated_at: "2026-06-01T00:00:00Z",
+    additions: 60,
+    deletions: 12,
+    changed_files: 2,
+    draft: false,
+    labels: [{ name: "waiting-on-author" }],
+  },
+  [{ filename: "src/parser/fast_path.py" }, { filename: "tests/test_fast_path.py" }],
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [{ status: "COMPLETED", conclusion: "SUCCESS" }],
+  }
+);
+
+assert.equal(labelBlocked.action, "needs author follow-up");
+assert.equal(
+  labelBlocked.nextStep,
+  "Ask the author to respond to unresolved maintainer feedback."
+);
+assert.ok(labelBlocked.flags.includes("maintainer blocking label"));
+assert.equal(demo.hasBlockingLabel({ labels: ["documentation"] }), false);
+
 const pending = demo.summarizeCheckRuns([{ status: "IN_PROGRESS", conclusion: null }]);
 assert.deepEqual(pending, { passed: 0, failed: 0, pending: 1, skipped: 0, total: 1 });
 
@@ -146,7 +174,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.13"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.14"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

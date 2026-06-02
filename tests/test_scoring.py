@@ -118,6 +118,59 @@ class AnalyzePrTests(unittest.TestCase):
                 result = analyze_pr(pr, now=NOW)
                 self.assertIn("maintainer blocker language", result["flags"])
 
+    def test_blocking_label_needs_author_follow_up(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 46,
+                "title": "Add parser fast path",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 60,
+                "deletions": 12,
+                "changedFiles": 2,
+                "labels": [{"name": "waiting-on-author"}],
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/parser/fast_path.py"},
+                    {"path": "tests/test_fast_path.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "needs author follow-up")
+        self.assertIn("maintainer blocking label", result["flags"])
+        self.assertEqual(
+            result["next_step"],
+            "Ask the author to respond to unresolved maintainer feedback.",
+        )
+        self.assertIn(
+            {"label": "maintainer blocking label", "risk_delta": 18, "kind": "flag"},
+            result["score_breakdown"],
+        )
+
+    def test_ordinary_label_does_not_trigger_blocking_label(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 47,
+                "title": "Fix docs typo",
+                "body": "Validation: docs only.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 4,
+                "deletions": 1,
+                "changedFiles": 1,
+                "labels": ["documentation"],
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [{"path": "docs/usage.md"}],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "review now")
+        self.assertNotIn("maintainer blocking label", result["flags"])
+
     def test_configurable_thresholds_and_hints(self) -> None:
         result = analyze_pr(
             {

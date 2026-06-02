@@ -77,6 +77,16 @@ BLOCKER_RE = re.compile(
     re.IGNORECASE,
 )
 
+LABEL_BLOCKER_RE = re.compile(
+    r"\b("
+    r"blocked|blocker|do not merge|dnm|"
+    r"changes requested|needs? changes?|"
+    r"needs? tests?|missing tests?|"
+    r"waiting on author|needs? author|author action|author follow up"
+    r")\b",
+    re.IGNORECASE,
+)
+
 TEST_PLAN_RE = re.compile(
     r"\b(test plan|tests?|validation|verified|repro|manual test|ci)\b",
     re.IGNORECASE,
@@ -211,6 +221,14 @@ def _label_names(pr: dict[str, Any]) -> list[str]:
     return [name for name in result if name]
 
 
+def _normalize_label_name(value: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[-_:/]+", " ", value.lower())).strip()
+
+
+def _has_blocking_label(pr: dict[str, Any]) -> bool:
+    return any(LABEL_BLOCKER_RE.search(_normalize_label_name(name)) for name in _label_names(pr))
+
+
 def _record_score(
     breakdown: list[dict[str, Any]],
     label: str,
@@ -244,6 +262,7 @@ def analyze_pr(
     is_draft = bool(pr.get("isDraft") or pr.get("draft"))
     stale_days = days_since(pr.get("updatedAt"), now)
     has_blocker = _has_blocker(pr)
+    has_blocking_label = _has_blocking_label(pr)
     has_test_plan = _has_test_plan(pr)
     has_body = "body" in pr
 
@@ -311,6 +330,11 @@ def analyze_pr(
         flags.append("maintainer blocker language")
         _record_score(score_breakdown, "maintainer blocker language", 25, kind="flag")
 
+    if has_blocking_label:
+        risk += 18
+        flags.append("maintainer blocking label")
+        _record_score(score_breakdown, "maintainer blocking label", 18, kind="flag")
+
     if has_body and not has_test_plan and files.code_files:
         risk += 8
         flags.append("no test plan found")
@@ -344,6 +368,7 @@ def analyze_pr(
         is_draft=is_draft,
         checks=checks,
         has_blocker=has_blocker,
+        has_blocking_label=has_blocking_label,
         total_diff=total_diff,
         changed_files=changed_files,
         review_decision=review_decision,
@@ -384,6 +409,7 @@ def choose_action(
     is_draft: bool,
     checks: CheckSummary,
     has_blocker: bool,
+    has_blocking_label: bool,
     total_diff: int,
     changed_files: int,
     review_decision: str,
@@ -396,7 +422,7 @@ def choose_action(
         return "ask for CI fix"
     if checks.pending:
         return "wait for CI"
-    if review_decision == "CHANGES_REQUESTED" or has_blocker:
+    if review_decision == "CHANGES_REQUESTED" or has_blocker or has_blocking_label:
         return "needs author follow-up"
     if total_diff > config["very_large_diff_lines"] or changed_files > config["very_large_file_count"]:
         return "request smaller PR"
@@ -422,7 +448,7 @@ def recommend_next_step(
     if action == "wait for CI":
         return "Wait for checks to finish before spending review time."
     if action == "needs author follow-up":
-        if "maintainer blocker language" in flags:
+        if "maintainer blocker language" in flags or "maintainer blocking label" in flags:
             return "Ask the author to respond to unresolved maintainer feedback."
         return "Ask the author to address requested changes before another review pass."
     if action == "request smaller PR":

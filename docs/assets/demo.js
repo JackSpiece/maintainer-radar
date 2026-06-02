@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.13";
+  const ACTION_VERSION = "v0.16.14";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -43,6 +43,8 @@
     "generated",
   ];
   const TEST_PLAN_RE = /\b(test plan|tests?|validation|verified|repro|manual test|ci)\b/i;
+  const LABEL_BLOCKER_RE =
+    /\b(blocked|blocker|do not merge|dnm|changes requested|needs? changes?|needs? tests?|missing tests?|waiting on author|needs? author|author action|author follow up)\b/i;
 
   function normalizeRepository(value) {
     const cleaned = String(value || "")
@@ -171,6 +173,30 @@
     };
   }
 
+  function labelNames(pr) {
+    const labels = pr && Array.isArray(pr.labels) ? pr.labels : [];
+    return labels
+      .map((label) => {
+        if (typeof label === "string") {
+          return label;
+        }
+        return String((label && label.name) || "");
+      })
+      .filter(Boolean);
+  }
+
+  function normalizeLabelName(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[-_:/]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function hasBlockingLabel(pr) {
+    return labelNames(pr).some((label) => LABEL_BLOCKER_RE.test(normalizeLabelName(label)));
+  }
+
   function daysSince(value, now = new Date()) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -210,6 +236,7 @@
     const hasTestPlan = TEST_PLAN_RE.test(String(pr.body || ""));
     const isDraft = Boolean(pr.draft);
     const hasCheckData = Array.isArray(options.checkRuns);
+    const hasLabelBlocker = hasBlockingLabel(pr);
 
     let risk = 0;
     const signals = [];
@@ -274,6 +301,12 @@
       signals.push("test plan present");
     }
 
+    if (hasLabelBlocker) {
+      risk += 18;
+      flags.push("maintainer blocking label");
+      addImpact(scoreBreakdown, "maintainer blocking label", 18, "flag");
+    }
+
     if (fileSummary.codeFiles && !fileSummary.testFiles) {
       risk += 10;
       flags.push("code changed without tests");
@@ -303,6 +336,7 @@
       isDraft,
       checks: checkSummary,
       hasCheckData,
+      hasLabelBlocker,
       totalDiff,
       changedFiles,
     });
@@ -322,7 +356,15 @@
     };
   }
 
-  function chooseAction({ reviewability, isDraft, checks, hasCheckData, totalDiff, changedFiles }) {
+  function chooseAction({
+    reviewability,
+    isDraft,
+    checks,
+    hasCheckData,
+    hasLabelBlocker,
+    totalDiff,
+    changedFiles,
+  }) {
     if (isDraft) {
       return "wait for author";
     }
@@ -331,6 +373,9 @@
     }
     if (hasCheckData && checks && checks.pending) {
       return "wait for CI";
+    }
+    if (hasLabelBlocker) {
+      return "needs author follow-up";
     }
     if (totalDiff > 1500 || changedFiles > 25) {
       return "request smaller PR";
@@ -355,7 +400,7 @@
       return "Wait for checks to finish before spending review time.";
     }
     if (action === "needs author follow-up") {
-      if (flags.includes("maintainer blocker language")) {
+      if (flags.includes("maintainer blocker language") || flags.includes("maintainer blocking label")) {
         return "Ask the author to respond to unresolved maintainer feedback.";
       }
       return "Ask the author to address requested changes before another review pass.";
@@ -831,6 +876,8 @@
     formatImpact,
     groupByActionFromSearch,
     groupItemsByAction,
+    hasBlockingLabel,
+    labelNames,
     normalizeRepository,
     recommendNextStep,
     renderBadgeMarkdown,
