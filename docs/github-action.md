@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.7
+        uses: JackSpiece/maintainer-radar@v0.16.8
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -71,6 +71,21 @@ jobs:
 | Output | Description |
 | --- | --- |
 | `report-path` | Path to the generated report file. Use it with `actions/upload-artifact`. |
+| `summary-json` | JSON summary for the generated report. |
+| `total` | Number of pull requests in the report after filters. |
+| `review-now` | Number of pull requests ready for review. |
+| `author-follow-up` | Number of pull requests needing author follow-up. |
+| `ci-blocked` | Number of pull requests with failing CI. |
+| `ci-pending` | Number of pull requests waiting for CI. |
+| `large-or-triage` | Number of pull requests that are too large or need triage. |
+| `stale` | Number of pull requests quiet for 7 or more days. |
+| `average-score` | Average reviewability score for the report. |
+
+Use summary outputs in later workflow steps:
+
+```yaml
+- run: echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
+```
 
 ## Report Formats
 

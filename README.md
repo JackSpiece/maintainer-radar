@@ -63,7 +63,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.7
+- uses: JackSpiece/maintainer-radar@v0.16.8
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -81,7 +81,9 @@ maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
 This writes a workflow that scans the current repository's PR queue and uploads
 a Markdown triage artifact. The report also appears in the GitHub Actions run
 summary, so maintainers do not have to download the artifact just to read the
-queue. It refuses to overwrite an existing file unless you pass `--force`.
+queue. The Action also exposes summary outputs such as `review-now`,
+`ci-blocked`, and `average-score` for later workflow steps. It refuses to
+overwrite an existing file unless you pass `--force`.
 
 If your project uses custom thresholds, include them in the generated workflow:
 

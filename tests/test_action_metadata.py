@@ -23,7 +23,10 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("config:", action)
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
+        self.assertIn("summary-json:", action)
+        self.assertIn("average-score:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.average-score }}", action)
 
     def test_action_installs_local_package_and_uses_read_only_cli(self) -> None:
         action = (ROOT / "action.yml").read_text(encoding="utf-8")
@@ -38,6 +41,9 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('summary_command+=(--label "$INPUT_LABEL")', action)
         self.assertIn('summary_command+=(--action "$INPUT_ACTION")', action)
         self.assertIn('summary_command+=(--min-score "$INPUT_MIN_SCORE")', action)
+        self.assertIn('summary_json="$("${summary_command[@]}" --format json)"', action)
+        self.assertIn('summary-json<<MAINTAINER_RADAR_SUMMARY', action)
+        self.assertIn('"average-score": "average_score"', action)
         self.assertIn('--summary-only', action)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', action)
         self.assertNotIn("gh pr comment", action)
@@ -74,6 +80,8 @@ class ActionMetadataTests(unittest.TestCase):
             "hydrate",
             "step-summary",
             "report-path",
+            "summary-json",
+            "average-score",
         ]:
             with self.subTest(name=name):
                 self.assertIn(f"`{name}`", docs)

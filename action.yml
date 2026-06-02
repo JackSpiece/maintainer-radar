@@ -74,6 +74,33 @@ outputs:
   report-path:
     description: Path to the generated report file.
     value: ${{ steps.build.outputs.report-path }}
+  summary-json:
+    description: JSON summary for the generated report.
+    value: ${{ steps.build.outputs.summary-json }}
+  total:
+    description: Number of pull requests in the report after filters.
+    value: ${{ steps.build.outputs.total }}
+  review-now:
+    description: Number of pull requests ready for review.
+    value: ${{ steps.build.outputs.review-now }}
+  author-follow-up:
+    description: Number of pull requests needing author follow-up.
+    value: ${{ steps.build.outputs.author-follow-up }}
+  ci-blocked:
+    description: Number of pull requests with failing CI.
+    value: ${{ steps.build.outputs.ci-blocked }}
+  ci-pending:
+    description: Number of pull requests waiting for CI.
+    value: ${{ steps.build.outputs.ci-pending }}
+  large-or-triage:
+    description: Number of pull requests that are too large or need triage.
+    value: ${{ steps.build.outputs.large-or-triage }}
+  stale:
+    description: Number of pull requests quiet for 7 or more days.
+    value: ${{ steps.build.outputs.stale }}
+  average-score:
+    description: Average reviewability score for the report.
+    value: ${{ steps.build.outputs.average-score }}
 
 runs:
   using: composite
@@ -166,42 +193,88 @@ runs:
           "${command[@]}" > "$output"
         fi
 
+        summary_command=(
+          maintainer-radar repo "$repository"
+          --limit "$INPUT_LIMIT"
+          --sort "$INPUT_SORT"
+          --summary-only
+        )
+        if [ "$INPUT_HYDRATE" = "true" ]; then
+          summary_command+=(--hydrate)
+        fi
+        if [ -n "$INPUT_TOP" ]; then
+          summary_command+=(--top "$INPUT_TOP")
+        fi
+        if [ -n "$INPUT_CONFIG" ]; then
+          summary_command+=(--config "$INPUT_CONFIG")
+        fi
+        if [ -n "$INPUT_LABEL" ]; then
+          summary_command+=(--label "$INPUT_LABEL")
+        fi
+        if [ -n "$INPUT_AUTHOR" ]; then
+          summary_command+=(--author "$INPUT_AUTHOR")
+        fi
+        if [ -n "$INPUT_STALE_DAYS" ]; then
+          summary_command+=(--stale-days "$INPUT_STALE_DAYS")
+        fi
+        if [ -n "$INPUT_UPDATED_SINCE" ]; then
+          summary_command+=(--updated-since "$INPUT_UPDATED_SINCE")
+        fi
+        if [ -n "$INPUT_ACTION" ]; then
+          summary_command+=(--action "$INPUT_ACTION")
+        fi
+        if [ -n "$INPUT_MIN_SCORE" ]; then
+          summary_command+=(--min-score "$INPUT_MIN_SCORE")
+        fi
+        if [ -n "$INPUT_MAX_RISK" ]; then
+          summary_command+=(--max-risk "$INPUT_MAX_RISK")
+        fi
+
+        summary_json="$("${summary_command[@]}" --format json)"
+        {
+          echo "summary-json<<MAINTAINER_RADAR_SUMMARY"
+          printf '%s\n' "$summary_json"
+          echo "MAINTAINER_RADAR_SUMMARY"
+        } >> "$GITHUB_OUTPUT"
+
+        SUMMARY_JSON="$summary_json" python - <<'PY' >> "$GITHUB_OUTPUT"
+        import json
+        import os
+
+        summary = json.loads(os.environ["SUMMARY_JSON"])
+        outputs = {
+            "total": "total",
+            "review-now": "review_now",
+            "author-follow-up": "author_follow_up",
+            "ci-blocked": "ci_blocked",
+            "ci-pending": "ci_pending",
+            "large-or-triage": "large_or_triage",
+            "stale": "stale",
+            "average-score": "average_score",
+        }
+        for output_name, summary_key in outputs.items():
+            print(f"{output_name}={int(summary.get(summary_key) or 0)}")
+        PY
+
         if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ]; then
-          summary_command=(
-            maintainer-radar repo "$repository"
-            --limit "$INPUT_LIMIT"
-            --sort "$INPUT_SORT"
-            --summary-only
-          )
-          if [ "$INPUT_HYDRATE" = "true" ]; then
-            summary_command+=(--hydrate)
-          fi
-          if [ -n "$INPUT_TOP" ]; then
-            summary_command+=(--top "$INPUT_TOP")
-          fi
-          if [ -n "$INPUT_CONFIG" ]; then
-            summary_command+=(--config "$INPUT_CONFIG")
-          fi
-          if [ -n "$INPUT_LABEL" ]; then
-            summary_command+=(--label "$INPUT_LABEL")
-          fi
-          if [ -n "$INPUT_AUTHOR" ]; then
-            summary_command+=(--author "$INPUT_AUTHOR")
-          fi
-          if [ -n "$INPUT_STALE_DAYS" ]; then
-            summary_command+=(--stale-days "$INPUT_STALE_DAYS")
-          fi
-          if [ -n "$INPUT_UPDATED_SINCE" ]; then
-            summary_command+=(--updated-since "$INPUT_UPDATED_SINCE")
-          fi
-          if [ -n "$INPUT_ACTION" ]; then
-            summary_command+=(--action "$INPUT_ACTION")
-          fi
-          if [ -n "$INPUT_MIN_SCORE" ]; then
-            summary_command+=(--min-score "$INPUT_MIN_SCORE")
-          fi
-          if [ -n "$INPUT_MAX_RISK" ]; then
-            summary_command+=(--max-risk "$INPUT_MAX_RISK")
-          fi
-          "${summary_command[@]}" >> "$GITHUB_STEP_SUMMARY" || true
+          SUMMARY_JSON="$summary_json" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json
+        import os
+
+        summary = json.loads(os.environ["SUMMARY_JSON"])
+        ci_total = int(summary.get("ci_blocked") or 0) + int(summary.get("ci_pending") or 0)
+        lines = [
+            "## Maintainer Radar Summary",
+            "",
+            f"- PRs scanned: {int(summary.get('total') or 0)}",
+            f"- Review now: {int(summary.get('review_now') or 0)}",
+            f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",
+            f"- CI blocked or pending: {ci_total}",
+            f"- Large or needs triage: {int(summary.get('large_or_triage') or 0)}",
+            f"- Stale 7+ days: {int(summary.get('stale') or 0)}",
+            f"- Average reviewability: {int(summary.get('average_score') or 0)}/100",
+            "",
+        ]
+        print("\n".join(lines))
+        PY
         fi

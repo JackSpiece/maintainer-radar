@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.7
+- uses: JackSpiece/maintainer-radar@v0.16.8
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -56,6 +56,9 @@ summary so the first read does not require downloading an artifact. Use
 `--no-step-summary` with `init-action`, or `step-summary: "false"` in direct
 action usage, if you only want uploaded artifacts.
 
+The reusable Action also exposes summary outputs such as `review-now`,
+`ci-blocked`, `stale`, and `average-score` for later workflow steps.
+
 Copy-paste examples are available in:
 
 - [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)
@@ -85,7 +88,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.7
+        uses: JackSpiece/maintainer-radar@v0.16.8
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -108,7 +111,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.7
+  uses: JackSpiece/maintainer-radar@v0.16.8
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -133,7 +136,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.7
+  uses: JackSpiece/maintainer-radar@v0.16.8
   env:
     GH_TOKEN: ${{ github.token }}
   with:

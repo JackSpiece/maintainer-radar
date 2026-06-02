@@ -54,3 +54,6 @@ jobs:
         run: |
           test -s "${{ steps.radar.outputs.report-path }}"
           grep -q "Maintainer Radar" "${{ steps.radar.outputs.report-path }}"
+          test -n "${{ steps.radar.outputs.total }}"
+          test -n "${{ steps.radar.outputs.average-score }}"
+          test -n "${{ steps.radar.outputs.summary-json }}"

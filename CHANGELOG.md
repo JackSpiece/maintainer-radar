@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.8
+
+- Added structured summary outputs to the reusable GitHub Action, including total, review-now, author-follow-up, CI, stale, and average-score counts.
+- Updated Action docs and CI smoke coverage so workflows can consume report metrics without parsing artifacts.
+
 ## 0.16.7
 
 - Added focused report filters to the reusable GitHub Action: label, author, stale-days, updated-since, action, min-score, and max-risk.
