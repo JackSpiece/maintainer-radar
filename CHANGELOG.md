@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.7
+
+- Added focused report filters to the reusable GitHub Action: label, author, stale-days, updated-since, action, min-score, and max-risk.
+- Added matching `init-action` filter flags, focused Action docs, and a review-ready scheduled workflow example.
+
 ## 0.16.6
 
 - Added deterministic `next_step` guidance to PR analyses so reports translate each action into a concrete maintainer move.

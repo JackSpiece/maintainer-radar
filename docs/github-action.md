@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.6
+        uses: JackSpiece/maintainer-radar@v0.16.7
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -53,6 +53,13 @@ jobs:
 | `format` | `markdown` | Report format: `markdown`, `html`, `json`, or `csv`. |
 | `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`. |
 | `limit` | `50` | Maximum pull requests to scan. |
+| `label` | empty | Only include pull requests with this label. |
+| `author` | empty | Only include pull requests by this author. |
+| `stale-days` | empty | Only include pull requests quiet for at least N days. |
+| `updated-since` | empty | Only include pull requests updated on or after this ISO date. |
+| `action` | empty | Only include pull requests with this action slug, such as `review-now`. |
+| `min-score` | empty | Only include pull requests with reviewability greater than or equal to N. |
+| `max-risk` | empty | Only include pull requests with risk less than or equal to N. |
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
@@ -86,6 +93,28 @@ with:
   step-summary: "false"
 ```
 
+## Focused Reports
+
+Use filters when a scheduled report should answer one review-session question
+instead of listing the whole queue:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  action: review-now
+  min-score: "80"
+  top: "10"
+```
+
+For stale follow-up sweeps:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  stale-days: "14"
+  sort: stale
+```
+
 ## Project Config
 
 Use the `config` input when a repository has custom size, stale, test path, doc
@@ -105,6 +134,7 @@ by hand:
 ```bash
 maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
 maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
+maintainer-radar init-action --action review-now --min-score 80 --top 10 --path .github/workflows/review-ready.yml
 ```
 
 ## Permissions

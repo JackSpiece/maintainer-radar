@@ -11,11 +11,14 @@ This directory contains sample inputs and copy-paste workflow examples.
 
 - `github-actions/daily-markdown-report.yml`: scheduled Markdown artifact
 - `github-actions/daily-html-report.yml`: scheduled HTML artifact
+- `github-actions/review-ready-report.yml`: focused scheduled report for high-score PRs
 
 Copy one workflow into `.github/workflows/` in a repository that uses GitHub pull
 requests, then run it manually from the Actions tab or wait for the schedule.
 The examples use the reusable `JackSpiece/maintainer-radar` GitHub Action and
-upload the generated report path exposed by the action.
+upload the generated report path exposed by the action. The review-ready example
+uses the Action filters to keep only `review-now` PRs with a score of at least
+80.
 
 ## Generated Output
 

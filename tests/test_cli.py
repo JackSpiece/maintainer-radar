@@ -128,6 +128,20 @@ class CliTests(unittest.TestCase):
                 "risk",
                 "--top",
                 "10",
+                "--label",
+                "bug",
+                "--author",
+                "alice",
+                "--stale-days",
+                "14",
+                "--updated-since",
+                "2026-06-01",
+                "--action",
+                "review-now",
+                "--min-score",
+                "80",
+                "--max-risk",
+                "20",
                 "--config",
                 ".maintainer-radar.json",
                 "--no-hydrate",
@@ -144,6 +158,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.limit, 25)
         self.assertEqual(args.sort, "risk")
         self.assertEqual(args.top, 10)
+        self.assertEqual(args.label, "bug")
+        self.assertEqual(args.author, "alice")
+        self.assertEqual(args.stale_days, 14)
+        self.assertEqual(args.updated_since, "2026-06-01")
+        self.assertEqual(args.action, "review-now")
+        self.assertEqual(args.min_score, 80)
+        self.assertEqual(args.max_risk, 20)
         self.assertEqual(args.config, ".maintainer-radar.json")
         self.assertTrue(args.no_hydrate)
         self.assertTrue(args.no_step_summary)
@@ -161,6 +182,10 @@ class CliTests(unittest.TestCase):
                         "html",
                         "--config",
                         ".maintainer-radar.json",
+                        "--action",
+                        "review-now",
+                        "--min-score",
+                        "80",
                         "--path",
                         str(path),
                     ]
@@ -175,6 +200,10 @@ class CliTests(unittest.TestCase):
                         "html",
                         "--config",
                         ".maintainer-radar.json",
+                        "--action",
+                        "review-now",
+                        "--min-score",
+                        "80",
                         "--path",
                         str(path),
                         "--force",
@@ -189,6 +218,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("pull-requests: read", output)
         self.assertIn("uses: JackSpiece/maintainer-radar@", output)
         self.assertIn("format: html", output)
+        self.assertIn('action: "review-now"', output)
+        self.assertIn('min-score: "80"', output)
         self.assertIn('config: ".maintainer-radar.json"', output)
         self.assertIn("maintainer-radar.html", output)
 

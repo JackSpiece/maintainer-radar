@@ -17,6 +17,9 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("using: composite", action)
         self.assertIn("repository:", action)
         self.assertIn("format:", action)
+        self.assertIn("label:", action)
+        self.assertIn("stale-days:", action)
+        self.assertIn("min-score:", action)
         self.assertIn("config:", action)
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
@@ -29,6 +32,12 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('maintainer-radar repo "$repository"', action)
         self.assertIn('command+=(--config "$INPUT_CONFIG")', action)
         self.assertIn('summary_command+=(--config "$INPUT_CONFIG")', action)
+        self.assertIn('command+=(--label "$INPUT_LABEL")', action)
+        self.assertIn('command+=(--action "$INPUT_ACTION")', action)
+        self.assertIn('command+=(--min-score "$INPUT_MIN_SCORE")', action)
+        self.assertIn('summary_command+=(--label "$INPUT_LABEL")', action)
+        self.assertIn('summary_command+=(--action "$INPUT_ACTION")', action)
+        self.assertIn('summary_command+=(--min-score "$INPUT_MIN_SCORE")', action)
         self.assertIn('--summary-only', action)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', action)
         self.assertNotIn("gh pr comment", action)
@@ -52,6 +61,13 @@ class ActionMetadataTests(unittest.TestCase):
             "format",
             "output",
             "limit",
+            "label",
+            "author",
+            "stale-days",
+            "updated-since",
+            "action",
+            "min-score",
+            "max-risk",
             "sort",
             "top",
             "config",

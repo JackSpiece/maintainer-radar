@@ -47,6 +47,8 @@ jobs:
           format: markdown
           output: maintainer-radar.md
           limit: "5"
+          action: review-now
+          min-score: "80"
           hydrate: "false"
       - name: Check action output
         run: |

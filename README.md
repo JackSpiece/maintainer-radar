@@ -63,7 +63,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.6
+- uses: JackSpiece/maintainer-radar@v0.16.7
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -87,6 +87,12 @@ If your project uses custom thresholds, include them in the generated workflow:
 
 ```bash
 maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
+```
+
+For a smaller scheduled report, generate a focused review-ready workflow:
+
+```bash
+maintainer-radar init-action --action review-now --min-score 80 --top 10 --path .github/workflows/review-ready.yml
 ```
 
 For local CLI use, install directly from GitHub:

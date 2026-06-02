@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.6
+- uses: JackSpiece/maintainer-radar@v0.16.7
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -36,6 +36,16 @@ maintainer-radar init-action \
   --path .github/workflows/maintainer-radar.yml
 ```
 
+For a focused review-ready report:
+
+```bash
+maintainer-radar init-action \
+  --action review-now \
+  --min-score 80 \
+  --top 10 \
+  --path .github/workflows/review-ready.yml
+```
+
 The command prints YAML to stdout when `--path` is omitted. When `--path` is
 provided, it creates parent directories and refuses to overwrite an existing
 workflow unless `--force` is passed.
@@ -50,6 +60,7 @@ Copy-paste examples are available in:
 
 - [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)
 - [examples/github-actions/daily-html-report.yml](../examples/github-actions/daily-html-report.yml)
+- [examples/github-actions/review-ready-report.yml](../examples/github-actions/review-ready-report.yml)
 
 ## Scheduled Queue Report
 
@@ -74,7 +85,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.6
+        uses: JackSpiece/maintainer-radar@v0.16.7
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -90,6 +101,31 @@ jobs:
           path: ${{ steps.radar.outputs.report-path }}
 ```
 
+## Focused Review-Ready Report
+
+For a smaller scheduled report that only shows PRs ready for maintainer review:
+
+```yaml
+- name: Build review-ready report
+  id: radar
+  uses: JackSpiece/maintainer-radar@v0.16.7
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: markdown
+    output: review-ready.md
+    action: review-now
+    min-score: "80"
+    top: "10"
+    sort: score
+    hydrate: "true"
+- uses: actions/upload-artifact@v4
+  with:
+    name: review-ready
+    path: ${{ steps.radar.outputs.report-path }}
+```
+
 ## HTML Artifact
 
 For a static browser-friendly report:
@@ -97,7 +133,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.6
+  uses: JackSpiece/maintainer-radar@v0.16.7
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -122,15 +158,6 @@ For a compact status artifact:
   env:
     GH_TOKEN: ${{ github.token }}
   run: maintainer-radar repo ${{ github.repository }} --limit 100 --summary-only > maintainer-radar-summary.md
-```
-
-For a review-ready queue artifact:
-
-```yaml
-- name: Build review-ready report
-  env:
-    GH_TOKEN: ${{ github.token }}
-  run: maintainer-radar repo ${{ github.repository }} --action review-now --min-score 80 > review-ready.md
 ```
 
 ## Notes

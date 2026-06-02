@@ -1,4 +1,4 @@
-name: Maintainer Radar HTML Report
+name: Maintainer Radar Review-Ready Report
 
 on:
   workflow_dispatch:
@@ -16,20 +16,23 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Build HTML report
+      - name: Build review-ready report
         id: radar
         uses: JackSpiece/maintainer-radar@v0.16.7
         env:
           GH_TOKEN: ${{ github.token }}
         with:
           repository: ${{ github.repository }}
-          format: html
-          output: maintainer-radar.html
+          format: markdown
+          output: review-ready.md
           limit: "50"
-          sort: action
+          action: review-now
+          min-score: "80"
+          top: "10"
+          sort: score
           hydrate: "true"
           step-summary: "true"
       - uses: actions/upload-artifact@v4
         with:
-          name: maintainer-radar-html
+          name: review-ready
           path: ${{ steps.radar.outputs.report-path }}

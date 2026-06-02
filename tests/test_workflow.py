@@ -31,6 +31,13 @@ class WorkflowTests(unittest.TestCase):
             sort="risk",
             hydrate=False,
             top=10,
+            label="bug",
+            author="alice",
+            stale_days=14,
+            updated_since="2026-06-01",
+            action_filter="review-now",
+            min_score=80,
+            max_risk=20,
             config=".maintainer-radar.json",
         )
 
@@ -38,6 +45,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('limit: "25"', output)
         self.assertIn('hydrate: "false"', output)
         self.assertIn("sort: risk", output)
+        self.assertIn('label: "bug"', output)
+        self.assertIn('author: "alice"', output)
+        self.assertIn('stale-days: "14"', output)
+        self.assertIn('updated-since: "2026-06-01"', output)
+        self.assertIn('action: "review-now"', output)
+        self.assertIn('min-score: "80"', output)
+        self.assertIn('max-risk: "20"', output)
         self.assertIn('top: "10"', output)
         self.assertIn('config: ".maintainer-radar.json"', output)
         self.assertIn("format: html", output)
@@ -56,6 +70,16 @@ class WorkflowTests(unittest.TestCase):
             render_github_action_workflow(limit=0)
         with self.assertRaises(ValueError):
             render_github_action_workflow(top=0)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(stale_days=0)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(min_score=-1)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(max_risk=-1)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(action_filter="review now")
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(label="bug\nname: injected")
         with self.assertRaises(ValueError):
             render_github_action_workflow(config="config.json\nname: injected")
         with self.assertRaises(ValueError):

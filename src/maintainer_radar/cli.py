@@ -407,6 +407,32 @@ def build_parser() -> argparse.ArgumentParser:
     init_action.add_argument("--limit", type=int, default=50, help="Maximum PRs to scan.")
     init_action.add_argument("--sort", choices=SORT_CHOICES, default="action")
     init_action.add_argument("--top", type=int, help="Only include the first N PRs after sorting.")
+    init_action.add_argument("--label", help="Only include PRs with this label in the workflow.")
+    init_action.add_argument("--author", help="Only include PRs by this author in the workflow.")
+    init_action.add_argument(
+        "--stale-days",
+        type=int,
+        help="Only include PRs quiet for at least N days in the workflow.",
+    )
+    init_action.add_argument(
+        "--updated-since",
+        help="Only include PRs updated on or after this ISO date in the workflow.",
+    )
+    init_action.add_argument(
+        "--action",
+        choices=sorted(ACTION_SLUGS),
+        help="Only include PRs with this recommended action in the workflow.",
+    )
+    init_action.add_argument(
+        "--min-score",
+        type=int,
+        help="Only include PRs with reviewability >= N in the workflow.",
+    )
+    init_action.add_argument(
+        "--max-risk",
+        type=int,
+        help="Only include PRs with risk <= N in the workflow.",
+    )
     init_action.add_argument(
         "--config",
         help="Add a config JSON path to the generated workflow.",
@@ -447,6 +473,13 @@ def main(argv: list[str] | None = None) -> int:
                 sort=args.sort,
                 hydrate=not args.no_hydrate,
                 top=args.top,
+                label=args.label,
+                author=args.author,
+                stale_days=args.stale_days,
+                updated_since=args.updated_since,
+                action_filter=args.action,
+                min_score=args.min_score,
+                max_risk=args.max_risk,
                 config=args.config,
                 step_summary=not args.no_step_summary,
             )

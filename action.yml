@@ -21,6 +21,34 @@ inputs:
     description: Maximum pull requests to scan.
     required: false
     default: "50"
+  label:
+    description: Only include pull requests with this label.
+    required: false
+    default: ""
+  author:
+    description: Only include pull requests by this author.
+    required: false
+    default: ""
+  stale-days:
+    description: Only include pull requests quiet for at least N days.
+    required: false
+    default: ""
+  updated-since:
+    description: Only include pull requests updated on or after this ISO date.
+    required: false
+    default: ""
+  action:
+    description: Only include pull requests with this recommended action slug.
+    required: false
+    default: ""
+  min-score:
+    description: Only include pull requests with reviewability greater than or equal to N.
+    required: false
+    default: ""
+  max-risk:
+    description: Only include pull requests with risk less than or equal to N.
+    required: false
+    default: ""
   sort:
     description: Sort order for queue output.
     required: false
@@ -61,6 +89,13 @@ runs:
         INPUT_FORMAT: ${{ inputs.format }}
         INPUT_OUTPUT: ${{ inputs.output }}
         INPUT_LIMIT: ${{ inputs.limit }}
+        INPUT_LABEL: ${{ inputs.label }}
+        INPUT_AUTHOR: ${{ inputs.author }}
+        INPUT_STALE_DAYS: ${{ inputs.stale-days }}
+        INPUT_UPDATED_SINCE: ${{ inputs.updated-since }}
+        INPUT_ACTION: ${{ inputs.action }}
+        INPUT_MIN_SCORE: ${{ inputs.min-score }}
+        INPUT_MAX_RISK: ${{ inputs.max-risk }}
         INPUT_SORT: ${{ inputs.sort }}
         INPUT_TOP: ${{ inputs.top }}
         INPUT_CONFIG: ${{ inputs.config }}
@@ -103,6 +138,27 @@ runs:
         if [ -n "$INPUT_CONFIG" ]; then
           command+=(--config "$INPUT_CONFIG")
         fi
+        if [ -n "$INPUT_LABEL" ]; then
+          command+=(--label "$INPUT_LABEL")
+        fi
+        if [ -n "$INPUT_AUTHOR" ]; then
+          command+=(--author "$INPUT_AUTHOR")
+        fi
+        if [ -n "$INPUT_STALE_DAYS" ]; then
+          command+=(--stale-days "$INPUT_STALE_DAYS")
+        fi
+        if [ -n "$INPUT_UPDATED_SINCE" ]; then
+          command+=(--updated-since "$INPUT_UPDATED_SINCE")
+        fi
+        if [ -n "$INPUT_ACTION" ]; then
+          command+=(--action "$INPUT_ACTION")
+        fi
+        if [ -n "$INPUT_MIN_SCORE" ]; then
+          command+=(--min-score "$INPUT_MIN_SCORE")
+        fi
+        if [ -n "$INPUT_MAX_RISK" ]; then
+          command+=(--max-risk "$INPUT_MAX_RISK")
+        fi
 
         if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" = "markdown" ]; then
           "${command[@]}" | tee "$output" >> "$GITHUB_STEP_SUMMARY"
@@ -125,6 +181,27 @@ runs:
           fi
           if [ -n "$INPUT_CONFIG" ]; then
             summary_command+=(--config "$INPUT_CONFIG")
+          fi
+          if [ -n "$INPUT_LABEL" ]; then
+            summary_command+=(--label "$INPUT_LABEL")
+          fi
+          if [ -n "$INPUT_AUTHOR" ]; then
+            summary_command+=(--author "$INPUT_AUTHOR")
+          fi
+          if [ -n "$INPUT_STALE_DAYS" ]; then
+            summary_command+=(--stale-days "$INPUT_STALE_DAYS")
+          fi
+          if [ -n "$INPUT_UPDATED_SINCE" ]; then
+            summary_command+=(--updated-since "$INPUT_UPDATED_SINCE")
+          fi
+          if [ -n "$INPUT_ACTION" ]; then
+            summary_command+=(--action "$INPUT_ACTION")
+          fi
+          if [ -n "$INPUT_MIN_SCORE" ]; then
+            summary_command+=(--min-score "$INPUT_MIN_SCORE")
+          fi
+          if [ -n "$INPUT_MAX_RISK" ]; then
+            summary_command+=(--max-risk "$INPUT_MAX_RISK")
           fi
           "${summary_command[@]}" >> "$GITHUB_STEP_SUMMARY" || true
         fi

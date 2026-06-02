@@ -13,6 +13,16 @@ REPORT_EXTENSIONS: Final[dict[str, str]] = {
 }
 
 WORKFLOW_SORTS: Final[set[str]] = {"input", "action", "score", "risk", "stale", "number"}
+WORKFLOW_ACTION_FILTERS: Final[set[str]] = {
+    "ask-for-ci-fix",
+    "needs-author-follow-up",
+    "needs-triage",
+    "request-smaller-pr",
+    "review-now",
+    "review-with-caution",
+    "wait-for-author",
+    "wait-for-ci",
+}
 ACTION_REPOSITORY: Final[str] = "JackSpiece/maintainer-radar"
 
 
@@ -24,6 +34,13 @@ def render_github_action_workflow(
     sort: str = "action",
     hydrate: bool = True,
     top: int | None = None,
+    label: str | None = None,
+    author: str | None = None,
+    stale_days: int | None = None,
+    updated_since: str | None = None,
+    action_filter: str | None = None,
+    min_score: int | None = None,
+    max_risk: int | None = None,
     config: str | None = None,
     step_summary: bool = True,
     action_ref: str | None = None,
@@ -38,9 +55,20 @@ def render_github_action_workflow(
         raise ValueError("--limit must be 1 or greater")
     if top is not None and top < 1:
         raise ValueError("--top must be 1 or greater")
-    clean_config = (config or "").strip()
-    if "\n" in clean_config or "\r" in clean_config:
-        raise ValueError("--config must be a single-line path")
+    if stale_days is not None and stale_days < 1:
+        raise ValueError("--stale-days must be 1 or greater")
+    if min_score is not None and min_score < 0:
+        raise ValueError("--min-score must be 0 or greater")
+    if max_risk is not None and max_risk < 0:
+        raise ValueError("--max-risk must be 0 or greater")
+    clean_action_filter = _clean_single_line(action_filter, "--action")
+    if clean_action_filter and clean_action_filter not in WORKFLOW_ACTION_FILTERS:
+        actions = ", ".join(sorted(WORKFLOW_ACTION_FILTERS))
+        raise ValueError(f"--action must be one of: {actions}")
+    clean_config = _clean_single_line(config, "--config")
+    clean_label = _clean_single_line(label, "--label")
+    clean_author = _clean_single_line(author, "--author")
+    clean_updated_since = _clean_single_line(updated_since, "--updated-since")
     clean_schedule = schedule.strip()
     if not clean_schedule or "\n" in clean_schedule or "\r" in clean_schedule:
         raise ValueError("--schedule must be a single-line cron expression")
@@ -49,9 +77,19 @@ def render_github_action_workflow(
     output_path = f"maintainer-radar.{extension}"
     artifact_name = f"maintainer-radar-{report_format}"
     action = action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
-    top_input = f'          top: "{top}"\n' if top is not None else ""
-    escaped_config = clean_config.replace('"', '\\"')
-    config_input = f'          config: "{escaped_config}"\n' if clean_config else ""
+    filter_inputs = "".join(
+        [
+            _yaml_input("label", clean_label),
+            _yaml_input("author", clean_author),
+            _yaml_input("stale-days", stale_days),
+            _yaml_input("updated-since", clean_updated_since),
+            _yaml_input("action", clean_action_filter),
+            _yaml_input("min-score", min_score),
+            _yaml_input("max-risk", max_risk),
+            _yaml_input("top", top),
+            _yaml_input("config", clean_config),
+        ]
+    )
 
     escaped_schedule = clean_schedule.replace('"', '\\"')
     return f"""name: Maintainer Radar Report
@@ -83,10 +121,24 @@ jobs:
           output: {output_path}
           limit: "{limit}"
           sort: {sort}
-{top_input}{config_input}          hydrate: "{str(hydrate).lower()}"
+{filter_inputs}          hydrate: "{str(hydrate).lower()}"
           step-summary: "{str(step_summary).lower()}"
       - uses: actions/upload-artifact@v4
         with:
           name: {artifact_name}
           path: ${{{{ steps.radar.outputs.report-path }}}}
 """
+
+
+def _clean_single_line(value: str | None, option_name: str) -> str:
+    cleaned = (value or "").strip()
+    if "\n" in cleaned or "\r" in cleaned:
+        raise ValueError(f"{option_name} must be a single-line value")
+    return cleaned
+
+
+def _yaml_input(name: str, value: str | int | None) -> str:
+    if value is None or value == "":
+        return ""
+    escaped = str(value).replace('"', '\\"')
+    return f'          {name}: "{escaped}"\n'
