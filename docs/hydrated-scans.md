@@ -11,6 +11,12 @@ maintainer-radar repo owner/repo --hydrate
 maintainer-radar repo owner/repo --hydrate --sort action
 ```
 
+GitHub repository URLs are accepted too:
+
+```bash
+maintainer-radar repo https://github.com/owner/repo/pulls --hydrate --sort action
+```
+
 Hydrated scans fetch each visible PR with `gh pr view` before scoring. This
 enables deeper signals from:
 

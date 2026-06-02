@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any, Callable
 
@@ -52,6 +53,15 @@ ACTION_PRIORITY = {
 
 SORT_CHOICES = ["input", "action", "score", "risk", "stale", "number"]
 
+GITHUB_REPO_URL_RE = re.compile(
+    r"^(?:https?://)?github\.com/(?P<owner>[^/\s?#]+)/(?P<repo>[^/\s?#]+)(?:[/?#].*)?$",
+    re.IGNORECASE,
+)
+GITHUB_PR_URL_RE = re.compile(
+    r"^(?:https?://)?github\.com/(?P<owner>[^/\s?#]+)/(?P<repo>[^/\s?#]+)/pull/(?P<number>\d+)(?:[/?#].*)?$",
+    re.IGNORECASE,
+)
+
 
 def _load_json(path: str) -> Any:
     if path == "-":
@@ -73,6 +83,44 @@ def _parse_now(value: str | None) -> datetime | None:
 
 def _as_pr_list(data: Any, *, source: str = "github") -> list[dict[str, Any]]:
     return normalize_items(data, source=source)
+
+
+def _normalize_repository_arg(value: str) -> str:
+    cleaned = str(value or "").strip()
+    if not cleaned:
+        return cleaned
+
+    pr_match = GITHUB_PR_URL_RE.match(cleaned)
+    if pr_match:
+        repo = _strip_git_suffix(pr_match.group("repo"))
+        return f"{pr_match.group('owner')}/{repo}"
+
+    repo_match = GITHUB_REPO_URL_RE.match(cleaned)
+    if repo_match:
+        repo = _strip_git_suffix(repo_match.group("repo"))
+        return f"{repo_match.group('owner')}/{repo}"
+
+    parts = cleaned.split("/")
+    if len(parts) >= 2 and not cleaned.lower().startswith(("http://", "https://")):
+        return f"{parts[0]}/{_strip_git_suffix(parts[1])}"
+    return cleaned
+
+
+def _strip_git_suffix(value: str) -> str:
+    return value[:-4] if value.endswith(".git") else value
+
+
+def _parse_pr_reference(repository: str, number: str | None) -> tuple[str, str]:
+    if number is not None:
+        return _normalize_repository_arg(repository), str(number)
+
+    match = GITHUB_PR_URL_RE.match(str(repository or "").strip())
+    if not match:
+        raise ValueError(
+            "pr requires a pull request number unless the repository argument is a GitHub PR URL"
+        )
+    repo = _strip_git_suffix(match.group("repo"))
+    return f"{match.group('owner')}/{repo}", match.group("number")
 
 
 def _label_names(pr: dict[str, Any]) -> set[str]:
@@ -352,7 +400,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_format_argument(repo, default=argparse.SUPPRESS)
     add_config_argument(repo)
     add_now_argument(repo)
-    repo.add_argument("repository", help="Repository in owner/name form.")
+    repo.add_argument("repository", help="Repository in owner/name form or a GitHub repository URL.")
     repo.add_argument("--state", default="open", choices=["open", "closed", "all"])
     repo.add_argument("--limit", type=int, default=30)
     repo.add_argument("--label", help="Only include PRs with this label.")
@@ -377,8 +425,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_format_argument(pr, default=argparse.SUPPRESS)
     add_config_argument(pr)
     add_now_argument(pr)
-    pr.add_argument("repository", help="Repository in owner/name form.")
-    pr.add_argument("number", help="Pull request number.")
+    pr.add_argument("repository", help="Repository in owner/name form, or a GitHub pull request URL.")
+    pr.add_argument("number", nargs="?", help="Pull request number.")
     pr.add_argument(
         "--comment-template",
         action="store_true",
@@ -551,7 +599,8 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(getattr(args, "config", None))
         now = _parse_now(getattr(args, "now", None))
         if args.command == "repo":
-            prs = list_repo_prs(args.repository, state=args.state, limit=args.limit)
+            repository = _normalize_repository_arg(args.repository)
+            prs = list_repo_prs(repository, state=args.state, limit=args.limit)
             prs = filter_prs(
                 prs,
                 label=args.label,
@@ -560,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:
                 updated_since=args.updated_since,
             )
             if args.hydrate:
-                prs = hydrate_prs(prs, repository=args.repository)
+                prs = hydrate_prs(prs, repository=repository)
             analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
                 analyses,
@@ -578,7 +627,8 @@ def main(argv: list[str] | None = None) -> int:
                 review_plan_minutes=args.review_plan_minutes,
             )
         elif args.command == "pr":
-            pr = view_pr(args.repository, args.number)
+            repository, number = _parse_pr_reference(args.repository, args.number)
+            pr = view_pr(repository, number)
             analysis = analyze_pr(pr, config=config, now=now)
             if args.comment_template:
                 if args.format == "json":

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.17.1
+
+- CLI repository commands now accept common GitHub repository URL shapes, such
+  as `https://github.com/owner/repo` and
+  `https://github.com/owner/repo/pulls`.
+- `maintainer-radar pr` can now analyze a pasted GitHub pull request URL without
+  requiring the PR number as a separate argument.
+- README and maintainer workflow docs now show the paste-a-URL flow.
+
 ## 0.17.0
 
 - Summary output now includes a default 60-minute next-session digest, with

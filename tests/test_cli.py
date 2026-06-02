@@ -10,6 +10,8 @@ import unittest
 from maintainer_radar.cli import (
     _as_pr_list,
     _load_json,
+    _normalize_repository_arg,
+    _parse_pr_reference,
     _parse_now,
     build_parser,
     filter_analyses,
@@ -140,6 +142,74 @@ class CliTests(unittest.TestCase):
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
 
         self.assertTrue(args.comment_template)
+
+    def test_pr_command_accepts_pr_url_without_number(self) -> None:
+        args = build_parser().parse_args(["pr", "https://github.com/owner/repo/pull/123"])
+
+        self.assertEqual(args.repository, "https://github.com/owner/repo/pull/123")
+        self.assertIsNone(args.number)
+
+    def test_repository_arg_accepts_common_github_url_shapes(self) -> None:
+        cases = {
+            "owner/repo": "owner/repo",
+            "owner/repo/pulls": "owner/repo",
+            "https://github.com/owner/repo": "owner/repo",
+            "https://github.com/owner/repo/": "owner/repo",
+            "https://github.com/owner/repo.git": "owner/repo",
+            "https://github.com/owner/repo/pulls": "owner/repo",
+            "github.com/owner/repo/pull/123": "owner/repo",
+        }
+
+        for value, expected in cases.items():
+            with self.subTest(value=value):
+                self.assertEqual(_normalize_repository_arg(value), expected)
+
+    def test_parse_pr_reference_accepts_url_or_explicit_number(self) -> None:
+        self.assertEqual(
+            _parse_pr_reference("https://github.com/owner/repo/pull/123", None),
+            ("owner/repo", "123"),
+        )
+        self.assertEqual(
+            _parse_pr_reference("https://github.com/owner/repo/pulls", "77"),
+            ("owner/repo", "77"),
+        )
+        with self.assertRaises(ValueError):
+            _parse_pr_reference("owner/repo", None)
+
+    def test_repo_command_normalizes_github_urls_before_fetching(self) -> None:
+        with patch("maintainer_radar.cli.list_repo_prs", return_value=[]) as list_repo_prs, patch(
+            "sys.stdout", new=StringIO()
+        ):
+            result = main(
+                [
+                    "repo",
+                    "https://github.com/owner/repo/pulls",
+                    "--summary-only",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        list_repo_prs.assert_called_once_with("owner/repo", state="open", limit=30)
+
+    def test_pr_command_normalizes_github_pr_url_before_fetching(self) -> None:
+        with patch(
+            "maintainer_radar.cli.view_pr",
+            return_value={"number": 123, "title": "Fix bug"},
+        ) as view_pr, patch(
+            "maintainer_radar.cli.analyze_pr",
+            return_value={
+                "number": 123,
+                "title": "Fix bug",
+                "action": "needs triage",
+                "next_step": "Triage manually before assigning reviewer time.",
+                "reviewability": 50,
+                "risk": 50,
+            },
+        ), patch("sys.stdout", new=StringIO()):
+            result = main(["pr", "https://github.com/owner/repo/pull/123"])
+
+        self.assertEqual(result, 0)
+        view_pr.assert_called_once_with("owner/repo", "123")
 
     def test_init_action_command_accepts_report_options(self) -> None:
         args = build_parser().parse_args(

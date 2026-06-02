@@ -11,6 +11,12 @@ Start with a full queue snapshot:
 maintainer-radar repo owner/repo --limit 50 --hydrate --sort action
 ```
 
+You can paste a GitHub repository URL instead of `owner/repo`:
+
+```bash
+maintainer-radar repo https://github.com/owner/repo/pulls --limit 50 --hydrate --sort action
+```
+
 Use this when the goal is to split the queue into review-now, CI-blocked,
 author-follow-up, and triage work.
 
@@ -64,6 +70,7 @@ For one PR:
 
 ```bash
 maintainer-radar pr owner/repo 123
+maintainer-radar pr https://github.com/owner/repo/pull/123
 ```
 
 Draft a follow-up comment without posting it:

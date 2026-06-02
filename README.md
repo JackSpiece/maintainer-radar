@@ -88,7 +88,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.17.0
+- uses: JackSpiece/maintainer-radar@v0.17.1
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -170,6 +170,12 @@ Analyze open PRs in a repository:
 maintainer-radar repo owner/repo --limit 20
 ```
 
+Pasted GitHub repository URLs work too:
+
+```bash
+maintainer-radar repo https://github.com/owner/repo/pulls --limit 20
+```
+
 Fetch full PR detail for deeper live scoring:
 
 ```bash
@@ -231,6 +237,12 @@ Analyze one PR in detail:
 
 ```bash
 maintainer-radar pr owner/repo 123
+```
+
+Or paste the PR URL directly:
+
+```bash
+maintainer-radar pr https://github.com/owner/repo/pull/123
 ```
 
 Draft a maintainer follow-up comment without posting it:
