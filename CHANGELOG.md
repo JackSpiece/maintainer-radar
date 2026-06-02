@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.11
+
+- Added shareable grouped browser preview links with `?group=action`.
+- Made Copy Link and the address bar preserve the current Group by action view.
+
 ## 0.16.10
 
 - Added a Group by action toggle to the public browser preview and made copied Markdown respect the grouped view.

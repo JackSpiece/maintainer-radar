@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.10";
+  const ACTION_VERSION = "v0.16.11";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -60,7 +60,13 @@
     return normalizeRepository(params.get("repo"));
   }
 
-  function shareUrlForRepository(baseUrl, value) {
+  function groupByActionFromSearch(search) {
+    const params = new URLSearchParams(String(search || "").replace(/^\?/, ""));
+    const group = String(params.get("group") || params.get("group-by") || "").toLowerCase();
+    return group === "action";
+  }
+
+  function shareUrlForRepository(baseUrl, value, options = {}) {
     const repository = normalizeRepository(value);
     if (!repository) {
       return "";
@@ -70,6 +76,12 @@
       "https://jackspiece.github.io/maintainer-radar/"
     );
     url.searchParams.set("repo", repository);
+    if (options.groupByAction) {
+      url.searchParams.set("group", "action");
+    } else {
+      url.searchParams.delete("group");
+      url.searchParams.delete("group-by");
+    }
     return url.toString();
   }
 
@@ -642,7 +654,9 @@
     }
 
     function updateLocation(repository) {
-      const shareUrl = shareUrlForRepository(window.location.href, repository);
+      const shareUrl = shareUrlForRepository(window.location.href, repository, {
+        groupByAction: groupToggle.checked,
+      });
       if (shareUrl && window.history && window.history.replaceState) {
         window.history.replaceState(null, "", shareUrl);
       }
@@ -703,7 +717,9 @@
 
     copyButton.addEventListener("click", async () => {
       const repository = currentRepository || normalizeRepository(input.value);
-      const shareUrl = shareUrlForRepository(window.location.href, repository);
+      const shareUrl = shareUrlForRepository(window.location.href, repository, {
+        groupByAction: groupToggle.checked,
+      });
       if (!shareUrl) {
         setStatus("Scan a repository before copying a share link.");
         return;
@@ -738,9 +754,11 @@
     groupToggle.addEventListener("change", () => {
       if (currentScanReady) {
         renderPreview(currentItems, currentRepository, { groupByAction: groupToggle.checked });
+        currentShareUrl = updateLocation(currentRepository);
       }
     });
 
+    groupToggle.checked = groupByActionFromSearch(window.location.search);
     const initialRepository = repositoryFromSearch(window.location.search);
     if (initialRepository) {
       input.value = initialRepository;
@@ -753,6 +771,7 @@
     analyzePullRequest,
     chooseAction,
     formatImpact,
+    groupByActionFromSearch,
     groupItemsByAction,
     normalizeRepository,
     recommendNextStep,

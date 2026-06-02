@@ -14,8 +14,14 @@ You can also share a prefilled scan link:
 https://jackspiece.github.io/maintainer-radar/?repo=python/cpython
 ```
 
+You can open the same scan with action grouping already enabled:
+
+```text
+https://jackspiece.github.io/maintainer-radar/?repo=python/cpython&group=action
+```
+
 After a scan, the page updates the address bar and enables **Copy Link** for the
-current repository.
+current repository and grouped view.
 
 It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the

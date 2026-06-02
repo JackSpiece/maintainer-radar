@@ -11,9 +11,25 @@ assert.equal(
   "python/cpython"
 );
 assert.equal(demo.repositoryFromSearch("?q=python/cpython"), "");
+assert.equal(demo.groupByActionFromSearch("?repo=python/cpython&group=action"), true);
+assert.equal(demo.groupByActionFromSearch("?repo=python/cpython&group-by=action"), true);
+assert.equal(demo.groupByActionFromSearch("?repo=python/cpython"), false);
 assert.equal(
   demo.shareUrlForRepository("https://jackspiece.github.io/maintainer-radar/?x=1", "python/cpython"),
   "https://jackspiece.github.io/maintainer-radar/?x=1&repo=python%2Fcpython"
+);
+assert.equal(
+  demo.shareUrlForRepository("https://jackspiece.github.io/maintainer-radar/?x=1", "python/cpython", {
+    groupByAction: true,
+  }),
+  "https://jackspiece.github.io/maintainer-radar/?x=1&repo=python%2Fcpython&group=action"
+);
+assert.equal(
+  demo.shareUrlForRepository(
+    "https://jackspiece.github.io/maintainer-radar/?group=action",
+    "python/cpython"
+  ),
+  "https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython"
 );
 assert.equal(demo.shareUrlForRepository("https://example.test/", "not a repo"), "");
 
@@ -108,7 +124,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.10"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.11"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));
