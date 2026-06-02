@@ -211,7 +211,7 @@
 
     .notes {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
       gap: 10px;
       margin-top: 16px;
     }
@@ -601,6 +601,7 @@
         <a href="adoption.html">Adoption</a>
         <a href="github-action.html">GitHub Action</a>
         <a href="attention-workflows.html">Attention</a>
+        <a href="privacy-permissions.html">Privacy</a>
         <a href="review-plan.html">Review Plan</a>
         <a href="browser-preview.html">Browser Preview</a>
         <a href="heuristics.html">Heuristics</a>
@@ -617,13 +618,17 @@
           Maintainer Radar turns pull request metadata into a deterministic queue brief:
           what is ready for review, what is blocked by CI, and why each score changed.
           One command can create a read-only GitHub Action report or a time-boxed review
-          plan that appears in the run summary.
+          plan that appears in the run summary, with no hosted service or model token.
         </p>
         <pre class="command">maintainer-radar init-action --path .github/workflows/maintainer-radar.yml</pre>
         <div class="notes" aria-label="Project traits">
           <div class="note">
             <strong>Local-first</strong>
             <span>No GitHub App, webhook, hosted database, or model key required.</span>
+          </div>
+          <div class="note">
+            <strong>Low-permission</strong>
+            <span>Reports use read-only contents and pull request access.</span>
           </div>
           <div class="note">
             <strong>Explainable</strong>

@@ -18,8 +18,10 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('href="adoption.html"', html)
         self.assertIn('href="github-action.html"', html)
         self.assertIn('href="attention-workflows.html"', html)
+        self.assertIn('href="privacy-permissions.html"', html)
         self.assertIn('href="review-plan.html"', html)
         self.assertIn("run summary", html)
+        self.assertIn("no hosted service or model token", html)
         self.assertIn("time-boxed review", html)
         self.assertIn("Next step", html)
         self.assertIn("Maintainer blocked", html)
@@ -60,6 +62,23 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
+
+    def test_privacy_permissions_docs_explain_data_flow(self) -> None:
+        docs = (ROOT / "docs" / "privacy-permissions.md").read_text(encoding="utf-8")
+        security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("Privacy and Permissions", docs)
+        self.assertIn("contents: read", docs)
+        self.assertIn("pull-requests: read", docs)
+        self.assertIn("GH_TOKEN: ${{ github.token }}", docs)
+        self.assertIn("does not send queue data to a hosted service", docs)
+        self.assertIn("does not read repository secrets", docs)
+        self.assertIn("does not ask for a token", docs)
+        self.assertIn("does not post comments", docs)
+        self.assertIn("does not", docs)
+        self.assertIn("docs/privacy-permissions.md", security)
+        self.assertIn("docs/privacy-permissions.md", readme)
 
     def test_attention_workflows_docs_explain_notification_gates(self) -> None:
         docs = (ROOT / "docs" / "attention-workflows.md").read_text(encoding="utf-8")

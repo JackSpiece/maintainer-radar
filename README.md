@@ -23,6 +23,8 @@ Review plan guide: [docs/review-plan.md](docs/review-plan.md)
 
 Attention workflows: [docs/attention-workflows.md](docs/attention-workflows.md)
 
+Privacy and permissions: [docs/privacy-permissions.md](docs/privacy-permissions.md)
+
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
@@ -63,6 +65,8 @@ dashboards. Maintainer Radar is different on purpose:
   code review.
 - **Maintainer-first:** it prioritizes review time, not contributor output.
 - **Local-first:** no SaaS, no webhook, no hosted database.
+- **Low-permission:** live GitHub reports need read-only repository and pull
+  request access.
 - **Deterministic:** every score comes with a visible heuristic breakdown.
 - **AI-era aware:** it catches the common failure shape of large PRs with weak
   test evidence and unresolved maintainer feedback.
