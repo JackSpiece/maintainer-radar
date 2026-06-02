@@ -14,6 +14,8 @@ Use these when the full report is useful, but the first question is:
 | `queue-headline` | One-line summary of the queue state |
 | `attention-level` | `quiet`, `review`, `triage`, `follow-up`, or `blocked` |
 | `attention-reason` | One-line reason for the attention level |
+| `workflow-mode` | Suggested maintainer session shape |
+| `workflow-recommendation` | One-line recommendation for the next maintainer workflow |
 
 The levels are ordered for maintainer urgency:
 
@@ -32,6 +34,8 @@ The levels are ordered for maintainer urgency:
     echo "${{ steps.radar.outputs.queue-headline }}"
     echo "Attention: ${{ steps.radar.outputs.attention-level }}"
     echo "${{ steps.radar.outputs.attention-reason }}"
+    echo "Workflow: ${{ steps.radar.outputs.workflow-mode }}"
+    echo "${{ steps.radar.outputs.workflow-recommendation }}"
 ```
 {% endraw %}
 
@@ -44,6 +48,7 @@ The levels are ordered for maintainer urgency:
   run: |
     echo "::warning title=Maintainer Radar::${{ steps.radar.outputs.queue-headline }}"
     echo "${{ steps.radar.outputs.attention-reason }}"
+    echo "${{ steps.radar.outputs.workflow-recommendation }}"
 ```
 {% endraw %}
 
@@ -76,7 +81,7 @@ decides attention level for stale PRs:
 
 {% raw %}
 ```yaml
-- uses: JackSpiece/maintainer-radar@v0.16.36
+- uses: JackSpiece/maintainer-radar@v0.16.37
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -91,6 +96,7 @@ decides attention level for stale PRs:
   run: |
     echo "${{ steps.radar.outputs.queue-headline }}"
     echo "${{ steps.radar.outputs.attention-reason }}"
+    echo "${{ steps.radar.outputs.workflow-recommendation }}"
 ```
 {% endraw %}
 

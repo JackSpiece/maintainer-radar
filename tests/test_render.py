@@ -128,6 +128,11 @@ class RenderTests(unittest.TestCase):
             summary["attention_reason"],
             "2 PRs have unresolved maintainer blockers.",
         )
+        self.assertEqual(summary["workflow_mode"], "blocker-sweep")
+        self.assertEqual(
+            summary["workflow_recommendation"],
+            "Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.",
+        )
 
     def test_summary_counts_ci_flags_even_when_action_differs(self) -> None:
         summary = summarize_report(
@@ -171,6 +176,43 @@ class RenderTests(unittest.TestCase):
 
                 self.assertEqual(summary["attention_level"], level)
                 self.assertEqual(summary["attention_reason"], reason)
+
+    def test_summary_workflow_recommendation_routes_common_queue_states(self) -> None:
+        cases = [
+            ([], "quiet", "No matching PRs. Keep the scheduled scan quiet."),
+            (
+                [{"action": "review now", "reviewability": 90}],
+                "review-sprint",
+                "Start a focused review block with the ready PRs.",
+            ),
+            (
+                [{"action": "needs author follow-up", "reviewability": 35}],
+                "author-follow-up",
+                "Send author follow-ups for waiting authors or branches behind base.",
+            ),
+            (
+                [{"action": "needs triage", "reviewability": 20}],
+                "triage-pass",
+                "Classify or split large and unclear PRs before review.",
+            ),
+            (
+                [{"action": "wait for CI", "reviewability": 60, "flags": ["CI pending"]}],
+                "ci-watch",
+                "Wait for pending checks before spending review time.",
+            ),
+            (
+                [{"action": "wait for author", "reviewability": 60, "stale_days": 9}],
+                "stale-sweep",
+                "Run a stale follow-up pass before assigning review time.",
+            ),
+        ]
+
+        for analyses, mode, recommendation in cases:
+            with self.subTest(mode=mode):
+                summary = summarize_report(analyses)
+
+                self.assertEqual(summary["workflow_mode"], mode)
+                self.assertEqual(summary["workflow_recommendation"], recommendation)
 
     def test_review_plan_builds_budgeted_maintainer_session(self) -> None:
         analyses = [
@@ -244,6 +286,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Maintainer Radar Review Plan", output)
         self.assertIn("Time budget: 30 minutes", output)
         self.assertIn("Estimated active time: 12 minutes", output)
+        self.assertIn("Workflow mode: review-sprint", output)
+        self.assertIn("Workflow recommendation: Start a focused review block", output)
         self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
         self.assertIn("[#1 Ready](https://example.test/pull/1)", output)
         self.assertIn("12m", output)
@@ -308,6 +352,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Deterministic maintainer review plan.", output)
         self.assertIn("Time budget", output)
         self.assertIn("30 minutes", output)
+        self.assertIn("review-sprint", output)
+        self.assertIn("Start a focused review block", output)
         self.assertIn("Planned Review Work", output)
         self.assertIn("Watch Only", output)
         self.assertIn("#1 Ready &lt;now&gt;", output)
@@ -467,6 +513,8 @@ class RenderTests(unittest.TestCase):
 
         self.assertIn("Maintainer Radar Summary", output)
         self.assertIn("Review now: 1", output)
+        self.assertIn("Workflow mode: review-sprint", output)
+        self.assertIn("Workflow recommendation: Start a focused review block", output)
         self.assertIn("Merge conflicts: 0", output)
         self.assertIn("Branch behind base: 0", output)
         self.assertIn("Merge gated: 0", output)
@@ -527,14 +575,23 @@ class RenderTests(unittest.TestCase):
             "merge_conflicts,branch_behind,merge_gated,review_requested",
             output,
         )
-        self.assertIn("average_score,queue_headline,attention_level,attention_reason", output)
+        self.assertIn(
+            "average_score,queue_headline,attention_level,attention_reason,"
+            "workflow_mode,workflow_recommendation",
+            output,
+        )
         self.assertIn("2,1,0,1,0,1,0,0,1,0,0,1,60", output)
         self.assertIn(
             "2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; "
             "1 with merge conflict.",
             output,
         )
-        self.assertIn("blocked,1 PR has merge conflicts.", output)
+        self.assertIn(
+            "blocked,1 PR has merge conflicts.,blocker-sweep,"
+            "\"Clear maintainer blockers, merge conflicts, failing CI, or merge gates "
+            "before assigning review time.\"",
+            output,
+        )
 
     def test_comment_csv_output_quotes_multiline_comment(self) -> None:
         output = render_comment_csv("Thanks.\nPlease add tests.")
@@ -563,6 +620,8 @@ class RenderTests(unittest.TestCase):
 
         self.assertIn("<!doctype html>", output)
         self.assertIn("PRs scanned", output)
+        self.assertIn("review-sprint", output)
+        self.assertIn("Start a focused review block", output)
         self.assertIn("#42 Fix &lt;parser&gt;", output)
         self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("needs &lt;tests&gt;", output)

@@ -1,9 +1,19 @@
 ## Maintainer Radar Report
 
+2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; 1 with merge conflict; 1 PR has unresolved maintainer blocker.
+
+- Attention level: blocked
+- Attention reason: 1 PR has unresolved maintainer blocker.
+- Workflow mode: blocker-sweep
+- Workflow recommendation: Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.
 - PRs scanned: 2
 - Review now: 1
 - Needs author follow-up: 0
 - CI blocked or pending: 1
+- Merge conflicts: 1
+- Branch behind base: 0
+- Merge gated: 0
+- Review requested: 1
 - Maintainer blocked: 1
 - Large or needs triage: 0
 - Stale 7+ days: 1

@@ -373,6 +373,9 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int | str]:
     attention_level, attention_reason = _attention_signal(summary)
     summary["attention_level"] = attention_level
     summary["attention_reason"] = attention_reason
+    workflow_mode, workflow_recommendation = _workflow_recommendation(summary)
+    summary["workflow_mode"] = workflow_mode
+    summary["workflow_recommendation"] = workflow_recommendation
     return summary
 
 
@@ -526,6 +529,45 @@ def _attention_reason(count: int, singular: str, plural: str) -> str:
     return f"{_pr_count(count)} {phrase}."
 
 
+def _workflow_recommendation(summary: dict[str, int | str]) -> tuple[str, str]:
+    if _int_value(summary.get("total")) == 0:
+        return ("quiet", "No matching PRs. Keep the scheduled scan quiet.")
+
+    if (
+        _int_value(summary.get("maintainer_blocked"))
+        or _int_value(summary.get("merge_conflicts"))
+        or _int_value(summary.get("ci_blocked"))
+        or _int_value(summary.get("merge_gated"))
+    ):
+        return (
+            "blocker-sweep",
+            "Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.",
+        )
+
+    if _int_value(summary.get("review_now")):
+        return ("review-sprint", "Start a focused review block with the ready PRs.")
+
+    if _int_value(summary.get("author_follow_up")) or _int_value(summary.get("branch_behind")):
+        return (
+            "author-follow-up",
+            "Send author follow-ups for waiting authors or branches behind base.",
+        )
+
+    if _int_value(summary.get("large_or_triage")):
+        return ("triage-pass", "Classify or split large and unclear PRs before review.")
+
+    if _int_value(summary.get("ci_pending")):
+        return ("ci-watch", "Wait for pending checks before spending review time.")
+
+    if _int_value(summary.get("stale")):
+        return ("stale-sweep", "Run a stale follow-up pass before assigning review time.")
+
+    if _int_value(summary.get("review_requested")):
+        return ("review-sprint", "Handle requested reviews that have no stronger blocker signal.")
+
+    return ("quiet", "No urgent maintainer workflow was found.")
+
+
 def render_summary_markdown(
     analyses: list[dict[str, Any]],
     title: str = "Maintainer Radar Summary",
@@ -538,6 +580,8 @@ def render_summary_markdown(
         "",
         f"- Attention level: {summary['attention_level']}",
         f"- Attention reason: {summary['attention_reason']}",
+        f"- Workflow mode: {summary['workflow_mode']}",
+        f"- Workflow recommendation: {summary['workflow_recommendation']}",
         f"- PRs scanned: {summary['total']}",
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",
@@ -572,6 +616,8 @@ def render_review_plan_markdown(
         f"- Queue scanned: {summary['total']} PRs",
         f"- Review now: {summary['review_now']}",
         f"- Maintainer blocked: {summary['maintainer_blocked']}",
+        f"- Workflow mode: {summary['workflow_mode']}",
+        f"- Workflow recommendation: {summary['workflow_recommendation']}",
         "",
     ]
     if plan["over_budget_minutes"]:
@@ -881,7 +927,13 @@ def _render_plan_html_summary(plan: dict[str, Any], summary: dict[str, int]) -> 
             f"First planned item exceeds the budget by {escape(str(plan['over_budget_minutes']))} minutes."
             "</p>"
         )
-    return f'{notice}<section class="metrics">{items}</section>'
+    workflow = (
+        '<p class="notice">'
+        f"<strong>{escape(str(summary['workflow_mode']))}</strong>: "
+        f"{escape(str(summary['workflow_recommendation']))}"
+        "</p>"
+    )
+    return f'{notice}{workflow}<section class="metrics">{items}</section>'
 
 
 def _render_plan_html_sections(plan: dict[str, Any]) -> str:
@@ -1069,7 +1121,13 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
         f'<div class="metric"><strong>{escape(str(value))}</strong><span>{escape(label)}</span></div>'
         for label, value in metrics
     )
-    return f'<section class="metrics">{items}</section>'
+    workflow = (
+        '<p class="notice">'
+        f"<strong>{escape(str(summary['workflow_mode']))}</strong>: "
+        f"{escape(str(summary['workflow_recommendation']))}"
+        "</p>"
+    )
+    return f'{workflow}<section class="metrics">{items}</section>'
 
 
 def _render_html_table(analyses: list[dict[str, Any]], *, group_by: str | None = None) -> str:

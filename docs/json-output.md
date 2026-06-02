@@ -66,7 +66,9 @@ Example:
   "average_score": 72,
   "queue_headline": "30 PRs scanned: 8 ready for review; 6 need author follow-up; 5 blocked or waiting on CI; 1 with merge conflict; 2 behind base; 3 blocked by merge gates; 5 PRs have unresolved maintainer blockers.",
   "attention_level": "blocked",
-  "attention_reason": "5 PRs have unresolved maintainer blockers."
+  "attention_reason": "5 PRs have unresolved maintainer blockers.",
+  "workflow_mode": "blocker-sweep",
+  "workflow_recommendation": "Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time."
 }
 ```
 
@@ -90,6 +92,8 @@ Summary fields:
 | `queue_headline` | string | One-line human summary of the queue state |
 | `attention_level` | string | Queue attention level: `quiet`, `review`, `triage`, `follow-up`, or `blocked` |
 | `attention_reason` | string | One-line reason for the queue attention level |
+| `workflow_mode` | string | Recommended workflow mode, such as `blocker-sweep`, `review-sprint`, `author-follow-up`, `triage-pass`, `ci-watch`, `stale-sweep`, or `quiet` |
+| `workflow_recommendation` | string | One-line recommended maintainer workflow for the scanned queue |
 
 ## Script Example
 

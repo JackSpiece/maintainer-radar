@@ -94,6 +94,12 @@ outputs:
   attention-reason:
     description: One-line reason for the queue attention level.
     value: ${{ steps.build.outputs.attention-reason }}
+  workflow-mode:
+    description: Recommended maintainer workflow mode for the scanned queue.
+    value: ${{ steps.build.outputs.workflow-mode }}
+  workflow-recommendation:
+    description: One-line recommended maintainer workflow for the scanned queue.
+    value: ${{ steps.build.outputs.workflow-recommendation }}
   total:
     description: Number of pull requests in the report after filters.
     value: ${{ steps.build.outputs.total }}
@@ -328,6 +334,8 @@ runs:
             "queue-headline": "queue_headline",
             "attention-level": "attention_level",
             "attention-reason": "attention_reason",
+            "workflow-mode": "workflow_mode",
+            "workflow-recommendation": "workflow_recommendation",
         }
         for output_name, summary_key in text_outputs.items():
             value = str(summary.get(summary_key) or "").replace("\n", " ")
@@ -408,6 +416,8 @@ runs:
             "",
             f"- Attention level: {summary.get('attention_level') or 'quiet'}",
             f"- Attention reason: {summary.get('attention_reason') or ''}",
+            f"- Workflow mode: {summary.get('workflow_mode') or 'quiet'}",
+            f"- Workflow recommendation: {summary.get('workflow_recommendation') or ''}",
             f"- PRs scanned: {int(summary.get('total') or 0)}",
             f"- Review now: {int(summary.get('review_now') or 0)}",
             f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",

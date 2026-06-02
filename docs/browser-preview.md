@@ -61,6 +61,10 @@ attention level, such as `blocked`, `follow-up`, `triage`, `review`, or `quiet`.
 It mirrors the Action outputs so maintainers can decide whether a queue needs a
 human notification before reading the full table.
 
+The same card includes a workflow recommendation, such as `blocker-sweep` or
+`review-sprint`, so a maintainer can decide what kind of review session to run
+before reading individual rows.
+
 Turn on **Group by action** to split the preview and copied Markdown into
 review-now, CI, author follow-up, and triage sections.
 

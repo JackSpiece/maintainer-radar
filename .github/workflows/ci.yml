@@ -60,6 +60,8 @@ jobs:
           QUEUE_HEADLINE: ${{ steps.radar.outputs.queue-headline }}
           ATTENTION_LEVEL: ${{ steps.radar.outputs.attention-level }}
           ATTENTION_REASON: ${{ steps.radar.outputs.attention-reason }}
+          WORKFLOW_MODE: ${{ steps.radar.outputs.workflow-mode }}
+          WORKFLOW_RECOMMENDATION: ${{ steps.radar.outputs.workflow-recommendation }}
           PLAN_BUDGET_MINUTES: ${{ steps.radar.outputs.plan-budget-minutes }}
           PLANNED_PRS: ${{ steps.radar.outputs.planned-prs }}
           PLANNED_MINUTES: ${{ steps.radar.outputs.planned-minutes }}
@@ -72,6 +74,8 @@ jobs:
           test -n "$QUEUE_HEADLINE"
           test -n "$ATTENTION_LEVEL"
           test -n "$ATTENTION_REASON"
+          test -n "$WORKFLOW_MODE"
+          test -n "$WORKFLOW_RECOMMENDATION"
           test -n "$PLAN_BUDGET_MINUTES"
           test -n "$PLANNED_PRS"
           test -n "$PLANNED_MINUTES"
@@ -87,4 +91,6 @@ jobs:
           assert "queue_headline" in summary
           assert "attention_level" in summary
           assert "attention_reason" in summary
+          assert "workflow_mode" in summary
+          assert "workflow_recommendation" in summary
           PY

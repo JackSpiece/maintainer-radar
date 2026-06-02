@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.36";
+  const ACTION_VERSION = "v0.16.37";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -813,6 +813,9 @@
     const attention = attentionSignal(summary);
     summary.attentionLevel = attention.level;
     summary.attentionReason = attention.reason;
+    const workflow = workflowRecommendation(summary);
+    summary.workflowMode = workflow.mode;
+    summary.workflowRecommendation = workflow.recommendation;
     return summary;
   }
 
@@ -964,6 +967,67 @@
     return `${prCount(count)} ${count === 1 ? singular : plural}.`;
   }
 
+  function workflowRecommendation(summary) {
+    if (!summary.total) {
+      return {
+        mode: "quiet",
+        recommendation: "No matching PRs. Keep the scheduled scan quiet.",
+      };
+    }
+    if (
+      summary.maintainerBlocked ||
+      summary.mergeConflicts ||
+      summary.ciBlocked ||
+      summary.mergeGated
+    ) {
+      return {
+        mode: "blocker-sweep",
+        recommendation:
+          "Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.",
+      };
+    }
+    if (summary.reviewNow) {
+      return {
+        mode: "review-sprint",
+        recommendation: "Start a focused review block with the ready PRs.",
+      };
+    }
+    if (summary.authorFollowUp || summary.branchBehind) {
+      return {
+        mode: "author-follow-up",
+        recommendation: "Send author follow-ups for waiting authors or branches behind base.",
+      };
+    }
+    if (summary.largeOrTriage) {
+      return {
+        mode: "triage-pass",
+        recommendation: "Classify or split large and unclear PRs before review.",
+      };
+    }
+    if (summary.ciPending) {
+      return {
+        mode: "ci-watch",
+        recommendation: "Wait for pending checks before spending review time.",
+      };
+    }
+    if (summary.stale) {
+      return {
+        mode: "stale-sweep",
+        recommendation: "Run a stale follow-up pass before assigning review time.",
+      };
+    }
+    if (summary.reviewRequested) {
+      return {
+        mode: "review-sprint",
+        recommendation: "Handle requested reviews that have no stronger blocker signal.",
+      };
+    }
+    return {
+      mode: "quiet",
+      recommendation: "No urgent maintainer workflow was found.",
+    };
+  }
+
   function groupItemsByAction(items) {
     const groups = [];
     const byAction = new Map();
@@ -1010,6 +1074,8 @@
       "",
       `- Attention level: ${summary.attentionLevel}`,
       `- Attention reason: ${summary.attentionReason}`,
+      `- Workflow mode: ${summary.workflowMode}`,
+      `- Workflow recommendation: ${summary.workflowRecommendation}`,
       `- PRs scanned: ${summary.total}`,
       `- Review now: ${summary.reviewNow}`,
       `- Follow-up: ${summary.followUp}`,
@@ -1052,6 +1118,8 @@
       `- Left for interrupts: ${plan.remainingMinutes} minutes`,
       `- Attention level: ${summary.attentionLevel}`,
       `- Attention reason: ${summary.attentionReason}`,
+      `- Workflow mode: ${summary.workflowMode}`,
+      `- Workflow recommendation: ${summary.workflowRecommendation}`,
       `- Queue scanned: ${summary.total} PRs`,
       `- Review now: ${summary.reviewNow}`,
       `- Maintainer blocked: ${summary.maintainerBlocked}`,
@@ -1159,6 +1227,8 @@
           queue_headline: summary.queueHeadline,
           attention_level: summary.attentionLevel,
           attention_reason: summary.attentionReason,
+          workflow_mode: summary.workflowMode,
+          workflow_recommendation: summary.workflowRecommendation,
         },
         planned: plan.planned.map(reviewPlanJsonEntry),
         deferred: plan.deferred.map(reviewPlanJsonEntry),
@@ -1287,11 +1357,22 @@
     const attentionLevel = document.querySelector("#attention-level");
     const attentionHeadline = document.querySelector("#attention-headline");
     const attentionReason = document.querySelector("#attention-reason");
-    if (attentionCard && attentionLevel && attentionHeadline && attentionReason) {
+    const workflowMode = document.querySelector("#workflow-mode");
+    const workflowRecommendation = document.querySelector("#workflow-recommendation");
+    if (
+      attentionCard &&
+      attentionLevel &&
+      attentionHeadline &&
+      attentionReason &&
+      workflowMode &&
+      workflowRecommendation
+    ) {
       attentionCard.dataset.level = summary.attentionLevel;
       attentionLevel.textContent = summary.attentionLevel;
       attentionHeadline.textContent = summary.queueHeadline;
       attentionReason.textContent = summary.attentionReason;
+      workflowMode.textContent = `Workflow: ${summary.workflowMode}`;
+      workflowRecommendation.textContent = summary.workflowRecommendation;
     }
 
     const body = document.querySelector("#queue-body");
@@ -1729,6 +1810,7 @@
     summarizeCheckRuns,
     summarizeItems,
     summarizeFiles,
+    workflowRecommendation,
   };
 
   if (typeof window !== "undefined") {

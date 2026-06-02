@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.36
+        uses: JackSpiece/maintainer-radar@v0.16.37
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -79,6 +79,8 @@ jobs:
 | `queue-headline` | One-line human summary of the queue state. |
 | `attention-level` | Queue attention level: `quiet`, `review`, `triage`, `follow-up`, or `blocked`. |
 | `attention-reason` | One-line reason for the queue attention level. |
+| `workflow-mode` | Recommended maintainer workflow mode, such as `blocker-sweep`, `review-sprint`, or `author-follow-up`. |
+| `workflow-recommendation` | One-line recommended maintainer workflow for the scanned queue. |
 | `total` | Number of pull requests in the report after filters. |
 | `review-now` | Number of pull requests ready for review. |
 | `author-follow-up` | Number of pull requests needing author follow-up. |
@@ -107,13 +109,16 @@ Use summary outputs in later workflow steps:
     echo "${{ steps.radar.outputs.queue-headline }}"
     echo "Attention: ${{ steps.radar.outputs.attention-level }}"
     echo "${{ steps.radar.outputs.attention-reason }}"
+    echo "Workflow: ${{ steps.radar.outputs.workflow-mode }}"
+    echo "${{ steps.radar.outputs.workflow-recommendation }}"
     echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
 {% endraw %}
 
 Use `queue-headline` when a later workflow step needs a concise notification
 line without parsing `summary-json`. Use `attention-level` when a workflow needs
-to decide whether to notify humans.
+to decide whether to notify humans. Use `workflow-mode` when a workflow or
+handoff note needs to choose the next maintainer session shape.
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.

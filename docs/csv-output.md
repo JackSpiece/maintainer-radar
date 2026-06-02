@@ -57,3 +57,5 @@ Summary output returns one row with the same fields as JSON summary output:
 - `queue_headline`
 - `attention_level`
 - `attention_reason`
+- `workflow_mode`
+- `workflow_recommendation`
