@@ -94,6 +94,9 @@ def normalize_gitlab_mr(mr: dict[str, Any]) -> dict[str, Any]:
         "isDraft": bool(mr.get("draft") or mr.get("work_in_progress") or _title_is_draft(mr)),
         "labels": labels,
         "reviewDecision": _review_decision(mr),
+        "mergeStateStatus": _gitlab_merge_state_status(mr),
+        "mergeable": _gitlab_mergeable(mr),
+        "reviewRequests": _gitlab_review_requests(mr),
         "statusCheckRollup": [_pipeline_check(pipeline)] if pipeline else [],
         "comments": comments,
         "latestReviews": _latest_reviews(mr),
@@ -121,6 +124,9 @@ def normalize_forgejo_pr(pr: dict[str, Any]) -> dict[str, Any]:
         "isDraft": bool(pr.get("draft") or _title_is_draft(pr)),
         "labels": _labels(pr.get("labels")),
         "reviewDecision": _forgejo_review_decision(reviews),
+        "mergeStateStatus": _forgejo_merge_state_status(pr),
+        "mergeable": _forgejo_mergeable(pr),
+        "reviewRequests": _forgejo_review_requests(pr),
         "statusCheckRollup": _forgejo_checks(pr),
         "comments": _forgejo_comments(pr),
         "latestReviews": reviews,
@@ -221,6 +227,40 @@ def _review_decision(mr: dict[str, Any]) -> str:
     return "REVIEW_REQUIRED"
 
 
+def _gitlab_merge_state_status(mr: dict[str, Any]) -> str:
+    if mr.get("has_conflicts"):
+        return "DIRTY"
+    status = str(mr.get("detailed_merge_status") or mr.get("merge_status") or "").lower()
+    if status in {"mergeable", "can_be_merged"}:
+        return "CLEAN"
+    if status in {"need_rebase"}:
+        return "BEHIND"
+    if status in {"discussions_not_resolved", "ci_must_pass", "not_approved", "blocked_status"}:
+        return "BLOCKED"
+    if status in {"cannot_be_merged", "conflict"}:
+        return "DIRTY"
+    return status.upper() if status else ""
+
+
+def _gitlab_mergeable(mr: dict[str, Any]) -> str:
+    if mr.get("has_conflicts"):
+        return "CONFLICTING"
+    status = str(mr.get("merge_status") or mr.get("detailed_merge_status") or "").lower()
+    if status in {"can_be_merged", "mergeable"}:
+        return "MERGEABLE"
+    if status in {"cannot_be_merged", "conflict"}:
+        return "CONFLICTING"
+    return ""
+
+
+def _gitlab_review_requests(mr: dict[str, Any]) -> list[Any]:
+    for key in ("reviewers", "review_requests", "requested_reviewers"):
+        value = mr.get(key)
+        if isinstance(value, list):
+            return value
+    return []
+
+
 def _forgejo_review_decision(reviews: list[dict[str, str]]) -> str:
     approved = False
     for review in reviews:
@@ -230,6 +270,34 @@ def _forgejo_review_decision(reviews: list[dict[str, str]]) -> str:
         if state == "APPROVED":
             approved = True
     return "APPROVED" if approved else "REVIEW_REQUIRED"
+
+
+def _forgejo_merge_state_status(pr: dict[str, Any]) -> str:
+    value = pr.get("mergeStateStatus") or pr.get("merge_state_status") or pr.get("mergeable_state")
+    if value:
+        return str(value).upper().replace("-", "_").replace(" ", "_")
+    if pr.get("has_conflicts"):
+        return "DIRTY"
+    if pr.get("mergeable") is True:
+        return "CLEAN"
+    if pr.get("mergeable") is False:
+        return "DIRTY"
+    return ""
+
+
+def _forgejo_mergeable(pr: dict[str, Any]) -> str:
+    value = pr.get("mergeable")
+    if isinstance(value, bool):
+        return "MERGEABLE" if value else "CONFLICTING"
+    return str(value or "").upper().replace("-", "_").replace(" ", "_")
+
+
+def _forgejo_review_requests(pr: dict[str, Any]) -> list[Any]:
+    for key in ("reviewRequests", "review_requests", "requested_reviewers", "requestedReviewers"):
+        value = pr.get(key)
+        if isinstance(value, list):
+            return value
+    return []
 
 
 def _changes(mr: dict[str, Any]) -> list[dict[str, Any]]:

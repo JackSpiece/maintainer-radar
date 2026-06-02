@@ -10,6 +10,7 @@
       "draft": false,
       "labels": ["bug", "backend"],
       "approved": true,
+      "merge_status": "can_be_merged",
       "head_pipeline": { "status": "success", "ref": "feature/cache-fix" },
       "changes_count": "2",
       "changes": [
@@ -33,6 +34,7 @@
       "draft": true,
       "labels": "feature,plugins",
       "blocking_discussions_resolved": false,
+      "detailed_merge_status": "discussions_not_resolved",
       "pipeline": { "status": "failed", "ref": "feature/plugins" },
       "changes_count": "35",
       "stats": { "additions": 2200, "deletions": 200 },
@@ -45,4 +47,3 @@
     }
   ]
 }
-

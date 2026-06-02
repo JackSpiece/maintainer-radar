@@ -10,6 +10,11 @@
     "deletions": 18,
     "changedFiles": 3,
     "reviewDecision": "REVIEW_REQUIRED",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "reviewRequests": [
+      { "login": "maintainer-a" }
+    ],
     "statusCheckRollup": [
       { "status": "COMPLETED", "conclusion": "SUCCESS" },
       { "status": "COMPLETED", "conclusion": "SUCCESS" }
@@ -30,6 +35,8 @@
     "deletions": 120,
     "changedFiles": 40,
     "reviewDecision": "CHANGES_REQUESTED",
+    "mergeStateStatus": "DIRTY",
+    "mergeable": "CONFLICTING",
     "statusCheckRollup": [
       { "status": "COMPLETED", "conclusion": "FAILURE" }
     ],
@@ -41,4 +48,3 @@
     ]
   }
 ]
-

@@ -195,6 +195,95 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertEqual(result["action"], "needs author follow-up")
         self.assertIn("maintainer blocking label", result["flags"])
 
+    def test_merge_conflict_needs_author_follow_up(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 49,
+                "title": "Refresh parser branch",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 60,
+                "deletions": 12,
+                "changedFiles": 2,
+                "mergeStateStatus": "DIRTY",
+                "mergeable": "CONFLICTING",
+                "reviewRequests": [{"login": "maintainer-a"}],
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/parser/branch.py"},
+                    {"path": "tests/test_branch.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "needs author follow-up")
+        self.assertIn("merge conflicts", result["flags"])
+        self.assertIn("review requested", result["signals"])
+        self.assertEqual(result["merge_state_status"], "DIRTY")
+        self.assertEqual(result["mergeable"], "CONFLICTING")
+        self.assertEqual(result["review_requests"], 1)
+        self.assertEqual(
+            result["next_step"],
+            "Ask the author to resolve merge conflicts before another review pass.",
+        )
+        self.assertIn(
+            {"label": "merge conflicts", "risk_delta": 20, "kind": "flag"},
+            result["score_breakdown"],
+        )
+
+    def test_branch_behind_needs_author_follow_up(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 50,
+                "title": "Update API client",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 60,
+                "deletions": 12,
+                "changedFiles": 2,
+                "mergeStateStatus": "BEHIND",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/client.py"},
+                    {"path": "tests/test_client.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "needs author follow-up")
+        self.assertIn("branch behind base", result["flags"])
+        self.assertEqual(
+            result["next_step"],
+            "Ask the author to update the branch with the base branch before review.",
+        )
+
+    def test_merge_blocked_by_repo_rules_stays_reviewable(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 51,
+                "title": "Small clean change",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 20,
+                "deletions": 4,
+                "changedFiles": 2,
+                "mergeStateStatus": "BLOCKED",
+                "reviewRequests": [{"login": "maintainer-a"}, {"login": "maintainer-b"}],
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/small.py"},
+                    {"path": "tests/test_small.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "review now")
+        self.assertIn("merge blocked by repo rules", result["flags"])
+        self.assertIn("2 reviews requested", result["signals"])
+
     def test_configurable_thresholds_and_hints(self) -> None:
         result = analyze_pr(
             {

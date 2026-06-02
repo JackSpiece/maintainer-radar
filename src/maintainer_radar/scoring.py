@@ -231,6 +231,37 @@ def _has_blocking_label(pr: dict[str, Any]) -> bool:
     return any(LABEL_BLOCKER_RE.search(_normalize_label_name(name)) for name in _label_names(pr))
 
 
+def _merge_state_status(pr: dict[str, Any]) -> str:
+    value = pr.get("mergeStateStatus") or pr.get("merge_state_status") or pr.get("mergeable_state")
+    return str(value or "").upper().replace("-", "_").replace(" ", "_")
+
+
+def _mergeable_state(pr: dict[str, Any]) -> str:
+    value = pr.get("mergeable")
+    if isinstance(value, bool):
+        return "MERGEABLE" if value else "CONFLICTING"
+    return str(value or "").upper().replace("-", "_").replace(" ", "_")
+
+
+def _review_request_count(pr: dict[str, Any]) -> int:
+    count = 0
+    for key in ("reviewRequests", "review_requests", "requested_reviewers", "requestedReviewers"):
+        value = pr.get(key)
+        if isinstance(value, list):
+            count += len(value)
+        elif isinstance(value, dict):
+            for nested_key in ("nodes", "items"):
+                nested = value.get(nested_key)
+                if isinstance(nested, list):
+                    count += len(nested)
+                    break
+    for key in ("requested_teams", "requestedTeams"):
+        value = pr.get(key)
+        if isinstance(value, list):
+            count += len(value)
+    return count
+
+
 def _record_score(
     breakdown: list[dict[str, Any]],
     label: str,
@@ -261,6 +292,9 @@ def analyze_pr(
     changed_files = int(pr.get("changedFiles") or files.total_files or 0)
     total_diff = additions + deletions
     review_decision = str(pr.get("reviewDecision") or "").upper()
+    merge_state_status = _merge_state_status(pr)
+    mergeable = _mergeable_state(pr)
+    review_request_count = _review_request_count(pr)
     is_draft = bool(pr.get("isDraft") or pr.get("draft"))
     stale_days = days_since(pr.get("updatedAt"), now)
     has_blocker = _has_blocker(pr)
@@ -314,6 +348,33 @@ def analyze_pr(
         _record_score(score_breakdown, "changes requested", 25, kind="flag")
     elif review_decision == "REVIEW_REQUIRED":
         signals.append("review required")
+
+    if mergeable == "CONFLICTING" or merge_state_status == "DIRTY":
+        risk += 20
+        flags.append("merge conflicts")
+        _record_score(score_breakdown, "merge conflicts", 20, kind="flag")
+    elif merge_state_status == "BEHIND":
+        risk += 8
+        flags.append("branch behind base")
+        _record_score(score_breakdown, "branch behind base", 8, kind="flag")
+    elif merge_state_status == "BLOCKED":
+        risk += 6
+        flags.append("merge blocked by repo rules")
+        _record_score(score_breakdown, "merge blocked by repo rules", 6, kind="flag")
+    elif merge_state_status == "UNSTABLE" and checks.total == 0:
+        risk += 12
+        flags.append("merge checks unstable")
+        _record_score(score_breakdown, "merge checks unstable", 12, kind="flag")
+    elif merge_state_status == "CLEAN" or mergeable == "MERGEABLE":
+        signals.append("mergeable")
+
+    if review_request_count:
+        label = (
+            "review requested"
+            if review_request_count == 1
+            else f"{review_request_count} reviews requested"
+        )
+        signals.append(label)
 
     if stale_days is not None:
         if stale_days >= config["stale_days"]:
@@ -371,6 +432,8 @@ def analyze_pr(
         checks=checks,
         has_blocker=has_blocker,
         has_blocking_label=has_blocking_label,
+        merge_conflict="merge conflicts" in flags,
+        branch_behind="branch behind base" in flags,
         total_diff=total_diff,
         changed_files=changed_files,
         review_decision=review_decision,
@@ -398,6 +461,9 @@ def analyze_pr(
         "raw_risk": raw_risk,
         "checks": checks.__dict__,
         "files": files.__dict__,
+        "merge_state_status": merge_state_status,
+        "mergeable": mergeable,
+        "review_requests": review_request_count,
         "stale_days": stale_days,
         "additions": additions,
         "deletions": deletions,
@@ -415,6 +481,8 @@ def choose_action(
     total_diff: int,
     changed_files: int,
     review_decision: str,
+    merge_conflict: bool = False,
+    branch_behind: bool = False,
     config: dict[str, Any] | None = None,
 ) -> str:
     config = config or DEFAULT_CONFIG
@@ -424,6 +492,8 @@ def choose_action(
         return "ask for CI fix"
     if checks.pending:
         return "wait for CI"
+    if merge_conflict or branch_behind:
+        return "needs author follow-up"
     if review_decision == "CHANGES_REQUESTED" or has_blocker or has_blocking_label:
         return "needs author follow-up"
     if total_diff > config["very_large_diff_lines"] or changed_files > config["very_large_file_count"]:
@@ -450,6 +520,10 @@ def recommend_next_step(
     if action == "wait for CI":
         return "Wait for checks to finish before spending review time."
     if action == "needs author follow-up":
+        if "merge conflicts" in flags:
+            return "Ask the author to resolve merge conflicts before another review pass."
+        if "branch behind base" in flags:
+            return "Ask the author to update the branch with the base branch before review."
         if "maintainer blocker language" in flags or "maintainer blocking label" in flags:
             return "Ask the author to respond to unresolved maintainer feedback."
         return "Ask the author to address requested changes before another review pass."

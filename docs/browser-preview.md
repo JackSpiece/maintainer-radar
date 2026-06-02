@@ -80,6 +80,8 @@ This lets the preview detect basic queue signals like:
 - missing test-plan language
 - code changes without test files
 - maintainer blocking labels such as waiting on author or blocked upstream
+- merge conflicts, branch-behind state, and repository merge gates
+- requested reviewers and teams
 - generated or lockfile changes
 - public CI passed, failing, pending, or absent
 

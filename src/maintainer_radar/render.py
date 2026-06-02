@@ -1120,6 +1120,10 @@ def render_comment_template(item: dict[str, Any]) -> str:
         requests.append("Add regression coverage, or explain why tests are not practical for this change.")
     if any("maintainer blocker language" in flag for flag in flags):
         requests.append("Respond to the unresolved maintainer feedback before the next review pass.")
+    if any("merge conflicts" in flag for flag in flags):
+        requests.append("Resolve merge conflicts before requesting another review pass.")
+    if any("branch behind base" in flag for flag in flags):
+        requests.append("Update the branch with the base branch, then rerun checks.")
     if any("large diff" in flag or "very large diff" in flag for flag in flags):
         requests.append("Consider splitting the PR or explaining why the current scope needs to stay together.")
     if any(flag.startswith("stale ") or flag.startswith("quiet ") for flag in flags):

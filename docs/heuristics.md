@@ -24,6 +24,8 @@ Example:
 
 - CI passed
 - PR is approved
+- PR is mergeable
+- review has been requested
 - test plan language is present
 - tests changed
 - docs-only shape
@@ -35,6 +37,10 @@ Example:
 - no visible checks
 - CI failing or pending
 - changes requested
+- merge conflicts
+- branch behind base
+- merge blocked by repository rules
+- merge checks unstable
 - stale update window
 - maintainer blocker language
 - maintainer blocking label
@@ -72,6 +78,17 @@ review:
 - blocked upstream
 
 These labels route the PR to author follow-up even when CI is green.
+
+## Merge Readiness
+
+Hydrated GitHub scans also read merge readiness fields such as `mergeable`,
+`mergeStateStatus`, and requested reviewers.
+
+- Merge conflicts route the PR to author follow-up.
+- A branch behind the base branch routes the PR to author follow-up.
+- Repository rule blocking is shown as a risk flag, but it does not automatically
+  blame the author.
+- Requested reviewers are shown as positive queue context.
 
 ## Fixture Corpus
 

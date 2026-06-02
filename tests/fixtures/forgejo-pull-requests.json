@@ -10,6 +10,7 @@
       "draft": false,
       "labels": [{ "name": "bug" }, { "name": "backend" }],
       "reviews": [{ "state": "APPROVED", "body": "Looks good to me." }],
+      "mergeable": true,
       "statuses": [{ "context": "ci/test", "state": "success" }],
       "changed_files": 2,
       "additions": 48,
@@ -28,6 +29,7 @@
       "updated_at": "2026-05-01T00:00:00Z",
       "draft": true,
       "labels": ["feature", "queue"],
+      "mergeable": false,
       "reviews": [
         {
           "state": "REQUEST_CHANGES",

@@ -13,6 +13,8 @@
     "signals": [
       "CI passed",
       "review required",
+      "mergeable",
+      "review requested",
       "test plan present",
       "tests changed"
     ],
@@ -38,6 +40,9 @@
       "generated_files": 0,
       "total_files": 2
     },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
     "stale_days": 0,
     "additions": 42,
     "deletions": 18,
@@ -57,6 +62,7 @@
       "very large diff",
       "CI failing",
       "changes requested",
+      "merge conflicts",
       "stale 22 days",
       "maintainer blocker language",
       "no test plan found",
@@ -80,6 +86,11 @@
         "kind": "flag"
       },
       {
+        "label": "merge conflicts",
+        "risk_delta": 20,
+        "kind": "flag"
+      },
+      {
         "label": "stale 22 days",
         "risk_delta": 15,
         "kind": "flag"
@@ -100,7 +111,7 @@
         "kind": "flag"
       }
     ],
-    "raw_risk": 143,
+    "raw_risk": 163,
     "checks": {
       "passed": 0,
       "failed": 1,
@@ -115,6 +126,9 @@
       "generated_files": 0,
       "total_files": 1
     },
+    "merge_state_status": "DIRTY",
+    "mergeable": "CONFLICTING",
+    "review_requests": 0,
     "stale_days": 22,
     "additions": 2200,
     "deletions": 120,

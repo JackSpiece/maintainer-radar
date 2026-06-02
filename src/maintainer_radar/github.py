@@ -42,8 +42,11 @@ PR_LIST_FIELDS = ",".join(
         "deletions",
         "isDraft",
         "labels",
+        "mergeable",
+        "mergeStateStatus",
         "number",
         "reviewDecision",
+        "reviewRequests",
         "statusCheckRollup",
         "title",
         "updatedAt",
@@ -125,4 +128,3 @@ def search_author_prs(author: str, *, state: str = "open", limit: int = 50) -> l
             }
         )
     return normalized
-

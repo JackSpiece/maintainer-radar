@@ -22,6 +22,9 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("time-boxed review", html)
         self.assertIn("Next step", html)
         self.assertIn("Maintainer blocked", html)
+        self.assertIn("mergeable, review requested", html)
+        self.assertIn("merge conflicts", html)
+        self.assertIn("Resolve merge conflicts", html)
         self.assertIn("Review now while the PR appears small, active, and low risk.", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
@@ -60,7 +63,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.31", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.32", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
@@ -121,11 +124,13 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("current plan minutes", docs)
         self.assertIn("Maintainer blocked", docs)
         self.assertIn("Group by action", docs)
+        self.assertIn("merge conflicts, branch-behind state, and repository merge gates", docs)
+        self.assertIn("requested reviewers and teams", docs)
 
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.31", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.32", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
@@ -174,6 +179,8 @@ class PagesAssetTests(unittest.TestCase):
         csv_docs = (ROOT / "docs" / "csv-output.md").read_text(encoding="utf-8")
 
         self.assertIn("maintainer_blocked", json_docs)
+        self.assertIn("merge_state_status", json_docs)
+        self.assertIn("review_requests", json_docs)
         self.assertIn("PRs blocked by maintainer feedback or labels", json_docs)
         self.assertIn("maintainer_blocked", csv_docs)
 
@@ -185,6 +192,9 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("waiting for dependency", docs)
         self.assertIn("blocked upstream", docs)
         self.assertIn("These labels route the PR to author follow-up", docs)
+        self.assertIn("Merge Readiness", docs)
+        self.assertIn("Merge conflicts route the PR to author follow-up", docs)
+        self.assertIn("Requested reviewers are shown as positive queue context", docs)
 
 
 if __name__ == "__main__":

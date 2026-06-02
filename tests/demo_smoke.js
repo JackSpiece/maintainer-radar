@@ -170,6 +170,15 @@ assert.equal(demo.hasBlockingLabel({ labels: [{ name: "blocked-upstream" }] }), 
 assert.equal(demo.hasBlockingLabel({ labels: [{ name: "waiting-for-dependency" }] }), true);
 assert.equal(demo.isMaintainerBlocked(labelBlocked), true);
 assert.equal(demo.isMaintainerBlocked(ready), false);
+assert.equal(demo.mergeStateStatus({ mergeable_state: "behind" }), "BEHIND");
+assert.equal(demo.mergeableState({ mergeable: false }), "CONFLICTING");
+assert.equal(
+  demo.reviewRequestCount({
+    requested_reviewers: [{ login: "maintainer-a" }],
+    requested_teams: [{ name: "core" }],
+  }),
+  2
+);
 assert.deepEqual(demo.summarizeItems([ready, risky, labelBlocked]), {
   total: 3,
   reviewNow: 1,
@@ -199,6 +208,62 @@ const waitForCi = demo.analyzePullRequest(
     checkRuns: [{ status: "IN_PROGRESS", conclusion: null }],
   }
 );
+
+const conflicted = demo.analyzePullRequest(
+  {
+    number: 46,
+    title: "Refresh parser branch",
+    html_url: "https://example.test/pull/46",
+    body: "Test plan: unit tests.",
+    updated_at: "2026-06-01T00:00:00Z",
+    additions: 60,
+    deletions: 12,
+    changed_files: 2,
+    draft: false,
+    mergeable_state: "dirty",
+    mergeable: false,
+    requested_reviewers: [{ login: "maintainer-a" }],
+  },
+  [{ filename: "src/parser/branch.py" }, { filename: "tests/test_branch.py" }],
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [{ status: "COMPLETED", conclusion: "SUCCESS" }],
+  }
+);
+assert.equal(conflicted.action, "needs author follow-up");
+assert.equal(
+  conflicted.nextStep,
+  "Ask the author to resolve merge conflicts before another review pass."
+);
+assert.ok(conflicted.flags.includes("merge conflicts"));
+assert.ok(conflicted.signals.includes("review requested"));
+assert.equal(conflicted.mergeStateStatus, "DIRTY");
+assert.equal(conflicted.mergeable, "CONFLICTING");
+assert.equal(conflicted.reviewRequests, 1);
+assert.ok(demo.draftFollowUpComment(conflicted).includes("Resolve merge conflicts"));
+
+const behind = demo.analyzePullRequest(
+  {
+    number: 47,
+    title: "Update API client",
+    html_url: "https://example.test/pull/47",
+    body: "Test plan: unit tests.",
+    updated_at: "2026-06-01T00:00:00Z",
+    additions: 60,
+    deletions: 12,
+    changed_files: 2,
+    draft: false,
+    mergeable_state: "behind",
+  },
+  [{ filename: "src/client.py" }, { filename: "tests/test_client.py" }],
+  {
+    now: new Date("2026-06-01T00:00:00Z"),
+    checkRuns: [{ status: "COMPLETED", conclusion: "SUCCESS" }],
+  }
+);
+assert.equal(behind.action, "needs author follow-up");
+assert.ok(behind.flags.includes("branch behind base"));
+assert.ok(demo.draftFollowUpComment(behind).includes("Update the branch with the base branch"));
 
 assert.equal(demo.estimateReviewMinutes(ready), 12);
 assert.equal(demo.estimateReviewMinutes(risky), 5);
@@ -299,7 +364,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.31"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.32"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));
 assert.ok(workflow.includes("output: review-plan.md"));

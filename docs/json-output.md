@@ -28,6 +28,9 @@ Important fields:
 | `raw_risk` | integer | Risk before clamping to the 0 to 100 range |
 | `checks` | object | Check summary |
 | `files` | object | File shape summary |
+| `merge_state_status` | string | Normalized merge state, when available |
+| `mergeable` | string | Normalized mergeability state, when available |
+| `review_requests` | integer | Requested reviewer and team count |
 | `stale_days` | integer or null | Days since last update |
 
 Each score breakdown entry has:

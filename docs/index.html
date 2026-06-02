@@ -669,6 +669,7 @@ Reviewability score: **0/100**.
 Before the next maintainer pass, please:
 - Get CI passing or explain why the failing check is unrelated.
 - Add a short validation or test plan to the PR body.
+- Resolve merge conflicts before requesting another review pass.
 - Consider splitting the PR or explaining why the current scope needs to stay together.
 
 _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
@@ -693,15 +694,15 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
               <td>Review now while the PR appears small, active, and low risk.</td>
               <td class="score">100</td>
               <td class="impact">CI passed (-8 risk)</td>
-              <td class="signals">CI passed, review required, test plan present, tests changed</td>
+              <td class="signals">CI passed, review required, mergeable, review requested, test plan present, tests changed</td>
             </tr>
             <tr>
               <td>#43 Add universal plugin system</td>
               <td><span class="pill ci">ask for CI fix</span></td>
               <td>Ask the author to get failing checks green before deeper review.</td>
               <td class="score">0</td>
-              <td class="impact">very large diff (+30 risk); CI failing (+30 risk); maintainer blocking label (+18 risk)</td>
-              <td class="signals">maintainer blocking label, changes requested, stale 22 days, no test plan found</td>
+              <td class="impact">very large diff (+30 risk); CI failing (+30 risk); merge conflicts (+20 risk)</td>
+              <td class="signals">merge conflicts, changes requested, stale 22 days, no test plan found</td>
             </tr>
           </tbody>
         </table>

@@ -5,6 +5,7 @@ import re
 import unittest
 
 from maintainer_radar import __version__
+from maintainer_radar.github import PR_LIST_FIELDS, PR_VIEW_FIELDS
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,12 @@ class MetadataTests(unittest.TestCase):
             'description = "GitHub Action and local CLI for read-only pull request triage reports."',
             pyproject,
         )
+
+    def test_github_fields_include_merge_readiness(self) -> None:
+        for field in ("mergeable", "mergeStateStatus", "reviewRequests"):
+            with self.subTest(field=field):
+                self.assertIn(field, PR_LIST_FIELDS)
+                self.assertIn(field, PR_VIEW_FIELDS)
 
 
 if __name__ == "__main__":

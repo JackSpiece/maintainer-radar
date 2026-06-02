@@ -45,6 +45,7 @@ Maintainer Radar focuses on that first 60 seconds:
 
 - Is the PR small enough to review?
 - Did CI pass?
+- Is the branch mergeable or blocked by conflicts?
 - Did the author include a test plan?
 - Are tests changed when code changed?
 - Did a maintainer already say "not working" or request changes?
@@ -78,7 +79,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.31
+- uses: JackSpiece/maintainer-radar@v0.16.32
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}

@@ -21,6 +21,8 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(normalized[0]["number"], 12)
         self.assertEqual(normalized[0]["author"]["login"], "alice")
         self.assertEqual(normalized[0]["reviewDecision"], "APPROVED")
+        self.assertEqual(normalized[0]["mergeStateStatus"], "CLEAN")
+        self.assertEqual(normalized[0]["mergeable"], "MERGEABLE")
         self.assertEqual(normalized[0]["statusCheckRollup"][0]["conclusion"], "SUCCESS")
         self.assertEqual(normalized[0]["changedFiles"], 2)
         self.assertEqual(normalized[0]["files"][1]["path"], "tests/test_api_cache.py")
@@ -56,6 +58,20 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(normalized["additions"], 2)
         self.assertEqual(normalized["deletions"], 1)
 
+    def test_gitlab_conflict_merge_state_is_normalized(self) -> None:
+        normalized = normalize_gitlab_mr(
+            {
+                "iid": 2,
+                "title": "Conflict",
+                "has_conflicts": True,
+                "reviewers": [{"username": "maintainer"}],
+            }
+        )
+
+        self.assertEqual(normalized["mergeStateStatus"], "DIRTY")
+        self.assertEqual(normalized["mergeable"], "CONFLICTING")
+        self.assertEqual(len(normalized["reviewRequests"]), 1)
+
     def test_normalize_forgejo_pull_request(self) -> None:
         fixture = json.loads(
             (Path(__file__).parent / "fixtures" / "forgejo-pull-requests.json").read_text(
@@ -68,6 +84,8 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(normalized[0]["number"], 7)
         self.assertEqual(normalized[0]["author"]["login"], "maya")
         self.assertEqual(normalized[0]["reviewDecision"], "APPROVED")
+        self.assertEqual(normalized[0]["mergeStateStatus"], "CLEAN")
+        self.assertEqual(normalized[0]["mergeable"], "MERGEABLE")
         self.assertEqual(normalized[0]["statusCheckRollup"][0]["conclusion"], "SUCCESS")
         self.assertEqual(normalized[0]["changedFiles"], 2)
         self.assertEqual(normalized[0]["files"][1]["path"], "tests/test_webhook_retry.py")
@@ -113,6 +131,20 @@ class NormalizeTests(unittest.TestCase):
 
         self.assertEqual(normalized["additions"], 5)
         self.assertEqual(normalized["deletions"], 1)
+
+    def test_forgejo_conflict_merge_state_is_normalized(self) -> None:
+        normalized = normalize_forgejo_pr(
+            {
+                "number": 2,
+                "title": "Conflict",
+                "mergeable": False,
+                "requested_reviewers": [{"login": "maintainer"}],
+            }
+        )
+
+        self.assertEqual(normalized["mergeStateStatus"], "DIRTY")
+        self.assertEqual(normalized["mergeable"], "CONFLICTING")
+        self.assertEqual(len(normalized["reviewRequests"]), 1)
 
 
 if __name__ == "__main__":

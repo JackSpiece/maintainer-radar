@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.16.32
+
+- Hydrated scans now include merge readiness signals from GitHub, including
+  merge conflicts, branch-behind state, repository merge gates, mergeability,
+  and requested reviewers.
+- Merge conflicts and branch-behind states route to author follow-up, and draft
+  follow-ups include targeted requests for those cases.
+- Browser preview scoring now shows the same merge readiness signals when the
+  public GitHub API exposes them.
+
 ## 0.16.31
 
 - The public browser preview now shows a Draft Follow-ups panel under the review

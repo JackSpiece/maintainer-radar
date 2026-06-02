@@ -350,6 +350,20 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Get CI passing", payload["planned"][0]["draft_follow_up_comment"])
         self.assertIn("Please edit before posting", payload["planned"][0]["draft_follow_up_comment"])
 
+    def test_comment_template_includes_merge_readiness_requests(self) -> None:
+        comment = render_comment_template(
+            {
+                "number": 9,
+                "title": "Refresh branch",
+                "action": "needs author follow-up",
+                "reviewability": 52,
+                "flags": ["merge conflicts", "branch behind base"],
+            }
+        )
+
+        self.assertIn("Resolve merge conflicts", comment)
+        self.assertIn("Update the branch with the base branch", comment)
+
     def test_review_plan_rejects_non_positive_budget(self) -> None:
         with self.assertRaises(ValueError):
             build_review_plan([], 0)

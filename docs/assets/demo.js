@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.31";
+  const ACTION_VERSION = "v0.16.32";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -242,6 +242,53 @@
     return labelNames(pr).some((label) => LABEL_BLOCKER_RE.test(normalizeLabelName(label)));
   }
 
+  function mergeStateStatus(pr) {
+    return String(
+      (pr && (pr.mergeStateStatus || pr.merge_state_status || pr.mergeable_state)) || ""
+    )
+      .toUpperCase()
+      .replace(/[-\s]+/g, "_");
+  }
+
+  function mergeableState(pr) {
+    const value = pr && pr.mergeable;
+    if (typeof value === "boolean") {
+      return value ? "MERGEABLE" : "CONFLICTING";
+    }
+    return String(value || "")
+      .toUpperCase()
+      .replace(/[-\s]+/g, "_");
+  }
+
+  function reviewRequestCount(pr) {
+    let count = 0;
+    for (const key of [
+      "reviewRequests",
+      "review_requests",
+      "requested_reviewers",
+      "requestedReviewers",
+    ]) {
+      const value = pr && pr[key];
+      if (Array.isArray(value)) {
+        count += value.length;
+      } else if (value && typeof value === "object") {
+        for (const nestedKey of ["nodes", "items"]) {
+          if (Array.isArray(value[nestedKey])) {
+            count += value[nestedKey].length;
+            break;
+          }
+        }
+      }
+    }
+    for (const key of ["requested_teams", "requestedTeams"]) {
+      const value = pr && pr[key];
+      if (Array.isArray(value)) {
+        count += value.length;
+      }
+    }
+    return count;
+  }
+
   function daysSince(value, now = new Date()) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -282,6 +329,9 @@
     const isDraft = Boolean(pr.draft);
     const hasCheckData = Array.isArray(options.checkRuns);
     const hasLabelBlocker = hasBlockingLabel(pr);
+    const mergeState = mergeStateStatus(pr);
+    const mergeable = mergeableState(pr);
+    const reviewRequests = reviewRequestCount(pr);
 
     let risk = 0;
     const signals = [];
@@ -352,6 +402,30 @@
       addImpact(scoreBreakdown, "maintainer blocking label", 18, "flag");
     }
 
+    if (mergeable === "CONFLICTING" || mergeState === "DIRTY") {
+      risk += 20;
+      flags.push("merge conflicts");
+      addImpact(scoreBreakdown, "merge conflicts", 20, "flag");
+    } else if (mergeState === "BEHIND") {
+      risk += 8;
+      flags.push("branch behind base");
+      addImpact(scoreBreakdown, "branch behind base", 8, "flag");
+    } else if (mergeState === "BLOCKED") {
+      risk += 6;
+      flags.push("merge blocked by repo rules");
+      addImpact(scoreBreakdown, "merge blocked by repo rules", 6, "flag");
+    } else if (mergeState === "UNSTABLE" && !checkSummary.total) {
+      risk += 12;
+      flags.push("merge checks unstable");
+      addImpact(scoreBreakdown, "merge checks unstable", 12, "flag");
+    } else if (mergeState === "CLEAN" || mergeable === "MERGEABLE") {
+      signals.push("mergeable");
+    }
+
+    if (reviewRequests) {
+      signals.push(reviewRequests === 1 ? "review requested" : `${reviewRequests} reviews requested`);
+    }
+
     if (fileSummary.codeFiles && !fileSummary.testFiles) {
       risk += 10;
       flags.push("code changed without tests");
@@ -382,6 +456,8 @@
       checks: checkSummary,
       hasCheckData,
       hasLabelBlocker,
+      hasMergeConflict: flags.includes("merge conflicts"),
+      isBranchBehind: flags.includes("branch behind base"),
       totalDiff,
       changedFiles,
     });
@@ -401,6 +477,9 @@
       additions,
       deletions,
       changedFiles,
+      mergeStateStatus: mergeState,
+      mergeable,
+      reviewRequests,
     };
   }
 
@@ -410,6 +489,8 @@
     checks,
     hasCheckData,
     hasLabelBlocker,
+    hasMergeConflict,
+    isBranchBehind,
     totalDiff,
     changedFiles,
   }) {
@@ -421,6 +502,9 @@
     }
     if (hasCheckData && checks && checks.pending) {
       return "wait for CI";
+    }
+    if (hasMergeConflict || isBranchBehind) {
+      return "needs author follow-up";
     }
     if (hasLabelBlocker) {
       return "needs author follow-up";
@@ -448,6 +532,12 @@
       return "Wait for checks to finish before spending review time.";
     }
     if (action === "needs author follow-up") {
+      if (flags.includes("merge conflicts")) {
+        return "Ask the author to resolve merge conflicts before another review pass.";
+      }
+      if (flags.includes("branch behind base")) {
+        return "Ask the author to update the branch with the base branch before review.";
+      }
       if (flags.includes("maintainer blocker language") || flags.includes("maintainer blocking label")) {
         return "Ask the author to respond to unresolved maintainer feedback.";
       }
@@ -580,6 +670,12 @@
     }
     if (flags.some((flag) => String(flag).includes("maintainer blocker language"))) {
       requests.push("Respond to the unresolved maintainer feedback before the next review pass.");
+    }
+    if (flags.some((flag) => String(flag).includes("merge conflicts"))) {
+      requests.push("Resolve merge conflicts before requesting another review pass.");
+    }
+    if (flags.some((flag) => String(flag).includes("branch behind base"))) {
+      requests.push("Update the branch with the base branch, then rerun checks.");
     }
     if (flags.some((flag) => String(flag).includes("large diff"))) {
       requests.push("Consider splitting the PR or explaining why the current scope needs to stay together.");
@@ -1409,6 +1505,8 @@
     hasBlockingLabel,
     isMaintainerBlocked,
     labelNames,
+    mergeableState,
+    mergeStateStatus,
     buildReviewPlan,
     draftFollowUpComment,
     estimateReviewMinutes,
@@ -1425,6 +1523,7 @@
     renderDraftFollowUpPreview,
     renderActionWorkflow,
     reviewPlanFollowUpEntries,
+    reviewRequestCount,
     shareUrlForRepository,
     summarizeCheckRuns,
     summarizeItems,
