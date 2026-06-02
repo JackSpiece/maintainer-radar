@@ -17,6 +17,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("GitHub Action", html)
         self.assertIn('href="adoption.html"', html)
         self.assertIn('href="github-action.html"', html)
+        self.assertIn('href="attention-workflows.html"', html)
         self.assertIn('href="review-plan.html"', html)
         self.assertIn("run summary", html)
         self.assertIn("time-boxed review", html)
@@ -59,6 +60,20 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
+
+    def test_attention_workflows_docs_explain_notification_gates(self) -> None:
+        docs = (ROOT / "docs" / "attention-workflows.md").read_text(encoding="utf-8")
+
+        self.assertIn("Attention Workflows", docs)
+        self.assertIn("queue-headline", docs)
+        self.assertIn("attention-level", docs)
+        self.assertIn("attention-reason", docs)
+        self.assertIn("Warn on active queue", docs)
+        self.assertIn("steps.radar.outputs.attention-level != 'quiet'", docs)
+        self.assertIn("steps.radar.outputs.attention-level == 'blocked'", docs)
+        self.assertIn("stale-days", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.36", docs)
+        self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_adoption_guide_has_copy_paste_workflows(self) -> None:
         docs = (ROOT / "docs" / "adoption.md").read_text(encoding="utf-8")
@@ -108,6 +123,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Use AI reviewers to inspect code", readme)
         self.assertIn("time-boxed review plan", readme)
+        self.assertIn("docs/attention-workflows.md", readme)
         self.assertIn("Before-review workflow", readme)
         self.assertIn("Where should a maintainer spend review attention first?", docs)
         self.assertIn("What It Refuses To Do", docs)

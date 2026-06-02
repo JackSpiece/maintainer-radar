@@ -21,6 +21,8 @@ GitHub Action usage: [docs/github-action.md](docs/github-action.md)
 
 Review plan guide: [docs/review-plan.md](docs/review-plan.md)
 
+Attention workflows: [docs/attention-workflows.md](docs/attention-workflows.md)
+
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
