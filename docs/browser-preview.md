@@ -49,8 +49,8 @@ Turn on **Group by action** to split the preview and copied Markdown into
 review-now, CI, author follow-up, and triage sections.
 
 The **Copy Workflow** button copies a ready scheduled GitHub Action workflow that
-uses the latest Maintainer Radar release and uploads the generated report as an
-artifact. The copied workflow uses action-grouped Markdown output.
+uses the latest Maintainer Radar release and uploads the generated review plan
+as an artifact. The copied workflow uses the current plan minutes value.
 
 ## What It Fetches
 

@@ -233,10 +233,15 @@ assert.deepEqual(
 );
 
 const workflow = demo.renderActionWorkflow();
-assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.20"));
+assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.21"));
 assert.ok(workflow.includes("pull-requests: read"));
-assert.ok(workflow.includes("group-by: action"));
+assert.ok(workflow.includes('review-plan-minutes: "30"'));
+assert.ok(workflow.includes("output: review-plan.md"));
+assert.ok(workflow.includes("name: review-plan"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));
+const fortyFiveMinuteWorkflow = demo.renderActionWorkflow({ budgetMinutes: 45 });
+assert.ok(fortyFiveMinuteWorkflow.includes("Build 45 minute review plan"));
+assert.ok(fortyFiveMinuteWorkflow.includes('review-plan-minutes: "45"'));
 
 console.log("browser demo smoke checks passed");

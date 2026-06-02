@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.20";
+  const ACTION_VERSION = "v0.16.21";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -723,9 +723,13 @@
     return `${lines.join("\n")}\n`;
   }
 
-  function renderActionWorkflow() {
+  function renderActionWorkflow(options = {}) {
+    const budgetMinutes = intValue(options.budgetMinutes || 30);
+    if (budgetMinutes < 1) {
+      throw new Error("Plan minutes must be 1 or greater.");
+    }
     return [
-      "name: Maintainer Radar",
+      "name: Maintainer Radar Review Plan",
       "",
       "on:",
       "  workflow_dispatch:",
@@ -737,13 +741,13 @@
       "  pull-requests: read",
       "",
       "jobs:",
-      "  report:",
+      "  review-plan:",
       "    runs-on: ubuntu-latest",
       "    steps:",
       "      - uses: actions/setup-python@v6",
       "        with:",
       '          python-version: "3.12"',
-      "      - name: Build PR report",
+      `      - name: Build ${budgetMinutes} minute review plan`,
       "        id: radar",
       `        uses: JackSpiece/maintainer-radar@${ACTION_VERSION}`,
       "        env:",
@@ -751,14 +755,14 @@
       "        with:",
       "          repository: ${{ github.repository }}",
       "          format: markdown",
-      "          output: maintainer-radar.md",
+      "          output: review-plan.md",
       '          limit: "50"',
       "          sort: action",
-      "          group-by: action",
+      `          review-plan-minutes: "${budgetMinutes}"`,
       '          hydrate: "true"',
       "      - uses: actions/upload-artifact@v4",
       "        with:",
-      "          name: maintainer-radar",
+      "          name: review-plan",
       "          path: ${{ steps.radar.outputs.report-path }}",
       "",
     ].join("\n");
@@ -1102,12 +1106,16 @@
     });
 
     workflowButton.addEventListener("click", async () => {
-      const workflow = renderActionWorkflow();
-      await copyText(
-        workflow,
-        `Copied GitHub Action workflow using Maintainer Radar ${ACTION_VERSION}.`,
-        "Workflow YAML is ready, but clipboard access is unavailable."
-      );
+      try {
+        const workflow = renderActionWorkflow({ budgetMinutes: planMinutesInput.value });
+        await copyText(
+          workflow,
+          `Copied review-plan workflow using Maintainer Radar ${ACTION_VERSION}.`,
+          "Workflow YAML is ready, but clipboard access is unavailable."
+        );
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : "Workflow generation failed.");
+      }
     });
 
     groupToggle.addEventListener("change", () => {
