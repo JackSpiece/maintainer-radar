@@ -6,6 +6,9 @@ The project sits before review. It answers a simpler question:
 
 > Where should a maintainer spend review attention first?
 
+Use AI reviewers to inspect code. Use Maintainer Radar before that to decide
+which pull requests are worth maintainer attention now.
+
 ## Existing Categories
 
 - AI code review bots comment on diffs.
@@ -41,6 +44,12 @@ why a PR was routed and what a maintainer should do next.
 
 This is intentionally small. It makes the review queue easier to scan without a
 bot account, webhook, hosted database, or SaaS subscription.
+
+## What It Refuses To Do
+
+- It does not approve, reject, merge, label, or comment on pull requests.
+- It does not claim to understand code better than a maintainer.
+- It does not require a model key or hosted service to produce a queue brief.
 
 ## Why Maintainers Might Care
 

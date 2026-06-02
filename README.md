@@ -23,6 +23,9 @@ review brief: which PRs are ready to review, which ones need author follow-up,
 which ones are blocked by CI, and which ones are too risky to merge without more
 evidence.
 
+Use AI reviewers to inspect code. Use Maintainer Radar before that to decide
+which pull requests deserve maintainer attention first.
+
 It is not a review bot and it does not require a GitHub App. It runs from your
 terminal, uses the GitHub CLI when live data is needed, and can also analyze JSON
 fixtures offline.
@@ -47,6 +50,8 @@ Maintainer Radar focuses on that first 60 seconds:
 Most tools in this area are AI reviewers, GitHub Apps, bounty boards, or generic
 dashboards. Maintainer Radar is different on purpose:
 
+- **Before-review workflow:** it routes attention before anyone spends time on
+  code review.
 - **Maintainer-first:** it prioritizes review time, not contributor output.
 - **Local-first:** no SaaS, no webhook, no hosted database.
 - **Deterministic:** every score comes with a visible heuristic breakdown.

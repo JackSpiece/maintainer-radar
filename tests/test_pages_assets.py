@@ -46,6 +46,16 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
+    def test_positioning_keeps_before_review_message(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        docs = (ROOT / "docs" / "positioning.md").read_text(encoding="utf-8")
+
+        self.assertIn("Use AI reviewers to inspect code", readme)
+        self.assertIn("Before-review workflow", readme)
+        self.assertIn("Where should a maintainer spend review attention first?", docs)
+        self.assertIn("What It Refuses To Do", docs)
+        self.assertIn("does not approve, reject, merge, label, or comment", docs)
+
     def test_social_preview_png_has_expected_dimensions(self) -> None:
         data = (ROOT / "docs" / "assets" / "social-preview.png").read_bytes()
 
