@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.23
+        uses: JackSpiece/maintainer-radar@v0.16.24
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -63,7 +63,7 @@ jobs:
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
 | `group-by` | empty | Group Markdown and HTML queue reports. Supported value: `action`. |
-| `review-plan-minutes` | empty | Render a Markdown review-session plan for this many maintainer minutes. |
+| `review-plan-minutes` | empty | Render a Markdown or HTML review-session plan for this many maintainer minutes. |
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |
@@ -138,12 +138,25 @@ with:
   group-by: action
 ```
 
-For a time-boxed maintainer session, keep Markdown output and add a review plan:
+For a time-boxed maintainer session, add a review plan. Use Markdown when you
+want the plan in the run summary:
 
 ```yaml
 with:
   repository: ${{ github.repository }}
   format: markdown
+  sort: action
+  review-plan-minutes: "30"
+  hydrate: "true"
+```
+
+Use HTML when you want a browser-friendly plan artifact:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  format: html
+  output: review-plan.html
   sort: action
   review-plan-minutes: "30"
   hydrate: "true"

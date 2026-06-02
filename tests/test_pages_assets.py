@@ -55,7 +55,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.23", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.24", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
@@ -114,13 +114,15 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.23", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.24", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)
+        self.assertIn("format: html", docs)
+        self.assertIn("review-plan.html", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_review_plan_docs_explain_time_boxed_workflow(self) -> None:
@@ -128,7 +130,9 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Review Plans", docs)
         self.assertIn("--review-plan-minutes 30", docs)
+        self.assertIn("--format html --review-plan-minutes 30", docs)
         self.assertIn("review-plan-minutes", docs)
+        self.assertIn("browser-friendly", docs)
         self.assertIn("watch-only", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 

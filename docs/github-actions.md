@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.23
+- uses: JackSpiece/maintainer-radar@v0.16.24
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -104,7 +104,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.23
+        uses: JackSpiece/maintainer-radar@v0.16.24
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -127,7 +127,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.23
+  uses: JackSpiece/maintainer-radar@v0.16.24
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -149,12 +149,12 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ## Time-Boxed Review Plan
 
 For a scheduled report that tells maintainers what fits in the next review
-session:
+session, use Markdown when you want the plan in the run summary:
 
 ```yaml
 - name: Build 30 minute review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.23
+  uses: JackSpiece/maintainer-radar@v0.16.24
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -170,6 +170,27 @@ session:
     path: ${{ steps.radar.outputs.report-path }}
 ```
 
+Use HTML when you want a browser-friendly plan artifact:
+
+```yaml
+- name: Build HTML review plan
+  id: radar
+  uses: JackSpiece/maintainer-radar@v0.16.24
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: html
+    output: review-plan.html
+    review-plan-minutes: "30"
+    sort: action
+    hydrate: "true"
+- uses: actions/upload-artifact@v4
+  with:
+    name: review-plan-html
+    path: ${{ steps.radar.outputs.report-path }}
+```
+
 ## HTML Artifact
 
 For a static browser-friendly report:
@@ -177,7 +198,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.23
+  uses: JackSpiece/maintainer-radar@v0.16.24
   env:
     GH_TOKEN: ${{ github.token }}
   with:

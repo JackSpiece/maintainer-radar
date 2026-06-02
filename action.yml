@@ -62,7 +62,7 @@ inputs:
     required: false
     default: ""
   review-plan-minutes:
-    description: Render a Markdown review-session plan for this many maintainer minutes.
+    description: Render a Markdown or HTML review-session plan for this many maintainer minutes.
     required: false
     default: ""
   config:

@@ -9,8 +9,13 @@ with the next 30 minutes?"
 maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
 ```
 
-The plan is Markdown so it can go directly into a terminal, GitHub Actions run
-summary, issue, or maintainer handoff note.
+The plan can be Markdown for a terminal, GitHub Actions run summary, issue, or
+maintainer handoff note. It can also be HTML when you want a browser-friendly
+artifact:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort action --format html --review-plan-minutes 30
+```
 
 You can also try this without installing anything in the browser preview:
 
@@ -64,8 +69,18 @@ with:
   hydrate: "true"
 ```
 
-Review plans require Markdown output because they are designed for human
-handoffs and Actions run summaries.
+Use Markdown output when you want the plan in the Actions run summary. Use HTML
+output when you want a downloadable browser-friendly plan artifact:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  format: html
+  output: review-plan.html
+  sort: action
+  review-plan-minutes: "30"
+  hydrate: "true"
+```
 
 When the reusable Action runs with `review-plan-minutes`, it also exposes
 structured plan outputs for later workflow steps:

@@ -183,6 +183,21 @@ HTML_TEMPLATE = """<!doctype html>
       font-size: 13px;
       font-weight: 500;
     }}
+    .plan-section {{
+      margin-top: 22px;
+    }}
+    .plan-section h2 {{
+      margin: 0 0 8px;
+      font-size: 18px;
+    }}
+    .notice {{
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      background: #fffbeb;
+      color: #92400e;
+      padding: 10px 12px;
+      margin: 0 0 18px;
+    }}
     pre {{
       white-space: pre-wrap;
       border: 1px solid var(--line);
@@ -202,7 +217,7 @@ HTML_TEMPLATE = """<!doctype html>
   <main>
     <header>
       <h1>{title}</h1>
-      <p class="subtitle">Deterministic maintainer triage report.</p>
+      <p class="subtitle">{subtitle}</p>
     </header>
     {summary}
     {table}
@@ -321,6 +336,23 @@ def render_review_plan_markdown(
     return "\n".join(lines) + "\n"
 
 
+def render_review_plan_html(
+    analyses: list[dict[str, Any]],
+    budget_minutes: int,
+    title: str = "Maintainer Radar Review Plan",
+) -> str:
+    plan = build_review_plan(analyses, budget_minutes)
+    summary = summarize_report(analyses)
+    summary_html = _render_plan_html_summary(plan, summary)
+    plan_html = _render_plan_html_sections(plan)
+    return HTML_TEMPLATE.format(
+        title=escape(title),
+        subtitle="Deterministic maintainer review plan.",
+        summary=summary_html,
+        table=plan_html,
+    )
+
+
 def render_csv(analyses: list[dict[str, Any]]) -> str:
     output = StringIO()
     writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, lineterminator="\n")
@@ -376,7 +408,12 @@ def render_html(
     safe_title = escape(title)
     summary_html = _render_html_summary(analyses)
     table_html = "" if summary_only else _render_html_table(analyses, group_by=group_by)
-    return HTML_TEMPLATE.format(title=safe_title, summary=summary_html, table=table_html)
+    return HTML_TEMPLATE.format(
+        title=safe_title,
+        subtitle="Deterministic maintainer triage report.",
+        summary=summary_html,
+        table=table_html,
+    )
 
 
 def render_comment_html(comment: str) -> str:
@@ -384,6 +421,7 @@ def render_comment_html(comment: str) -> str:
     body = f"<pre>{escape(comment)}</pre>"
     return HTML_TEMPLATE.format(
         title=title,
+        subtitle="Draft maintainer follow-up comment.",
         summary="",
         table=body,
     )
@@ -505,6 +543,100 @@ def summarize_review_plan(analyses: list[dict[str, Any]], budget_minutes: int) -
         "deferred_prs": len(plan["deferred"]),
         "watch_only_prs": len(plan["waiting"]),
     }
+
+
+def _render_plan_html_summary(plan: dict[str, Any], summary: dict[str, int]) -> str:
+    metrics = [
+        ("Time budget", f"{plan['budget_minutes']} minutes"),
+        ("Planned PRs", len(plan["planned"])),
+        ("Active time", f"{plan['planned_minutes']} minutes"),
+        ("Open time", f"{plan['remaining_minutes']} minutes"),
+        ("Queue scanned", summary["total"]),
+        ("Review now", summary["review_now"]),
+        ("Maintainer blocked", summary["maintainer_blocked"]),
+    ]
+    items = "\n".join(
+        f'<div class="metric"><strong>{escape(str(value))}</strong><span>{escape(label)}</span></div>'
+        for label, value in metrics
+    )
+    notice = ""
+    if plan["over_budget_minutes"]:
+        notice = (
+            '<p class="notice">'
+            f"First planned item exceeds the budget by {escape(str(plan['over_budget_minutes']))} minutes."
+            "</p>"
+        )
+    return f'{notice}<section class="metrics">{items}</section>'
+
+
+def _render_plan_html_sections(plan: dict[str, Any]) -> str:
+    sections: list[str] = []
+    if plan["planned"]:
+        rows = "\n".join(
+            _render_plan_html_row(str(index), entry)
+            for index, entry in enumerate(plan["planned"], 1)
+        )
+        sections.append(_render_plan_html_section("Planned Review Work", rows))
+    else:
+        sections.append(
+            '<section class="plan-section"><h2>Planned Review Work</h2>'
+            '<p class="empty">No active maintainer work was found for this budget.</p></section>'
+        )
+
+    if plan["deferred"]:
+        rows = "\n".join(
+            _render_plan_html_row("defer", entry) for entry in plan["deferred"][:5]
+        )
+        sections.append(_render_plan_html_section("Deferred by Budget", rows))
+
+    if plan["waiting"]:
+        rows = "\n".join(
+            _render_plan_html_row("watch", entry) for entry in plan["waiting"][:5]
+        )
+        sections.append(_render_plan_html_section("Watch Only", rows))
+
+    return "\n".join(sections)
+
+
+def _render_plan_html_section(title: str, rows: str) -> str:
+    return (
+        '<section class="plan-section">'
+        f"<h2>{escape(title)}</h2>"
+        "<table>"
+        "<thead><tr>"
+        "<th>Order</th><th>PR</th><th>Action</th><th>Est.</th><th>Next step</th><th>Why</th>"
+        "</tr></thead>"
+        f"<tbody>{rows}</tbody>"
+        "</table>"
+        "</section>"
+    )
+
+
+def _render_plan_html_row(order: str, entry: dict[str, Any]) -> str:
+    item = entry["item"]
+    minutes = int(entry["estimated_minutes"] or 0)
+    estimate = f"{minutes}m" if minutes else "watch"
+    action = str(item.get("action") or "needs triage")
+    return (
+        "<tr>"
+        f'<td class="score">{escape(order)}</td>'
+        f"<td>{_html_pr_label(item)}</td>"
+        f'<td><span class="action {_action_class(action)}">{escape(action)}</span></td>'
+        f'<td class="score">{escape(estimate)}</td>'
+        f"<td>{escape(_next_step(item))}</td>"
+        f"<td>{escape(str(entry.get('reason') or 'no notable signals'))}</td>"
+        "</tr>"
+    )
+
+
+def _html_pr_label(item: dict[str, Any]) -> str:
+    number = item.get("number")
+    title_text = str(item.get("title") or "Untitled")
+    label = f"#{number} {title_text}" if number else title_text
+    url = _safe_url(item.get("url"))
+    if url:
+        return f'<a href="{url}">{escape(label)}</a>'
+    return escape(label)
 
 
 def _plan_reason(item: dict[str, Any]) -> str:

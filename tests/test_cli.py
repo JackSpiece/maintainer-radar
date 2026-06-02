@@ -498,7 +498,31 @@ class CliTests(unittest.TestCase):
         self.assertIn("Time budget: 30 minutes", output)
         self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
 
-    def test_review_plan_rejects_summary_only_and_non_markdown_format(self) -> None:
+    def test_from_json_review_plan_outputs_html_plan(self) -> None:
+        with patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(
+                [
+                    "from-json",
+                    "examples/sample-prs.json",
+                    "--sort",
+                    "action",
+                    "--format",
+                    "html",
+                    "--review-plan-minutes",
+                    "30",
+                    "--now",
+                    "2026-06-01",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        output = stdout.getvalue()
+        self.assertIn("<!doctype html>", output)
+        self.assertIn("Maintainer Radar Review Plan", output)
+        self.assertIn("Time budget", output)
+        self.assertIn("Planned Review Work", output)
+
+    def test_review_plan_rejects_summary_only_and_machine_formats(self) -> None:
         with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as stderr:
             summary_result = main(
                 [
@@ -524,7 +548,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(summary_result, 2)
         self.assertIn("cannot be combined", stderr.getvalue())
         self.assertEqual(json_result, 2)
-        self.assertIn("supports --format markdown", json_stderr.getvalue())
+        self.assertIn("supports --format markdown or html", json_stderr.getvalue())
 
 
 if __name__ == "__main__":

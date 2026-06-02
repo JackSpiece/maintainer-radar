@@ -12,6 +12,7 @@ from maintainer_radar.render import (
     render_detail,
     render_html,
     render_markdown,
+    render_review_plan_html,
     render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
@@ -195,6 +196,47 @@ class RenderTests(unittest.TestCase):
         self.assertIn("12m", output)
         self.assertIn("### Watch Only", output)
         self.assertIn("#2 Wait", output)
+
+    def test_review_plan_html_contains_budget_sections_and_escapes_content(self) -> None:
+        output = render_review_plan_html(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready <now>",
+                    "url": "https://example.test/pull/1",
+                    "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
+                    "reviewability": 90,
+                    "changed_files": 2,
+                    "additions": 40,
+                    "deletions": 10,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Wait",
+                    "url": "javascript:alert(1)",
+                    "action": "wait for CI",
+                    "next_step": "Wait for checks to finish before spending review time.",
+                    "reviewability": 65,
+                    "flags": ["CI pending"],
+                },
+            ],
+            30,
+        )
+
+        self.assertIn("<!doctype html>", output)
+        self.assertIn("Maintainer Radar Review Plan", output)
+        self.assertIn("Deterministic maintainer review plan.", output)
+        self.assertIn("Time budget", output)
+        self.assertIn("30 minutes", output)
+        self.assertIn("Planned Review Work", output)
+        self.assertIn("Watch Only", output)
+        self.assertIn("#1 Ready &lt;now&gt;", output)
+        self.assertIn("12m", output)
+        self.assertIn("watch", output)
+        self.assertNotIn("javascript:alert", output)
 
     def test_review_plan_rejects_non_positive_budget(self) -> None:
         with self.assertRaises(ValueError):

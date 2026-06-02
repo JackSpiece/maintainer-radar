@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.24
+
+- Added HTML review-plan output for `--review-plan-minutes --format html`.
+- Allowed generated workflows to combine `--report-format html` with
+  `--review-plan-minutes` for browser-friendly plan artifacts.
+
 ## 0.16.23
 
 - Added shareable browser demo links that preserve the current review-plan

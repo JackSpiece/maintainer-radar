@@ -71,6 +71,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('review-plan-minutes: "30"', output)
         self.assertIn("format: markdown", output)
 
+    def test_render_github_action_workflow_supports_html_review_plan(self) -> None:
+        output = render_github_action_workflow(report_format="html", review_plan_minutes=45)
+
+        self.assertIn('review-plan-minutes: "45"', output)
+        self.assertIn("format: html", output)
+        self.assertIn("maintainer-radar.html", output)
+
     def test_render_github_action_workflow_rejects_invalid_values(self) -> None:
         with self.assertRaises(ValueError):
             render_github_action_workflow(report_format="xml")
@@ -81,7 +88,7 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_github_action_workflow(review_plan_minutes=0)
         with self.assertRaises(ValueError):
-            render_github_action_workflow(report_format="html", review_plan_minutes=30)
+            render_github_action_workflow(report_format="json", review_plan_minutes=30)
         with self.assertRaises(ValueError):
             render_github_action_workflow(stale_days=0)
         with self.assertRaises(ValueError):

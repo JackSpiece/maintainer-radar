@@ -59,8 +59,8 @@ def render_github_action_workflow(
         raise ValueError("--top must be 1 or greater")
     if review_plan_minutes is not None and review_plan_minutes < 1:
         raise ValueError("--review-plan-minutes must be 1 or greater")
-    if review_plan_minutes is not None and report_format != "markdown":
-        raise ValueError("--review-plan-minutes requires --report-format markdown")
+    if review_plan_minutes is not None and report_format not in {"markdown", "html"}:
+        raise ValueError("--review-plan-minutes requires --report-format markdown or html")
     if stale_days is not None and stale_days < 1:
         raise ValueError("--stale-days must be 1 or greater")
     if min_score is not None and min_score < 0:
