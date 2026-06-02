@@ -221,6 +221,23 @@ assert.ok(planMarkdown.includes("[#42 Fix parser cache race](https://example.tes
 assert.ok(planMarkdown.includes("12m"));
 assert.ok(planMarkdown.includes("### Watch Only"));
 assert.ok(planMarkdown.includes("#45 Refresh generated docs"));
+const planJson = JSON.parse(
+  demo.renderReviewPlanJson(
+    [ready, risky, waitForCi],
+    "example/project",
+    30,
+    "https://jackspiece.github.io/maintainer-radar/?repo=example%2Fproject"
+  )
+);
+assert.equal(planJson.repository, "example/project");
+assert.equal(planJson.demo_link, "https://jackspiece.github.io/maintainer-radar/?repo=example%2Fproject");
+assert.equal(planJson.budget_minutes, 30);
+assert.equal(planJson.planned_minutes, 17);
+assert.equal(planJson.queue_summary.total, 3);
+assert.deepEqual(planJson.planned.map((entry) => entry.number), [42, 43]);
+assert.deepEqual(planJson.watch_only.map((entry) => entry.number), [45]);
+assert.equal(planJson.planned[0].estimated_minutes, 12);
+assert.equal(planJson.planned[0].next_step, "Review now while the PR appears small, active, and low risk.");
 
 const markdown = demo.renderMarkdownReport(
   [ready, risky],
@@ -258,7 +275,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.26"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.27"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));
 assert.ok(workflow.includes("output: review-plan.md"));

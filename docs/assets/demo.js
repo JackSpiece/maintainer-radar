@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.26";
+  const ACTION_VERSION = "v0.16.27";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -752,6 +752,50 @@
     return `${lines.join("\n")}\n`;
   }
 
+  function reviewPlanJsonEntry(entry) {
+    const item = entry.item || {};
+    return {
+      number: item.number,
+      title: item.title || "Untitled",
+      url: item.url || "",
+      action: item.action || "needs triage",
+      next_step: item.nextStep || "Triage manually before assigning reviewer time.",
+      estimated_minutes: intValue(entry.estimatedMinutes),
+      reason: entry.reason || "no notable signals",
+      reviewability: intValue(item.reviewability),
+      risk: intValue(item.risk),
+      signals: Array.isArray(item.signals) ? item.signals.filter(Boolean) : [],
+      flags: Array.isArray(item.flags) ? item.flags.filter(Boolean) : [],
+    };
+  }
+
+  function renderReviewPlanJson(items, repository, budgetMinutes, shareUrl = "") {
+    const plan = buildReviewPlan(items || [], budgetMinutes);
+    const summary = summarizeItems(items || []);
+    return `${JSON.stringify(
+      {
+        repository,
+        demo_link: shareUrl || "",
+        budget_minutes: plan.budgetMinutes,
+        planned_minutes: plan.plannedMinutes,
+        remaining_minutes: plan.remainingMinutes,
+        over_budget_minutes: plan.overBudgetMinutes,
+        queue_summary: {
+          total: summary.total,
+          review_now: summary.reviewNow,
+          follow_up: summary.followUp,
+          maintainer_blocked: summary.maintainerBlocked,
+          average_score: summary.average,
+        },
+        planned: plan.planned.map(reviewPlanJsonEntry),
+        deferred: plan.deferred.map(reviewPlanJsonEntry),
+        watch_only: plan.waiting.map(reviewPlanJsonEntry),
+      },
+      null,
+      2
+    )}\n`;
+  }
+
   function renderActionWorkflow(options = {}) {
     const budgetMinutes = intValue(options.budgetMinutes || 30);
     if (budgetMinutes < 1) {
@@ -958,6 +1002,7 @@
     const cliButton = document.querySelector("#copy-cli");
     const markdownButton = document.querySelector("#copy-markdown");
     const planButton = document.querySelector("#copy-plan");
+    const planJsonButton = document.querySelector("#copy-plan-json");
     const planMinutesInput = document.querySelector("#plan-minutes");
     const workflowButton = document.querySelector("#copy-workflow");
     const groupToggle = document.querySelector("#group-action");
@@ -970,6 +1015,7 @@
       !cliButton ||
       !markdownButton ||
       !planButton ||
+      !planJsonButton ||
       !planMinutesInput ||
       !workflowButton ||
       !groupToggle
@@ -989,6 +1035,7 @@
       cliButton.disabled = !currentRepository;
       markdownButton.disabled = !currentRepository || !currentScanReady;
       planButton.disabled = !currentRepository || !currentScanReady;
+      planJsonButton.disabled = !currentRepository || !currentScanReady;
     }
 
     function updateLocation(repository) {
@@ -1137,6 +1184,28 @@
       }
     });
 
+    planJsonButton.addEventListener("click", async () => {
+      if (!currentRepository || !currentScanReady) {
+        setStatus("Scan a repository before copying review-plan JSON.");
+        return;
+      }
+      try {
+        const planJson = renderReviewPlanJson(
+          currentItems,
+          currentRepository,
+          planMinutesInput.value,
+          currentShareUrl
+        );
+        await copyText(
+          planJson,
+          `Copied review-plan JSON for ${currentRepository}.`,
+          "Review-plan JSON is ready, but clipboard access is unavailable."
+        );
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : "Review-plan JSON failed.");
+      }
+    });
+
     workflowButton.addEventListener("click", async () => {
       try {
         const workflow = renderActionWorkflow({ budgetMinutes: planMinutesInput.value });
@@ -1195,6 +1264,7 @@
     recommendNextStep,
     renderBadgeMarkdown,
     renderCliCommand,
+    renderReviewPlanJson,
     renderReviewPlanMarkdown,
     repositoryFromSearch,
     renderMarkdownReport,

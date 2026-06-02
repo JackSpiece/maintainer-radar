@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.27
+
+- Added Copy JSON to the browser preview so scanned repositories can copy the
+  current review plan as structured JSON.
+- Browser review-plan JSON includes planned, deferred, and watch-only PR arrays
+  for dashboards, scripts, and handoff tooling.
+
 ## 0.16.26
 
 - Added structured JSON review-plan output for
