@@ -171,6 +171,30 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertEqual(result["action"], "review now")
         self.assertNotIn("maintainer blocking label", result["flags"])
 
+    def test_dependency_blocking_label_needs_author_follow_up(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 48,
+                "title": "Update generated client",
+                "body": "Test plan: local client fixture.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 80,
+                "deletions": 12,
+                "changedFiles": 3,
+                "labels": [{"name": "blocked-upstream"}],
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/client/generated.py"},
+                    {"path": "tests/test_client.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertEqual(result["action"], "needs author follow-up")
+        self.assertIn("maintainer blocking label", result["flags"])
+
     def test_configurable_thresholds_and_hints(self) -> None:
         result = analyze_pr(
             {

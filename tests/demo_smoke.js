@@ -142,6 +142,8 @@ assert.equal(
 );
 assert.ok(labelBlocked.flags.includes("maintainer blocking label"));
 assert.equal(demo.hasBlockingLabel({ labels: ["documentation"] }), false);
+assert.equal(demo.hasBlockingLabel({ labels: [{ name: "blocked-upstream" }] }), true);
+assert.equal(demo.hasBlockingLabel({ labels: [{ name: "waiting-for-dependency" }] }), true);
 
 const pending = demo.summarizeCheckRuns([{ status: "IN_PROGRESS", conclusion: null }]);
 assert.deepEqual(pending, { passed: 0, failed: 0, pending: 1, skipped: 0, total: 1 });
@@ -174,7 +176,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.14"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.15"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

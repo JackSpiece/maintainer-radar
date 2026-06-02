@@ -82,7 +82,9 @@ LABEL_BLOCKER_RE = re.compile(
     r"blocked|blocker|do not merge|dnm|"
     r"changes requested|needs? changes?|"
     r"needs? tests?|missing tests?|"
-    r"waiting on author|needs? author|author action|author follow up"
+    r"waiting on author|needs? author|author action|author follow up|"
+    r"waiting on dependency|waiting for dependency|needs? dependency|"
+    r"dependency blocked|blocked upstream|blocked by upstream|upstream blocked"
     r")\b",
     re.IGNORECASE,
 )

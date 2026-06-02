@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.14";
+  const ACTION_VERSION = "v0.16.15";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -44,7 +44,7 @@
   ];
   const TEST_PLAN_RE = /\b(test plan|tests?|validation|verified|repro|manual test|ci)\b/i;
   const LABEL_BLOCKER_RE =
-    /\b(blocked|blocker|do not merge|dnm|changes requested|needs? changes?|needs? tests?|missing tests?|waiting on author|needs? author|author action|author follow up)\b/i;
+    /\b(blocked|blocker|do not merge|dnm|changes requested|needs? changes?|needs? tests?|missing tests?|waiting on author|needs? author|author action|author follow up|waiting on dependency|waiting for dependency|needs? dependency|dependency blocked|blocked upstream|blocked by upstream|upstream blocked)\b/i;
 
   function normalizeRepository(value) {
     const cleaned = String(value || "")

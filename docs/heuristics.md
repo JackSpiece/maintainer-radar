@@ -68,6 +68,8 @@ review:
 - changes requested
 - needs tests
 - waiting on author
+- waiting for dependency
+- blocked upstream
 
 These labels route the PR to author follow-up even when CI is green.
 

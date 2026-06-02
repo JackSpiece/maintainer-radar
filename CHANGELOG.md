@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.15
+
+- Expanded label-aware blocker scoring for dependency and upstream blocked PR
+  labels such as `blocked-upstream` and `waiting-for-dependency`.
+
 ## 0.16.14
 
 - Added label-aware blocker scoring for labels like blocked, do not merge,

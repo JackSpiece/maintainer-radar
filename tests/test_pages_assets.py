@@ -43,7 +43,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Daily Queue Brief", docs)
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.14", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.15", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
@@ -94,7 +94,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.14", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.15", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("contents: read", docs)
@@ -106,6 +106,8 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("maintainer blocking label", docs)
         self.assertIn("waiting on author", docs)
+        self.assertIn("waiting for dependency", docs)
+        self.assertIn("blocked upstream", docs)
         self.assertIn("These labels route the PR to author follow-up", docs)
 
 
