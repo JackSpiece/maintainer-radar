@@ -88,7 +88,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Maintainer Radar", svg)
         self.assertIn("Read-only PR triage + review plans", svg)
-        self.assertIn("Draft asks included", svg)
+        self.assertIn("Copy draft asks", svg)
         self.assertIn("uses: JackSpiece/maintainer-radar", svg)
         self.assertIn("jackspiece.github.io/maintainer-radar", svg)
 

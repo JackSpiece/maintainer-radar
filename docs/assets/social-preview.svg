@@ -5,7 +5,7 @@
   <rect x="56" y="54" width="1088" height="522" rx="24" fill="#ffffff" stroke="#d8dee9" stroke-width="2"/>
   <text x="102" y="136" fill="#172033" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="66" font-weight="800">Maintainer Radar</text>
   <text x="106" y="190" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30">Read-only PR triage + review plans</text>
-  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Review first. Draft asks included.</text>
+  <text x="106" y="238" fill="#5d6678" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="26">Review first. Copy draft asks.</text>
 
   <rect x="104" y="306" width="520" height="74" rx="14" fill="#101827"/>
   <text x="132" y="352" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">uses: JackSpiece/maintainer-radar</text>

@@ -8,6 +8,9 @@ contribution era.
 Demo: <https://jackspiece.github.io/maintainer-radar/> includes a no-install
 browser preview for public repositories.
 
+The demo shows a review plan and copyable draft follow-ups before you install
+anything.
+
 Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpython>
 
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
