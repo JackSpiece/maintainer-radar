@@ -34,6 +34,8 @@ Scan a public repository, set the plan minutes, and use **Copy Plan**.
 - next-step guidance for each planned PR
 - deferred PRs that did not fit the budget
 - watch-only PRs that are waiting for CI or author action
+- draft follow-up comments for PRs that need author action, CI fixes, smaller
+  scope, or a ready-for-review update
 
 ## How Time Is Estimated
 
@@ -47,6 +49,15 @@ maintainers budget attention, not predict exact review time.
 - quick unblock actions such as CI fix, author follow-up, or smaller-PR request
   count as 5 minutes
 - wait-for-CI and wait-for-author PRs are listed as watch-only items
+
+## Draft Follow-ups
+
+Review plans stay read-only. They do not post comments, label PRs, or contact
+authors. When a planned or deferred item needs author action, the plan includes
+a draft follow-up comment that a maintainer can edit before posting.
+
+JSON plans include the same text in `draft_follow_up_comment` for each entry, so
+handoff tools and dashboards can show the draft without scraping Markdown.
 
 ## Scheduled Review Plan
 

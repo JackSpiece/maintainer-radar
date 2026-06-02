@@ -42,6 +42,11 @@ GitHub Action, or a no-install browser preview:
 Each PR includes a score breakdown and a next step, so the report explains both
 why a PR was routed and what a maintainer should do next.
 
+Review plans can also include editable draft follow-ups for PRs that need author
+action, CI fixes, smaller scope, or a ready-for-review update. Maintainer Radar
+still does not post anything; it gives maintainers copy they can edit during a
+handoff or review session.
+
 This is intentionally small. It makes the review queue easier to scan without a
 bot account, webhook, hosted database, or SaaS subscription.
 

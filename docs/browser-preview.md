@@ -37,11 +37,13 @@ preview.
 
 Use **Copy Plan** to copy a time-boxed review plan for the scanned PRs. Set the
 plan minutes field first when you want something other than the default 30
-minute plan. The current minutes value is also preserved in copied demo links.
+minute plan. The plan also includes draft follow-up comments for PRs that need
+author action. The current minutes value is preserved in copied demo links.
 
 Use **Copy JSON** to copy the same review plan as structured JSON with planned,
-deferred, and watch-only PR arrays. It is meant for dashboards, scripts, or
-handoff tooling that should not parse Markdown.
+deferred, and watch-only PR arrays plus `draft_follow_up_comment` fields. It is
+meant for dashboards, scripts, or handoff tooling that should not parse
+Markdown.
 
 The page also shows a compact review plan preview under the summary metrics so
 you can inspect the planned active time before copying Markdown.

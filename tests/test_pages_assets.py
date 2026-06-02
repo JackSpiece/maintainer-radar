@@ -56,7 +56,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.28", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.29", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
@@ -107,6 +107,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Copy Plan", docs)
         self.assertIn("Copy JSON", docs)
         self.assertIn("planned,\ndeferred, and watch-only PR arrays", docs)
+        self.assertIn("draft_follow_up_comment", docs)
         self.assertIn("--review-plan-minutes 30", docs)
         self.assertIn("copied demo links", docs)
         self.assertIn("Copy Workflow", docs)
@@ -117,7 +118,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.28", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.29", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
@@ -133,6 +134,7 @@ class PagesAssetTests(unittest.TestCase):
         )
         self.assertIn("estimated active time", docs)
         self.assertIn("watch-only count", docs)
+        self.assertIn("draft follow-up comments", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_review_plan_docs_explain_time_boxed_workflow(self) -> None:
@@ -146,6 +148,8 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("browser-friendly", docs)
         self.assertIn("dashboards and automation", docs)
         self.assertIn("watch-only", docs)
+        self.assertIn("Draft Follow-ups", docs)
+        self.assertIn("draft_follow_up_comment", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_summary_output_docs_include_maintainer_blocked(self) -> None:

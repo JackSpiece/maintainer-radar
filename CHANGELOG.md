@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.29
+
+- Review plans now include draft follow-up comments for PRs that need author
+  action, CI fixes, smaller scope, or a ready-for-review update.
+- JSON review-plan entries now include `draft_follow_up_comment` so dashboards
+  and handoff tooling can surface the same read-only draft text.
+- The browser preview's Copy Plan and Copy JSON actions now include the draft
+  follow-up text too.
+
 ## 0.16.28
 
 - HTML and JSON review-plan Action runs now add compact review-plan metrics to

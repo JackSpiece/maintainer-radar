@@ -199,6 +199,30 @@ class RenderTests(unittest.TestCase):
         self.assertIn("### Watch Only", output)
         self.assertIn("#2 Wait", output)
 
+    def test_review_plan_markdown_includes_draft_follow_ups(self) -> None:
+        output = render_review_plan_markdown(
+            [
+                {
+                    "number": 2,
+                    "title": "Fix CI",
+                    "url": "https://example.test/pull/2",
+                    "action": "ask for CI fix",
+                    "next_step": "Ask the author to get failing checks green before deeper review.",
+                    "reviewability": 20,
+                    "flags": ["CI failing", "no test plan found"],
+                }
+            ],
+            10,
+        )
+
+        self.assertIn("### Draft Follow-ups", output)
+        self.assertIn("#### [#2 Fix CI](https://example.test/pull/2)", output)
+        self.assertIn("```markdown", output)
+        self.assertIn("Current triage suggests: **ask for CI fix**.", output)
+        self.assertIn("Get CI passing", output)
+        self.assertIn("Add a short validation", output)
+        self.assertIn("Please edit before posting", output)
+
     def test_review_plan_html_contains_budget_sections_and_escapes_content(self) -> None:
         output = render_review_plan_html(
             [
@@ -240,6 +264,26 @@ class RenderTests(unittest.TestCase):
         self.assertIn("watch", output)
         self.assertNotIn("javascript:alert", output)
 
+    def test_review_plan_html_includes_escaped_draft_follow_ups(self) -> None:
+        output = render_review_plan_html(
+            [
+                {
+                    "number": 7,
+                    "title": "Needs <tests>",
+                    "action": "needs author follow-up",
+                    "next_step": "Ask the author to address requested changes before another review pass.",
+                    "reviewability": 48,
+                    "flags": ["code changed without tests"],
+                }
+            ],
+            10,
+        )
+
+        self.assertIn("Draft Follow-ups", output)
+        self.assertIn("<details>", output)
+        self.assertIn("#7 Needs &lt;tests&gt;", output)
+        self.assertIn("Add regression coverage", output)
+
     def test_review_plan_json_contains_structured_plan_entries(self) -> None:
         output = render_review_plan_json(
             [
@@ -279,6 +323,28 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(payload["planned"][0]["reason"], "CI passed")
         self.assertEqual(payload["watch_only"][0]["number"], 2)
         self.assertEqual(payload["watch_only"][0]["estimated_minutes"], 0)
+        self.assertEqual(payload["planned"][0]["draft_follow_up_comment"], "")
+        self.assertEqual(payload["watch_only"][0]["draft_follow_up_comment"], "")
+
+    def test_review_plan_json_includes_draft_follow_up_comments(self) -> None:
+        output = render_review_plan_json(
+            [
+                {
+                    "number": 2,
+                    "title": "Fix CI",
+                    "action": "ask for CI fix",
+                    "next_step": "Ask the author to get failing checks green before deeper review.",
+                    "reviewability": 20,
+                    "risk": 80,
+                    "flags": ["CI failing"],
+                }
+            ],
+            10,
+        )
+
+        payload = json.loads(output)
+        self.assertIn("Get CI passing", payload["planned"][0]["draft_follow_up_comment"])
+        self.assertIn("Please edit before posting", payload["planned"][0]["draft_follow_up_comment"])
 
     def test_review_plan_rejects_non_positive_budget(self) -> None:
         with self.assertRaises(ValueError):

@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.28
+        uses: JackSpiece/maintainer-radar@v0.16.29
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -127,6 +127,10 @@ with:
 For HTML and JSON review-plan artifacts, the run summary also includes the plan
 budget, planned PR count, estimated active time, remaining minutes, deferred
 count, and watch-only count.
+
+Review plans also include draft follow-up comments for PRs that need author
+action. The Action does not post those comments; it only writes the draft text
+to the report artifact or JSON fields.
 
 ## Focused Reports
 

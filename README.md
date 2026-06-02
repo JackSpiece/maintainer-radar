@@ -60,6 +60,8 @@ dashboards. Maintainer Radar is different on purpose:
 - **Deterministic:** every score comes with a visible heuristic breakdown.
 - **AI-era aware:** it catches the common failure shape of large PRs with weak
   test evidence and unresolved maintainer feedback.
+- **Handoff-ready:** review plans include editable draft follow-ups for PRs that
+  need author action, while staying read-only.
 - **Markdown-native:** output can be pasted into issues, PR comments, worklogs,
   release notes, or maintainer handoff docs.
 
@@ -73,7 +75,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.28
+- uses: JackSpiece/maintainer-radar@v0.16.29
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -286,6 +288,7 @@ Maintainer Radar currently checks:
 - generated file paths and lockfiles
 - maintainer comments that look like blockers
 - failing or pending checks
+- draft follow-up comments inside review plans, without posting anything
 - per-PR score breakdowns that show each risk adjustment
 - per-PR next steps that translate triage into a maintainer move
 - draft follow-up comments for one PR, without posting automatically
