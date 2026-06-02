@@ -23,6 +23,10 @@ https://jackspiece.github.io/maintainer-radar/?repo=python/cpython&group=action
 After a scan, the page updates the address bar and enables **Copy Link** for the
 current repository and grouped view.
 
+Use **Copy Badge** to copy a static Markdown badge that links to the current
+browser preview. It is intended for a README, maintainer handoff issue, or
+project docs page.
+
 It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the
 preview.

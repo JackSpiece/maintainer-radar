@@ -32,6 +32,19 @@ assert.equal(
   "https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython"
 );
 assert.equal(demo.shareUrlForRepository("https://example.test/", "not a repo"), "");
+assert.equal(
+  demo.renderBadgeMarkdown(
+    "python/cpython",
+    "https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython&group=action"
+  ),
+  [
+    "[![Maintainer Radar PR triage]",
+    "(https://img.shields.io/badge/Maintainer%20Radar-PR%20triage-1d4ed8)]",
+    "(https://jackspiece.github.io/maintainer-radar/?repo=python%2Fcpython&group=action)",
+  ].join("")
+);
+assert.equal(demo.renderBadgeMarkdown("not a repo", "https://example.test/"), "");
+assert.equal(demo.renderBadgeMarkdown("python/cpython", ""), "");
 
 const ready = demo.analyzePullRequest(
   {
@@ -124,7 +137,7 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.11"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.12"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes("group-by: action"));
 assert.ok(workflow.includes("path: ${{ steps.radar.outputs.report-path }}"));

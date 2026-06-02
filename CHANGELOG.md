@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.12
+
+- Added a Copy Badge button to the public browser preview for sharing a static
+  README badge linked to the current scan.
+- Documented the badge flow in the browser preview guide.
+
 ## 0.16.11
 
 - Added shareable grouped browser preview links with `?group=action`.

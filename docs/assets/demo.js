@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.11";
+  const ACTION_VERSION = "v0.16.12";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -83,6 +83,15 @@
       url.searchParams.delete("group-by");
     }
     return url.toString();
+  }
+
+  function renderBadgeMarkdown(repository, shareUrl) {
+    const normalized = normalizeRepository(repository);
+    if (!normalized || !shareUrl) {
+      return "";
+    }
+    const badgeUrl = "https://img.shields.io/badge/Maintainer%20Radar-PR%20triage-1d4ed8";
+    return `[![Maintainer Radar PR triage](${badgeUrl})](${shareUrl})`;
   }
 
   function summarizeFiles(files) {
@@ -627,6 +636,7 @@
     const input = document.querySelector("#repo-input");
     const button = document.querySelector("#repo-submit");
     const copyButton = document.querySelector("#copy-link");
+    const badgeButton = document.querySelector("#copy-badge");
     const markdownButton = document.querySelector("#copy-markdown");
     const workflowButton = document.querySelector("#copy-workflow");
     const groupToggle = document.querySelector("#group-action");
@@ -635,6 +645,7 @@
       !input ||
       !button ||
       !copyButton ||
+      !badgeButton ||
       !markdownButton ||
       !workflowButton ||
       !groupToggle
@@ -650,6 +661,7 @@
     function setShareRepository(repository) {
       currentRepository = normalizeRepository(repository);
       copyButton.disabled = !currentRepository;
+      badgeButton.disabled = !currentRepository;
       markdownButton.disabled = !currentRepository || !currentScanReady;
     }
 
@@ -727,6 +739,23 @@
       await copyText(shareUrl, `Copied share link for ${repository}.`, `Share link: ${shareUrl}`);
     });
 
+    badgeButton.addEventListener("click", async () => {
+      const repository = currentRepository || normalizeRepository(input.value);
+      const shareUrl = shareUrlForRepository(window.location.href, repository, {
+        groupByAction: groupToggle.checked,
+      });
+      const badge = renderBadgeMarkdown(repository, shareUrl);
+      if (!badge) {
+        setStatus("Scan a repository before copying a badge.");
+        return;
+      }
+      await copyText(
+        badge,
+        `Copied README badge for ${repository}.`,
+        `Badge Markdown: ${badge}`
+      );
+    });
+
     markdownButton.addEventListener("click", async () => {
       if (!currentRepository || !currentScanReady) {
         setStatus("Scan a repository before copying Markdown.");
@@ -775,6 +804,7 @@
     groupItemsByAction,
     normalizeRepository,
     recommendNextStep,
+    renderBadgeMarkdown,
     repositoryFromSearch,
     renderMarkdownReport,
     renderActionWorkflow,
