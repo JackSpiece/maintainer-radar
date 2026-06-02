@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.33";
+  const ACTION_VERSION = "v0.16.34";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -1015,7 +1015,7 @@
       "          sort: action",
       `          review-plan-minutes: "${budgetMinutes}"`,
       '          hydrate: "true"',
-      "      - uses: actions/upload-artifact@v4",
+      "      - uses: actions/upload-artifact@v7",
       "        with:",
       "          name: review-plan",
       "          path: ${{ steps.radar.outputs.report-path }}",

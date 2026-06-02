@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.33
+        uses: JackSpiece/maintainer-radar@v0.16.34
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -40,7 +40,7 @@ jobs:
           limit: "50"
           sort: action
           hydrate: "true"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: maintainer-radar
           path: ${{ steps.radar.outputs.report-path }}

@@ -16,6 +16,7 @@ class ExampleTests(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
 
                 self.assertIn(f"uses: JackSpiece/maintainer-radar@v{__version__}", text)
+                self.assertIn("uses: actions/upload-artifact@v7", text)
                 self.assertIn("GH_TOKEN: ${{ github.token }}", text)
                 self.assertIn("path: ${{ steps.radar.outputs.report-path }}", text)
                 self.assertNotIn("python -m pip install git+", text)

@@ -364,7 +364,8 @@ assert.deepEqual(
 
 const workflow = demo.renderActionWorkflow();
 assert.ok(workflow.includes("name: Maintainer Radar Review Plan"));
-assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.33"));
+assert.ok(workflow.includes("uses: JackSpiece/maintainer-radar@v0.16.34"));
+assert.ok(workflow.includes("uses: actions/upload-artifact@v7"));
 assert.ok(workflow.includes("pull-requests: read"));
 assert.ok(workflow.includes('review-plan-minutes: "30"'));
 assert.ok(workflow.includes("output: review-plan.md"));

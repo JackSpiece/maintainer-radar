@@ -17,6 +17,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("pull-requests: read", output)
         self.assertIn('GH_TOKEN: ${{ github.token }}', output)
         self.assertIn(f"uses: JackSpiece/maintainer-radar@v{__version__}", output)
+        self.assertIn("uses: actions/upload-artifact@v7", output)
         self.assertIn("id: radar", output)
         self.assertIn("format: markdown", output)
         self.assertIn('sort: action', output)

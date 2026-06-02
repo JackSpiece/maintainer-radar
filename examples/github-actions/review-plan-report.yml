@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Build 30 minute review plan
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.33
+        uses: JackSpiece/maintainer-radar@v0.16.34
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -28,7 +28,7 @@ jobs:
           review-plan-minutes: "30"
           sort: action
           hydrate: "true"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: review-plan
           path: ${{ steps.radar.outputs.report-path }}

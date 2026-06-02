@@ -145,7 +145,7 @@ jobs:
           sort: {sort}
 {filter_inputs}          hydrate: "{str(hydrate).lower()}"
           step-summary: "{str(step_summary).lower()}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: {artifact_name}
           path: ${{{{ steps.radar.outputs.report-path }}}}
