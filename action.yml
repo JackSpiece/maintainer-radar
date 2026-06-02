@@ -384,3 +384,27 @@ runs:
         print("\n".join(lines))
         PY
         fi
+
+        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ] && [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
+          PLAN_JSON="$plan_json" PLAN_BUDGET="$INPUT_REVIEW_PLAN_MINUTES" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json
+        import os
+
+        from maintainer_radar.render import summarize_review_plan
+
+        analyses = json.loads(os.environ["PLAN_JSON"])
+        summary = summarize_review_plan(analyses, int(os.environ["PLAN_BUDGET"]))
+        lines = [
+            "## Maintainer Radar Review Plan",
+            "",
+            f"- Time budget: {int(summary.get('plan_budget_minutes') or 0)} minutes",
+            f"- Planned PRs: {int(summary.get('planned_prs') or 0)}",
+            f"- Estimated active time: {int(summary.get('planned_minutes') or 0)} minutes",
+            f"- Left for interrupts: {int(summary.get('remaining_minutes') or 0)} minutes",
+            f"- Deferred by budget: {int(summary.get('deferred_prs') or 0)}",
+            f"- Watch only: {int(summary.get('watch_only_prs') or 0)}",
+            "",
+        ]
+        print("\n".join(lines))
+        PY
+        fi

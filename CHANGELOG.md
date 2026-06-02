@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.28
+
+- HTML and JSON review-plan Action runs now add compact review-plan metrics to
+  the GitHub Actions run summary.
+- The compact plan summary includes budget, planned PRs, active time, remaining
+  minutes, deferred PRs, and watch-only PRs.
+
 ## 0.16.27
 
 - Added Copy JSON to the browser preview so scanned repositories can copy the

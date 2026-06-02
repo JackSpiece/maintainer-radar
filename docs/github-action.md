@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.27
+        uses: JackSpiece/maintainer-radar@v0.16.28
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -123,6 +123,10 @@ summary to the run summary by default. Disable that with:
 with:
   step-summary: "false"
 ```
+
+For HTML and JSON review-plan artifacts, the run summary also includes the plan
+budget, planned PR count, estimated active time, remaining minutes, deferred
+count, and watch-only count.
 
 ## Focused Reports
 

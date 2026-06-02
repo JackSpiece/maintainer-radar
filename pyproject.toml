@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maintainer-radar"
-version = "0.16.27"
+version = "0.16.28"
 description = "GitHub Action and local CLI for read-only pull request triage reports."
 readme = "README.md"
 requires-python = ">=3.10"
