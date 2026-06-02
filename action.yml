@@ -58,7 +58,7 @@ inputs:
     required: false
     default: ""
   group-by:
-    description: Group Markdown and HTML queue reports by a field. Supported value: action.
+    description: "Group Markdown and HTML queue reports by a field. Supported value: action."
     required: false
     default: ""
   config:
