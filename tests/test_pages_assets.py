@@ -15,6 +15,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Try a public repo", html)
         self.assertIn("maintainer-radar init-action", html)
         self.assertIn("GitHub Action", html)
+        self.assertIn('href="quickstart.html"', html)
         self.assertIn('href="adoption.html"', html)
         self.assertIn('href="github-action.html"', html)
         self.assertIn('href="attention-workflows.html"', html)
@@ -70,6 +71,25 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
+
+    def test_quickstart_docs_show_first_run_path(self) -> None:
+        docs = (ROOT / "docs" / "quickstart.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("Two Minute Quickstart", docs)
+        self.assertIn("?repo=owner/repo", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.17.1", docs)
+        self.assertIn("workflow_dispatch", docs)
+        self.assertIn("contents: read", docs)
+        self.assertIn("pull-requests: read", docs)
+        self.assertIn("GH_TOKEN: ${{ github.token }}", docs)
+        self.assertIn("maintainer-radar repo https://github.com/owner/repo/pulls", docs)
+        self.assertIn("maintainer-radar pr https://github.com/owner/repo/pull/123", docs)
+        self.assertIn("attention-level", docs)
+        self.assertIn("workflow-mode", docs)
+        self.assertIn("next-session-brief", docs)
+        self.assertIn("does not approve, reject, merge, label, or comment", docs)
+        self.assertIn("docs/quickstart.md", readme)
 
     def test_privacy_permissions_docs_explain_data_flow(self) -> None:
         docs = (ROOT / "docs" / "privacy-permissions.md").read_text(encoding="utf-8")

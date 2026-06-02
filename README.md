@@ -16,6 +16,8 @@ Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpytho
 
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
 
+Two minute quickstart: [docs/quickstart.md](docs/quickstart.md)
+
 Adoption guide: [docs/adoption.md](docs/adoption.md)
 
 GitHub Action usage: [docs/github-action.md](docs/github-action.md)
