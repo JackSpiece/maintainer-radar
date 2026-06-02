@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.29
+        uses: JackSpiece/maintainer-radar@v0.16.30
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -130,7 +130,8 @@ count, and watch-only count.
 
 Review plans also include draft follow-up comments for PRs that need author
 action. The Action does not post those comments; it only writes the draft text
-to the report artifact or JSON fields.
+to the report artifact or JSON fields. HTML review-plan artifacts include Copy
+Draft buttons for those drafts.
 
 ## Focused Reports
 

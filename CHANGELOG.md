@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.30
+
+- HTML review-plan artifacts now show Copy Draft buttons for generated draft
+  follow-up comments.
+- The HTML copy helper stays local to the static artifact and does not post,
+  label, approve, or mutate pull requests.
+
 ## 0.16.29
 
 - Review plans now include draft follow-up comments for PRs that need author

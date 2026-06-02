@@ -281,6 +281,10 @@ class RenderTests(unittest.TestCase):
 
         self.assertIn("Draft Follow-ups", output)
         self.assertIn("<details>", output)
+        self.assertIn("Copy Draft", output)
+        self.assertIn('data-copy-target="draft-follow-up-1"', output)
+        self.assertIn('id="draft-follow-up-1"', output)
+        self.assertIn("navigator.clipboard", output)
         self.assertIn("#7 Needs &lt;tests&gt;", output)
         self.assertIn("Add regression coverage", output)
 

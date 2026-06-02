@@ -56,6 +56,10 @@ Review plans stay read-only. They do not post comments, label PRs, or contact
 authors. When a planned or deferred item needs author action, the plan includes
 a draft follow-up comment that a maintainer can edit before posting.
 
+HTML review-plan artifacts include a **Copy Draft** button for each draft
+follow-up. This is meant for CI artifacts and local handoff files where the
+maintainer wants to copy the ask quickly, then edit it before posting.
+
 JSON plans include the same text in `draft_follow_up_comment` for each entry, so
 handoff tools and dashboards can show the draft without scraping Markdown.
 

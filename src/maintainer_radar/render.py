@@ -228,6 +228,29 @@ HTML_TEMPLATE = """<!doctype html>
     details pre {{
       margin-bottom: 0;
     }}
+    .draft-tools {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }}
+    .copy-draft {{
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #eef2f7;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 6px 10px;
+    }}
+    .copy-draft:hover {{
+      background: #e2e8f0;
+    }}
+    .copy-state {{
+      color: var(--muted);
+      font-size: 13px;
+    }}
     footer {{
       margin-top: 18px;
       color: var(--muted);
@@ -245,6 +268,66 @@ HTML_TEMPLATE = """<!doctype html>
     {table}
     <footer>Scores route maintainer attention. They do not replace review.</footer>
   </main>
+  <script>
+    (() => {{
+      function fallbackCopy(text) {{
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.appendChild(area);
+        area.select();
+        try {{
+          return document.execCommand("copy");
+        }} finally {{
+          area.remove();
+        }}
+      }}
+
+      async function copyText(text) {{
+        if (navigator.clipboard && window.isSecureContext) {{
+          await navigator.clipboard.writeText(text);
+          return true;
+        }}
+        return fallbackCopy(text);
+      }}
+
+      function setState(button, text) {{
+        const state = button.parentElement.querySelector("[data-copy-state]");
+        if (!state) {{
+          return;
+        }}
+        state.textContent = text;
+        setTimeout(() => {{
+          if (state.textContent === text) {{
+            state.textContent = "";
+          }}
+        }}, 2000);
+      }}
+
+      document.addEventListener("click", async (event) => {{
+        const target = event.target;
+        if (!(target instanceof Element)) {{
+          return;
+        }}
+        const button = target.closest("[data-copy-target]");
+        if (!(button instanceof HTMLButtonElement)) {{
+          return;
+        }}
+        const source = document.getElementById(button.dataset.copyTarget || "");
+        if (!source) {{
+          return;
+        }}
+        try {{
+          const copied = await copyText(source.textContent || "");
+          setState(button, copied ? "Copied" : "Select and copy");
+        }} catch (error) {{
+          setState(button, "Copy failed");
+        }}
+      }});
+    }})();
+  </script>
 </body>
 </html>
 """
@@ -650,7 +733,10 @@ def _render_plan_html_sections(plan: dict[str, Any]) -> str:
 
     follow_ups = _review_plan_follow_up_entries(plan)
     if follow_ups:
-        items = "\n".join(_render_plan_html_follow_up(entry) for entry in follow_ups)
+        items = "\n".join(
+            _render_plan_html_follow_up(entry, index)
+            for index, entry in enumerate(follow_ups, 1)
+        )
         sections.append(f'<section class="plan-section"><h2>Draft Follow-ups</h2>{items}</section>')
 
     return "\n".join(sections)
@@ -738,13 +824,18 @@ def _draft_follow_up_comment(item: dict[str, Any]) -> str:
     return render_comment_template(item).rstrip()
 
 
-def _render_plan_html_follow_up(entry: dict[str, Any]) -> str:
+def _render_plan_html_follow_up(entry: dict[str, Any], index: int) -> str:
     item = entry["item"]
     comment = _draft_follow_up_comment(item)
+    copy_id = f"draft-follow-up-{index}"
     return (
         "<details>"
         f"<summary>{_html_pr_label(item)}</summary>"
-        f"<pre>{escape(comment)}</pre>"
+        '<div class="draft-tools">'
+        f'<button class="copy-draft" type="button" data-copy-target="{copy_id}">Copy Draft</button>'
+        '<span class="copy-state" data-copy-state aria-live="polite"></span>'
+        "</div>"
+        f'<pre id="{copy_id}">{escape(comment)}</pre>'
         "</details>"
     )
 
