@@ -137,6 +137,15 @@ class ActionMetadataTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertIn(f"`{name}`", docs)
 
+    def test_ci_smoke_checks_multiline_summary_json_safely(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+        self.assertIn("QUEUE_HEADLINE: ${{ steps.radar.outputs.queue-headline }}", workflow)
+        self.assertIn("cat > summary.json <<'JSON'", workflow)
+        self.assertIn("${{ steps.radar.outputs.summary-json }}", workflow)
+        self.assertIn('assert "queue_headline" in summary', workflow)
+        self.assertNotIn('test -n "${{ steps.radar.outputs.summary-json }}"', workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

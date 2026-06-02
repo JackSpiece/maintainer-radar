@@ -53,13 +53,32 @@ jobs:
           review-plan-minutes: "30"
           hydrate: "false"
       - name: Check action output
+        env:
+          REPORT_PATH: ${{ steps.radar.outputs.report-path }}
+          TOTAL: ${{ steps.radar.outputs.total }}
+          AVERAGE_SCORE: ${{ steps.radar.outputs.average-score }}
+          QUEUE_HEADLINE: ${{ steps.radar.outputs.queue-headline }}
+          PLAN_BUDGET_MINUTES: ${{ steps.radar.outputs.plan-budget-minutes }}
+          PLANNED_PRS: ${{ steps.radar.outputs.planned-prs }}
+          PLANNED_MINUTES: ${{ steps.radar.outputs.planned-minutes }}
         run: |
-          test -s "${{ steps.radar.outputs.report-path }}"
-          grep -q "Maintainer Radar" "${{ steps.radar.outputs.report-path }}"
-          grep -q "Review Plan" "${{ steps.radar.outputs.report-path }}"
-          test -n "${{ steps.radar.outputs.total }}"
-          test -n "${{ steps.radar.outputs.average-score }}"
-          test -n "${{ steps.radar.outputs.summary-json }}"
-          test -n "${{ steps.radar.outputs.plan-budget-minutes }}"
-          test -n "${{ steps.radar.outputs.planned-prs }}"
-          test -n "${{ steps.radar.outputs.planned-minutes }}"
+          test -s "$REPORT_PATH"
+          grep -q "Maintainer Radar" "$REPORT_PATH"
+          grep -q "Review Plan" "$REPORT_PATH"
+          test -n "$TOTAL"
+          test -n "$AVERAGE_SCORE"
+          test -n "$QUEUE_HEADLINE"
+          test -n "$PLAN_BUDGET_MINUTES"
+          test -n "$PLANNED_PRS"
+          test -n "$PLANNED_MINUTES"
+
+          cat > summary.json <<'JSON'
+          ${{ steps.radar.outputs.summary-json }}
+          JSON
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          summary = json.loads(Path("summary.json").read_text())
+          assert "queue_headline" in summary
+          PY
