@@ -35,6 +35,9 @@ It also enables **Copy Markdown**, which copies a paste-ready queue brief with
 the same action, next-step, score, risk-impact, and signal columns shown in the
 preview.
 
+The summary metrics include PRs scanned, review-now count, follow-up count,
+Maintainer blocked count, and average score.
+
 Turn on **Group by action** to split the preview and copied Markdown into
 review-now, CI, author follow-up, and triage sections.
 
@@ -58,6 +61,7 @@ This lets the preview detect basic queue signals like:
 - stale PRs
 - missing test-plan language
 - code changes without test files
+- maintainer blocking labels such as waiting on author or blocked upstream
 - generated or lockfile changes
 - public CI passed, failing, pending, or absent
 

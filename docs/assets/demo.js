@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.16";
+  const ACTION_VERSION = "v0.16.17";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",
@@ -444,6 +444,14 @@
     return signals.length ? signals.join(", ") : "no notable signals";
   }
 
+  function isMaintainerBlocked(item) {
+    const flags = item && Array.isArray(item.flags) ? item.flags : [];
+    return (
+      flags.includes("maintainer blocker language") ||
+      flags.includes("maintainer blocking label")
+    );
+  }
+
   function markdownCell(value) {
     return String(value || "")
       .replaceAll("\n", " ")
@@ -455,10 +463,11 @@
     const total = items.length;
     const reviewNow = items.filter((item) => item.action === "review now").length;
     const followUp = items.filter((item) => item.action !== "review now").length;
+    const maintainerBlocked = items.filter(isMaintainerBlocked).length;
     const average = total
       ? Math.round(items.reduce((sum, item) => sum + item.reviewability, 0) / total)
       : 0;
-    return { total, reviewNow, followUp, average };
+    return { total, reviewNow, followUp, maintainerBlocked, average };
   }
 
   function groupItemsByAction(items) {
@@ -506,6 +515,7 @@
       `- PRs scanned: ${summary.total}`,
       `- Review now: ${summary.reviewNow}`,
       `- Follow-up: ${summary.followUp}`,
+      `- Maintainer blocked: ${summary.maintainerBlocked}`,
       `- Average reviewability: ${summary.average}/100`,
     ];
     if (shareUrl) {
@@ -640,6 +650,7 @@
     document.querySelector("#metric-total").textContent = String(summary.total);
     document.querySelector("#metric-review").textContent = String(summary.reviewNow);
     document.querySelector("#metric-followup").textContent = String(summary.followUp);
+    document.querySelector("#metric-blocked").textContent = String(summary.maintainerBlocked);
     document.querySelector("#metric-score").textContent = String(summary.average);
 
     const body = document.querySelector("#queue-body");
@@ -877,6 +888,7 @@
     groupByActionFromSearch,
     groupItemsByAction,
     hasBlockingLabel,
+    isMaintainerBlocked,
     labelNames,
     normalizeRepository,
     recommendNextStep,

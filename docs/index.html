@@ -249,7 +249,7 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 1px;
       background: var(--line);
     }
@@ -473,6 +473,7 @@
           <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
           <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
           <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
+          <div class="metric"><strong id="metric-blocked">1</strong><span>Maintainer blocked</span></div>
           <div class="metric"><strong id="metric-score">50</strong><span>Average score</span></div>
         </div>
         <table>
@@ -500,8 +501,8 @@
               <td><span class="pill ci">ask for CI fix</span></td>
               <td>Ask the author to get failing checks green before deeper review.</td>
               <td class="score">0</td>
-              <td class="impact">very large diff (+30 risk); CI failing (+30 risk)</td>
-              <td class="signals">changes requested, stale 22 days, no test plan found</td>
+              <td class="impact">very large diff (+30 risk); CI failing (+30 risk); maintainer blocking label (+18 risk)</td>
+              <td class="signals">maintainer blocking label, changes requested, stale 22 days, no test plan found</td>
             </tr>
           </tbody>
         </table>

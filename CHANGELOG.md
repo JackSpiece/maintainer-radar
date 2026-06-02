@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.17
+
+- Added a Maintainer blocked metric to the public browser preview and copied
+  Markdown briefs.
+- Documented the browser metric so the public demo matches the CLI and Action
+  summary output.
+
 ## 0.16.16
 
 - Added `maintainer_blocked` to summary output and `maintainer-blocked` to the

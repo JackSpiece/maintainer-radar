@@ -19,6 +19,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('href="github-action.html"', html)
         self.assertIn("run summary", html)
         self.assertIn("Next step", html)
+        self.assertIn("Maintainer blocked", html)
         self.assertIn("Review now while the PR appears small, active, and low risk.", html)
         self.assertIn('id="repo-form"', html)
         self.assertIn('id="copy-link"', html)
@@ -26,6 +27,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('id="copy-cli"', html)
         self.assertIn('id="copy-markdown"', html)
         self.assertIn('id="copy-workflow"', html)
+        self.assertIn('id="metric-blocked"', html)
         self.assertIn('id="group-action"', html)
         self.assertIn("Group by action", html)
         self.assertIn('href="browser-preview.html"', html)
@@ -43,7 +45,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Daily Queue Brief", docs)
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.16", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.17", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
@@ -88,13 +90,14 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("static Markdown badge", docs)
         self.assertIn("Copy Markdown", docs)
         self.assertIn("Copy Workflow", docs)
+        self.assertIn("Maintainer blocked", docs)
         self.assertIn("Group by action", docs)
         self.assertIn("?repo=python/cpython&group=action", docs)
 
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.16", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.17", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)
