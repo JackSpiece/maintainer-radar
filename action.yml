@@ -85,6 +85,9 @@ outputs:
   summary-json:
     description: JSON summary for the generated report.
     value: ${{ steps.build.outputs.summary-json }}
+  queue-headline:
+    description: One-line human summary of the queue state.
+    value: ${{ steps.build.outputs.queue-headline }}
   total:
     description: Number of pull requests in the report after filters.
     value: ${{ steps.build.outputs.total }}
@@ -315,6 +318,7 @@ runs:
         }
         for output_name, summary_key in outputs.items():
             print(f"{output_name}={int(summary.get(summary_key) or 0)}")
+        print(f"queue-headline={summary.get('queue_headline') or ''}")
         PY
 
         if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
@@ -386,6 +390,8 @@ runs:
         ci_total = int(summary.get("ci_blocked") or 0) + int(summary.get("ci_pending") or 0)
         lines = [
             "## Maintainer Radar Summary",
+            "",
+            str(summary.get("queue_headline") or ""),
             "",
             f"- PRs scanned: {int(summary.get('total') or 0)}",
             f"- Review now: {int(summary.get('review_now') or 0)}",

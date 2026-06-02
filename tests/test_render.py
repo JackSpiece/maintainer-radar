@@ -117,6 +117,12 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(summary["maintainer_blocked"], 2)
         self.assertEqual(summary["large_or_triage"], 1)
         self.assertEqual(summary["stale"], 1)
+        self.assertEqual(
+            summary["queue_headline"],
+            "4 PRs scanned: 2 ready for review; 1 blocked or waiting on CI; "
+            "1 with merge conflict; 1 behind base; 1 blocked by merge gates; "
+            "2 have unresolved maintainer blockers.",
+        )
 
     def test_summary_counts_ci_flags_even_when_action_differs(self) -> None:
         summary = summarize_report(
@@ -487,7 +493,13 @@ class RenderTests(unittest.TestCase):
             "merge_conflicts,branch_behind,merge_gated,review_requested",
             output,
         )
+        self.assertIn("average_score,queue_headline", output)
         self.assertIn("2,1,0,1,0,1,0,0,1,0,0,1,60", output)
+        self.assertIn(
+            "2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; "
+            "1 with merge conflict.",
+            output,
+        )
 
     def test_comment_csv_output_quotes_multiline_comment(self) -> None:
         output = render_comment_csv("Thanks.\nPlease add tests.")

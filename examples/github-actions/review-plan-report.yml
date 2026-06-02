@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Build 30 minute review plan
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.34
+        uses: JackSpiece/maintainer-radar@v0.16.35
         env:
           GH_TOKEN: ${{ github.token }}
         with:

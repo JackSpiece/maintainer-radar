@@ -26,6 +26,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
         self.assertIn("summary-json:", action)
+        self.assertIn("queue-headline:", action)
         self.assertIn("merge-conflicts:", action)
         self.assertIn("branch-behind:", action)
         self.assertIn("merge-gated:", action)
@@ -36,6 +37,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("planned-minutes:", action)
         self.assertIn("watch-only-prs:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.queue-headline }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-conflicts }}", action)
         self.assertIn("value: ${{ steps.build.outputs.branch-behind }}", action)
         self.assertIn("value: ${{ steps.build.outputs.merge-gated }}", action)
@@ -67,6 +69,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('"merge-gated": "merge_gated"', action)
         self.assertIn('"review-requested": "review_requested"', action)
         self.assertIn('"maintainer-blocked": "maintainer_blocked"', action)
+        self.assertIn("queue-headline=", action)
         self.assertIn('"planned-minutes": "planned_minutes"', action)
         self.assertIn("summarize_review_plan", action)
         self.assertIn("Maintainer blocked:", action)
@@ -117,6 +120,7 @@ class ActionMetadataTests(unittest.TestCase):
             "step-summary",
             "report-path",
             "summary-json",
+            "queue-headline",
             "merge-conflicts",
             "branch-behind",
             "merge-gated",

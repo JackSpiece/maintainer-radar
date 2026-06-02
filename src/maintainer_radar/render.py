@@ -333,7 +333,7 @@ HTML_TEMPLATE = """<!doctype html>
 """
 
 
-def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
+def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int | str]:
     actions = [str(item.get("action") or "") for item in analyses]
     scores = [int(item.get("reviewability") or 0) for item in analyses]
     stale_count = sum(1 for item in analyses if (item.get("stale_days") or 0) >= 7)
@@ -354,7 +354,7 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
         if "maintainer blocker language" in (item.get("flags") or [])
         or "maintainer blocking label" in (item.get("flags") or [])
     )
-    return {
+    summary: dict[str, int | str] = {
         "total": len(analyses),
         "review_now": actions.count("review now"),
         "author_follow_up": actions.count("needs author follow-up"),
@@ -369,6 +369,48 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
         "stale": stale_count,
         "average_score": round(sum(scores) / len(scores)) if scores else 0,
     }
+    summary["queue_headline"] = _queue_headline(summary)
+    return summary
+
+
+def _queue_headline(summary: dict[str, int | str]) -> str:
+    total = _int_value(summary.get("total"))
+    if total == 0:
+        return "No pull requests matched this scan."
+
+    ci_total = _int_value(summary.get("ci_blocked")) + _int_value(summary.get("ci_pending"))
+    parts: list[str] = []
+    if _int_value(summary.get("review_now")):
+        parts.append(f"{_int_value(summary.get('review_now'))} ready for review")
+    if _int_value(summary.get("author_follow_up")):
+        parts.append(_needs_phrase(_int_value(summary.get("author_follow_up")), "author follow-up"))
+    if ci_total:
+        parts.append(f"{ci_total} blocked or waiting on CI")
+    if _int_value(summary.get("merge_conflicts")):
+        count = _int_value(summary.get("merge_conflicts"))
+        parts.append(f"{count} with merge {'conflict' if count == 1 else 'conflicts'}")
+    if _int_value(summary.get("branch_behind")):
+        parts.append(f"{_int_value(summary.get('branch_behind'))} behind base")
+    if _int_value(summary.get("merge_gated")):
+        count = _int_value(summary.get("merge_gated"))
+        parts.append(f"{count} blocked by merge gates")
+    if _int_value(summary.get("maintainer_blocked")):
+        count = _int_value(summary.get("maintainer_blocked"))
+        verb = "has" if count == 1 else "have"
+        blocker = "blocker" if count == 1 else "blockers"
+        parts.append(f"{count} {verb} unresolved maintainer {blocker}")
+
+    if not parts:
+        parts.append("no urgent blocker signals")
+    return f"{_pr_count(total)} scanned: {'; '.join(parts)}."
+
+
+def _pr_count(count: int) -> str:
+    return f"{count} {'PR' if count == 1 else 'PRs'}"
+
+
+def _needs_phrase(count: int, noun: str) -> str:
+    return f"{count} {'needs' if count == 1 else 'need'} {noun}"
 
 
 def render_summary_markdown(
@@ -378,6 +420,8 @@ def render_summary_markdown(
     summary = summarize_report(analyses)
     lines = [
         f"## {title}",
+        "",
+        str(summary["queue_headline"]),
         "",
         f"- PRs scanned: {summary['total']}",
         f"- Review now: {summary['review_now']}",
