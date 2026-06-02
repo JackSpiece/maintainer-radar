@@ -96,7 +96,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.18.0
+- uses: JackSpiece/maintainer-radar@v0.19.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -124,6 +124,7 @@ overwrite an existing file unless you pass `--force`.
 If your project uses custom thresholds, include them in the generated workflow:
 
 ```bash
+maintainer-radar init-config --profile strict --path .maintainer-radar.json
 maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
 ```
 
@@ -246,6 +247,7 @@ maintainer-radar repo owner/repo --hydrate --sort risk --top 10
 Use project-specific thresholds:
 
 ```bash
+maintainer-radar init-config --profile large-repo --path .maintainer-radar.json
 maintainer-radar repo owner/repo --config .maintainer-radar.json
 ```
 

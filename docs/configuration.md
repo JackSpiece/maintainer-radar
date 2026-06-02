@@ -5,6 +5,24 @@ Maintainer Radar can read project-specific thresholds from
 
 Use `--config path/to/config.json` to load a different file.
 
+Generate a starter config instead of writing JSON by hand:
+
+```bash
+maintainer-radar init-config --profile balanced --path .maintainer-radar.json
+maintainer-radar init-config --profile strict --path .maintainer-radar.json
+maintainer-radar init-config --profile large-repo --path .maintainer-radar.json
+```
+
+`init-config` refuses to overwrite an existing file unless you pass `--force`.
+
+## Profiles
+
+| Profile | Best For | Behavior |
+| --- | --- | --- |
+| `balanced` | Most repositories | Uses the default thresholds |
+| `strict` | Small teams or high-signal queues | Flags large diffs and quiet PRs earlier |
+| `large-repo` | High-volume repositories | Allows larger PRs and longer quiet windows |
+
 ## Example
 
 ```json
@@ -58,5 +76,6 @@ with:
 Or generate that workflow locally:
 
 ```bash
+maintainer-radar init-config --profile balanced --path .maintainer-radar.json
 maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
 ```

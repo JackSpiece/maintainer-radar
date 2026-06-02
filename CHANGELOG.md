@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.0
+
+- Added `maintainer-radar init-config`, which prints or writes a
+  `.maintainer-radar.json` scoring config without hand-writing JSON.
+- Added `balanced`, `strict`, and `large-repo` config profiles. The command
+  protects existing files unless `--force` is passed.
+- Updated quickstart, adoption, configuration, examples, and README docs to show
+  config bootstrapping before scheduled report setup.
+
 ## 0.18.0
 
 - Added `maintainer-radar recommend owner/repo`, a short maintainer workflow

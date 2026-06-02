@@ -17,9 +17,35 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "generated_hints": [],
 }
 
+CONFIG_PROFILES: dict[str, dict[str, Any]] = {
+    "balanced": DEFAULT_CONFIG,
+    "strict": {
+        "large_diff_lines": 300,
+        "very_large_diff_lines": 900,
+        "large_file_count": 6,
+        "very_large_file_count": 15,
+        "quiet_days": 5,
+        "stale_days": 10,
+        "test_hints": [],
+        "doc_hints": [],
+        "generated_hints": [],
+    },
+    "large-repo": {
+        "large_diff_lines": 1000,
+        "very_large_diff_lines": 3000,
+        "large_file_count": 20,
+        "very_large_file_count": 50,
+        "quiet_days": 14,
+        "stale_days": 30,
+        "test_hints": [],
+        "doc_hints": [],
+        "generated_hints": [],
+    },
+}
+
 
 def load_config(path: str | None = None) -> dict[str, Any]:
-    config = dict(DEFAULT_CONFIG)
+    config = _copy_config(DEFAULT_CONFIG)
     config_path = Path(path) if path else Path(".maintainer-radar.json")
     if not config_path.exists():
         return config
@@ -37,6 +63,23 @@ def load_config(path: str | None = None) -> dict[str, Any]:
         else:
             config[key] = _positive_int(value, key)
     return config
+
+
+def config_profile(profile: str) -> dict[str, Any]:
+    if profile not in CONFIG_PROFILES:
+        raise ValueError(f"Unknown config profile: {profile}")
+    return _copy_config(CONFIG_PROFILES[profile])
+
+
+def render_config_profile(profile: str = "balanced") -> str:
+    return json.dumps(config_profile(profile), indent=2) + "\n"
+
+
+def _copy_config(config: dict[str, Any]) -> dict[str, Any]:
+    copied: dict[str, Any] = {}
+    for key, value in config.items():
+        copied[key] = list(value) if isinstance(value, list) else value
+    return copied
 
 
 def _positive_int(value: Any, key: str) -> int:
@@ -60,4 +103,3 @@ def _string_list(value: Any, key: str) -> list[str]:
         if normalized:
             result.append(normalized)
     return result
-

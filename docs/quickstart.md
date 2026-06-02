@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: JackSpiece/maintainer-radar@v0.18.0
+      - uses: JackSpiece/maintainer-radar@v0.19.0
         id: radar
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,6 +59,21 @@ Open the Action run summary after it finishes. The summary should show:
 - `next-session-brief`: what fits in the next 60 minutes
 
 The workflow is read-only. It does not approve, reject, merge, label, or comment.
+
+## Optional Repo Tuning
+
+Generate a config file when your repository needs stricter or looser queue
+thresholds:
+
+```bash
+maintainer-radar init-config --profile strict --path .maintainer-radar.json
+maintainer-radar init-config --profile large-repo --path .maintainer-radar.json
+```
+
+Use `strict` for smaller projects where large diffs should be flagged earlier.
+Use `large-repo` for high-volume repositories where bigger PRs and longer quiet
+windows are normal. Pass `--force` only when you want to overwrite an existing
+config.
 
 ## First CLI Run
 

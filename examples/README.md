@@ -7,6 +7,12 @@ This directory contains sample inputs and copy-paste workflow examples.
 - `sample-prs.json`: small GitHub-shaped PR queue for trying `from-json`
 - `maintainer-radar-config.json`: sample project-specific threshold config
 
+Generate a fresh config profile with:
+
+```bash
+maintainer-radar init-config --profile strict --path .maintainer-radar.json
+```
+
 ## GitHub Actions
 
 - `github-actions/daily-markdown-report.yml`: scheduled Markdown artifact

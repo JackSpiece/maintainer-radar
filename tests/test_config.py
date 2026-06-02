@@ -5,7 +5,12 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from maintainer_radar.config import DEFAULT_CONFIG, load_config
+from maintainer_radar.config import (
+    DEFAULT_CONFIG,
+    config_profile,
+    load_config,
+    render_config_profile,
+)
 
 
 class ConfigTests(unittest.TestCase):
@@ -27,7 +32,23 @@ class ConfigTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_config(str(path))
 
+    def test_config_profiles_are_renderable_and_loadable(self) -> None:
+        strict = config_profile("strict")
+        large_repo = config_profile("large-repo")
+
+        self.assertLess(strict["large_diff_lines"], DEFAULT_CONFIG["large_diff_lines"])
+        self.assertGreater(large_repo["large_diff_lines"], DEFAULT_CONFIG["large_diff_lines"])
+
+        rendered = render_config_profile("strict")
+        parsed = json.loads(rendered)
+
+        self.assertEqual(parsed["quiet_days"], 5)
+        self.assertEqual(parsed["stale_days"], 10)
+
+    def test_unknown_config_profile_fails(self) -> None:
+        with self.assertRaises(ValueError):
+            config_profile("surprise")
+
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -8,7 +8,7 @@ import re
 import sys
 from typing import Any, Callable
 
-from .config import load_config
+from .config import CONFIG_PROFILES, load_config, render_config_profile
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .normalize import normalize_items
 from .render import (
@@ -606,6 +606,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Overwrite --path when it already exists.",
     )
 
+    init_config = sub.add_parser(
+        "init-config",
+        help="Print or write a Maintainer Radar scoring config.",
+    )
+    init_config.add_argument(
+        "--profile",
+        choices=sorted(CONFIG_PROFILES),
+        default="balanced",
+        help="Config profile to generate. Default: balanced.",
+    )
+    init_config.add_argument(
+        "--path",
+        help="Write the config to this path instead of stdout, for example .maintainer-radar.json.",
+    )
+    init_config.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --path when it already exists.",
+    )
+
     return parser
 
 
@@ -643,6 +663,19 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"Wrote {output_path}")
             else:
                 print(workflow, end="")
+            return 0
+
+        if args.command == "init-config":
+            rendered_config = render_config_profile(args.profile)
+            if args.path:
+                output_path = Path(args.path)
+                if output_path.exists() and not args.force:
+                    raise ValueError(f"{output_path} already exists; pass --force to overwrite")
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(rendered_config, encoding="utf-8")
+                print(f"Wrote {output_path}")
+            else:
+                print(rendered_config, end="")
             return 0
 
         config = load_config(getattr(args, "config", None))

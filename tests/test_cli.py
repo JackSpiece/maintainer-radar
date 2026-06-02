@@ -407,6 +407,68 @@ class CliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         load_config.assert_not_called()
 
+    def test_init_config_command_accepts_profile(self) -> None:
+        args = build_parser().parse_args(
+            [
+                "init-config",
+                "--profile",
+                "strict",
+                "--path",
+                ".maintainer-radar.json",
+                "--force",
+            ]
+        )
+
+        self.assertEqual(args.command, "init-config")
+        self.assertEqual(args.profile, "strict")
+        self.assertEqual(args.path, ".maintainer-radar.json")
+        self.assertTrue(args.force)
+
+    def test_init_config_prints_profile_json(self) -> None:
+        with patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(["init-config", "--profile", "large-repo"])
+
+        output = json.loads(stdout.getvalue())
+
+        self.assertEqual(result, 0)
+        self.assertEqual(output["large_diff_lines"], 1000)
+        self.assertEqual(output["stale_days"], 30)
+
+    def test_init_config_writes_file_and_protects_existing_file(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / ".maintainer-radar.json"
+
+            with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()):
+                first_result = main(["init-config", "--profile", "strict", "--path", str(path)])
+                second_result = main(["init-config", "--profile", "balanced", "--path", str(path)])
+                forced_result = main(
+                    [
+                        "init-config",
+                        "--profile",
+                        "large-repo",
+                        "--path",
+                        str(path),
+                        "--force",
+                    ]
+                )
+
+            output = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(first_result, 0)
+        self.assertEqual(second_result, 2)
+        self.assertEqual(forced_result, 0)
+        self.assertEqual(output["large_file_count"], 20)
+        self.assertEqual(output["stale_days"], 30)
+
+    def test_init_config_does_not_load_scoring_config(self) -> None:
+        with patch("maintainer_radar.cli.load_config") as load_config, patch(
+            "sys.stdout", new=StringIO()
+        ):
+            result = main(["init-config"])
+
+        self.assertEqual(result, 0)
+        load_config.assert_not_called()
+
     def test_as_pr_list_accepts_common_shapes(self) -> None:
         self.assertEqual(_as_pr_list({"number": 1}), [{"number": 1}])
         self.assertEqual(_as_pr_list([{"number": 1}]), [{"number": 1}])
