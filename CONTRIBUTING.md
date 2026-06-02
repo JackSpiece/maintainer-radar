@@ -26,6 +26,10 @@ PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json
 - support for exported JSON from other forges
 - docs that help maintainers adopt the tool
 
+If you try Maintainer Radar on a public repository, the maintainer feedback
+issue template is the best place to share what queue routing felt useful or
+wrong.
+
 ## Pull Request Checklist
 
 - Add or update tests for scoring changes.

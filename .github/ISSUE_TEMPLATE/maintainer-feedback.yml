@@ -1,0 +1,42 @@
+name: Maintainer feedback
+description: Share how Maintainer Radar handled a real PR queue.
+title: "Maintainer feedback: "
+labels: ["feedback"]
+body:
+  - type: input
+    id: repository
+    attributes:
+      label: Repository
+      description: Link the public repository or write owner/name.
+      placeholder: owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: queue_shape
+    attributes:
+      label: Queue shape
+      description: What kind of PR queue did you scan?
+      placeholder: Busy release queue, stale contributor PRs, CI-heavy queue, mixed review-ready queue.
+    validations:
+      required: true
+  - type: textarea
+    id: useful
+    attributes:
+      label: What was useful?
+      description: Which summary, action, workflow mode, next-session digest, or row signal helped?
+    validations:
+      required: false
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What felt wrong?
+      description: Link a public PR or describe a routing, score, next step, or missing signal that felt off.
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected maintainer action
+      description: What should Maintainer Radar have recommended instead?
+    validations:
+      required: false
