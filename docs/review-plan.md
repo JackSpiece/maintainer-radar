@@ -10,11 +10,12 @@ maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 3
 ```
 
 The plan can be Markdown for a terminal, GitHub Actions run summary, issue, or
-maintainer handoff note. It can also be HTML when you want a browser-friendly
-artifact:
+maintainer handoff note. It can be HTML for a browser-friendly artifact, or JSON
+for dashboards and automation:
 
 ```bash
 maintainer-radar repo owner/repo --hydrate --sort action --format html --review-plan-minutes 30
+maintainer-radar repo owner/repo --hydrate --sort action --format json --review-plan-minutes 30
 ```
 
 You can also try this without installing anything in the browser preview:
@@ -70,13 +71,24 @@ with:
 ```
 
 Use Markdown output when you want the plan in the Actions run summary. Use HTML
-output when you want a downloadable browser-friendly plan artifact:
+output when you want a downloadable browser-friendly plan artifact. Use JSON
+output when a later workflow or dashboard should consume the plan:
 
 ```yaml
 with:
   repository: ${{ github.repository }}
   format: html
   output: review-plan.html
+  sort: action
+  review-plan-minutes: "30"
+  hydrate: "true"
+```
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  format: json
+  output: review-plan.json
   sort: action
   review-plan-minutes: "30"
   hydrate: "true"

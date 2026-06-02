@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import unittest
 
 from maintainer_radar.render import (
@@ -13,6 +14,7 @@ from maintainer_radar.render import (
     render_html,
     render_markdown,
     render_review_plan_html,
+    render_review_plan_json,
     render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
@@ -237,6 +239,46 @@ class RenderTests(unittest.TestCase):
         self.assertIn("12m", output)
         self.assertIn("watch", output)
         self.assertNotIn("javascript:alert", output)
+
+    def test_review_plan_json_contains_structured_plan_entries(self) -> None:
+        output = render_review_plan_json(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready",
+                    "url": "https://example.test/pull/1",
+                    "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
+                    "reviewability": 90,
+                    "risk": 10,
+                    "changed_files": 2,
+                    "additions": 40,
+                    "deletions": 10,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Wait",
+                    "action": "wait for CI",
+                    "next_step": "Wait for checks to finish before spending review time.",
+                    "reviewability": 65,
+                    "risk": 35,
+                    "flags": ["CI pending"],
+                },
+            ],
+            30,
+        )
+
+        payload = json.loads(output)
+        self.assertEqual(payload["budget_minutes"], 30)
+        self.assertEqual(payload["planned_minutes"], 12)
+        self.assertEqual(payload["queue_summary"]["total"], 2)
+        self.assertEqual(payload["planned"][0]["number"], 1)
+        self.assertEqual(payload["planned"][0]["estimated_minutes"], 12)
+        self.assertEqual(payload["planned"][0]["reason"], "CI passed")
+        self.assertEqual(payload["watch_only"][0]["number"], 2)
+        self.assertEqual(payload["watch_only"][0]["estimated_minutes"], 0)
 
     def test_review_plan_rejects_non_positive_budget(self) -> None:
         with self.assertRaises(ValueError):

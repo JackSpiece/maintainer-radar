@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.25
+        uses: JackSpiece/maintainer-radar@v0.16.26
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -51,7 +51,7 @@ jobs:
 | --- | --- | --- |
 | `repository` | current workflow repository | Repository to scan in `owner/name` form. |
 | `format` | `markdown` | Report format: `markdown`, `html`, `json`, or `csv`. |
-| `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`; review plans default to `review-plan.md` or `review-plan.html`. |
+| `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`; review plans default to `review-plan.md`, `review-plan.html`, or `review-plan.json`. |
 | `limit` | `50` | Maximum pull requests to scan. |
 | `label` | empty | Only include pull requests with this label. |
 | `author` | empty | Only include pull requests by this author. |
@@ -63,7 +63,7 @@ jobs:
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
 | `group-by` | empty | Group Markdown and HTML queue reports. Supported value: `action`. |
-| `review-plan-minutes` | empty | Render a Markdown or HTML review-session plan for this many maintainer minutes. |
+| `review-plan-minutes` | empty | Render a Markdown, HTML, or JSON review-session plan for this many maintainer minutes. |
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |

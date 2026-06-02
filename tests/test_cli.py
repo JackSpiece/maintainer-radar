@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import StringIO
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -522,7 +523,31 @@ class CliTests(unittest.TestCase):
         self.assertIn("Time budget", output)
         self.assertIn("Planned Review Work", output)
 
-    def test_review_plan_rejects_summary_only_and_machine_formats(self) -> None:
+    def test_from_json_review_plan_outputs_json_plan(self) -> None:
+        with patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(
+                [
+                    "from-json",
+                    "examples/sample-prs.json",
+                    "--sort",
+                    "action",
+                    "--format",
+                    "json",
+                    "--review-plan-minutes",
+                    "30",
+                    "--now",
+                    "2026-06-01",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["budget_minutes"], 30)
+        self.assertIn("queue_summary", payload)
+        self.assertIn("planned", payload)
+        self.assertIn("watch_only", payload)
+
+    def test_review_plan_rejects_summary_only_and_unsupported_formats(self) -> None:
         with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as stderr:
             summary_result = main(
                 [
@@ -533,13 +558,13 @@ class CliTests(unittest.TestCase):
                     "30",
                 ]
             )
-        with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as json_stderr:
-            json_result = main(
+        with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as csv_stderr:
+            csv_result = main(
                 [
                     "from-json",
                     "examples/sample-prs.json",
                     "--format",
-                    "json",
+                    "csv",
                     "--review-plan-minutes",
                     "30",
                 ]
@@ -547,8 +572,8 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(summary_result, 2)
         self.assertIn("cannot be combined", stderr.getvalue())
-        self.assertEqual(json_result, 2)
-        self.assertIn("supports --format markdown or html", json_stderr.getvalue())
+        self.assertEqual(csv_result, 2)
+        self.assertIn("supports --format markdown, html, or json", csv_stderr.getvalue())
 
 
 if __name__ == "__main__":

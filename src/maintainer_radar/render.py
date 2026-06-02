@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 from html import escape
 from io import StringIO
+import json
 import re
 from typing import Any
 
@@ -353,6 +354,21 @@ def render_review_plan_html(
     )
 
 
+def render_review_plan_json(analyses: list[dict[str, Any]], budget_minutes: int) -> str:
+    plan = build_review_plan(analyses, budget_minutes)
+    payload = {
+        "budget_minutes": plan["budget_minutes"],
+        "planned_minutes": plan["planned_minutes"],
+        "remaining_minutes": plan["remaining_minutes"],
+        "over_budget_minutes": plan["over_budget_minutes"],
+        "queue_summary": summarize_report(analyses),
+        "planned": [_review_plan_json_entry(entry) for entry in plan["planned"]],
+        "deferred": [_review_plan_json_entry(entry) for entry in plan["deferred"]],
+        "watch_only": [_review_plan_json_entry(entry) for entry in plan["waiting"]],
+    }
+    return json.dumps(payload, indent=2) + "\n"
+
+
 def render_csv(analyses: list[dict[str, Any]]) -> str:
     output = StringIO()
     writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, lineterminator="\n")
@@ -637,6 +653,23 @@ def _html_pr_label(item: dict[str, Any]) -> str:
     if url:
         return f'<a href="{url}">{escape(label)}</a>'
     return escape(label)
+
+
+def _review_plan_json_entry(entry: dict[str, Any]) -> dict[str, Any]:
+    item = entry["item"]
+    return {
+        "number": item.get("number"),
+        "title": item.get("title") or "Untitled",
+        "url": item.get("url") or "",
+        "action": item.get("action") or "needs triage",
+        "next_step": _next_step(item),
+        "estimated_minutes": int(entry.get("estimated_minutes") or 0),
+        "reason": entry.get("reason") or "no notable signals",
+        "reviewability": _int_value(item.get("reviewability")),
+        "risk": _int_value(item.get("risk")),
+        "signals": [str(value) for value in item.get("signals") or [] if value],
+        "flags": [str(value) for value in item.get("flags") or [] if value],
+    }
 
 
 def _plan_reason(item: dict[str, Any]) -> str:

@@ -19,6 +19,7 @@ from .render import (
     render_html,
     render_markdown,
     render_review_plan_html,
+    render_review_plan_json,
     render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
@@ -246,8 +247,13 @@ def _emit(
             raise ValueError("--review-plan-minutes cannot be combined with --summary-only")
         if detail:
             raise ValueError("--review-plan-minutes is only available for queue reports")
-        if fmt not in {"markdown", "html"}:
-            raise ValueError("--review-plan-minutes currently supports --format markdown or html")
+        if fmt not in {"markdown", "html", "json"}:
+            raise ValueError(
+                "--review-plan-minutes currently supports --format markdown, html, or json"
+            )
+        if fmt == "json":
+            print(render_review_plan_json(analyses, review_plan_minutes), end="")
+            return
         if fmt == "html":
             print(render_review_plan_html(analyses, review_plan_minutes), end="")
             return
@@ -336,7 +342,7 @@ def build_parser() -> argparse.ArgumentParser:
         target.add_argument(
             "--review-plan-minutes",
             type=int,
-            help="Render a Markdown or HTML review-session plan for this many maintainer minutes.",
+            help="Render a Markdown, HTML, or JSON review-session plan for this many maintainer minutes.",
         )
 
     add_format_argument(parser, default="markdown")
@@ -451,7 +457,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_action.add_argument(
         "--review-plan-minutes",
         type=int,
-        help="Render a Markdown or HTML review-session plan in the generated workflow.",
+        help="Render a Markdown, HTML, or JSON review-session plan in the generated workflow.",
     )
     init_action.add_argument("--label", help="Only include PRs with this label in the workflow.")
     init_action.add_argument("--author", help="Only include PRs by this author in the workflow.")

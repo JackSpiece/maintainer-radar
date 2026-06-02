@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.26
+
+- Added structured JSON review-plan output for
+  `--review-plan-minutes --format json`.
+- Generated workflows and direct Action usage can now create
+  `review-plan.json` artifacts for dashboards and automation.
+
 ## 0.16.25
 
 - Generated review-plan workflows now default to `review-plan.md` or

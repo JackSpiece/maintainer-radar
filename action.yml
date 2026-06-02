@@ -62,7 +62,7 @@ inputs:
     required: false
     default: ""
   review-plan-minutes:
-    description: Render a Markdown or HTML review-session plan for this many maintainer minutes.
+    description: Render a Markdown, HTML, or JSON review-session plan for this many maintainer minutes.
     required: false
     default: ""
   config:
@@ -181,6 +181,7 @@ runs:
           case "$INPUT_FORMAT" in
             markdown) default_output="review-plan.md" ;;
             html) default_output="review-plan.html" ;;
+            json) default_output="review-plan.json" ;;
           esac
         fi
         output="${INPUT_OUTPUT:-$default_output}"
