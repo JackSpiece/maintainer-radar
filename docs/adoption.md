@@ -18,6 +18,7 @@ scheduled workflow.
 
 Use this when maintainers want one read-only report every weekday:
 
+{% raw %}
 ```yaml
 name: Maintainer Radar
 
@@ -55,6 +56,7 @@ jobs:
           name: maintainer-radar
           path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 The Markdown report appears in the run summary and is also uploaded as an
 artifact.
@@ -64,6 +66,7 @@ artifact.
 Use this when the queue is large and maintainers only want PRs likely to be
 worth reviewing now:
 
+{% raw %}
 ```yaml
 - name: Build review-ready report
   id: radar
@@ -81,6 +84,7 @@ worth reviewing now:
     group-by: action
     hydrate: "true"
 ```
+{% endraw %}
 
 This keeps the report short enough to scan during a review session.
 
@@ -88,6 +92,7 @@ This keeps the report short enough to scan during a review session.
 
 Use this when maintainers want a concrete plan for a short review block:
 
+{% raw %}
 ```yaml
 - name: Build 30 minute review plan
   id: radar
@@ -102,6 +107,7 @@ Use this when maintainers want a concrete plan for a short review block:
     sort: action
     hydrate: "true"
 ```
+{% endraw %}
 
 The plan estimates active maintainer time, lists PRs that fit the budget, and
 keeps wait-for-CI or wait-for-author items in a watch-only section.
@@ -110,6 +116,7 @@ keeps wait-for-CI or wait-for-author items in a watch-only section.
 
 Use this when the team needs to clear old contributor threads:
 
+{% raw %}
 ```yaml
 - name: Build stale follow-up report
   id: radar
@@ -125,6 +132,7 @@ Use this when the team needs to clear old contributor threads:
     group-by: action
     hydrate: "true"
 ```
+{% endraw %}
 
 Read the next-step column before writing replies. Maintainer Radar drafts
 priorities, not decisions.
@@ -134,6 +142,7 @@ priorities, not decisions.
 Use Action outputs when maintainers want a dashboard or notification to separate
 author-fixable branch work from normal review work:
 
+{% raw %}
 ```yaml
 - name: Build queue brief
   id: radar
@@ -154,6 +163,7 @@ author-fixable branch work from normal review work:
     echo "Merge gated: ${{ steps.radar.outputs.merge-gated }}"
     echo "Review requested: ${{ steps.radar.outputs.review-requested }}"
 ```
+{% endraw %}
 
 This keeps merge conflicts, stale branches, repository merge gates, and reviewer
 requests visible without parsing the report artifact.

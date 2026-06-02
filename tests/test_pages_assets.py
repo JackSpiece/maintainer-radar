@@ -73,6 +73,27 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
+    def test_pages_markdown_keeps_actions_expressions_in_raw_blocks(self) -> None:
+        for path in sorted((ROOT / "docs").glob("*.md")):
+            in_raw_block = False
+            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if "{% raw %}" in line:
+                    self.assertFalse(in_raw_block, f"{path}:{lineno} nested raw block")
+                    in_raw_block = True
+
+                if "${{" in line:
+                    self.assertTrue(in_raw_block, f"{path}:{lineno} needs a Liquid raw block")
+
+                if "{% endraw %}" in line:
+                    self.assertTrue(in_raw_block, f"{path}:{lineno} raw block was not open")
+                    in_raw_block = False
+
+            self.assertFalse(in_raw_block, f"{path} has an unclosed raw block")
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertNotIn("{% raw %}", readme)
+        self.assertNotIn("{% endraw %}", readme)
+
     def test_positioning_keeps_before_review_message(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         docs = (ROOT / "docs" / "positioning.md").read_text(encoding="utf-8")

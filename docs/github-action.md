@@ -8,6 +8,7 @@ also be saved as an artifact.
 
 ## Minimal Workflow
 
+{% raw %}
 ```yaml
 name: Maintainer Radar
 
@@ -44,6 +45,7 @@ jobs:
           name: maintainer-radar
           path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 ## Inputs
 
@@ -96,9 +98,11 @@ jobs:
 
 Use summary outputs in later workflow steps:
 
+{% raw %}
 ```yaml
 - run: echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
+{% endraw %}
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.
@@ -117,12 +121,14 @@ Markdown is best for a run summary. HTML is best when maintainers want a local
 browser-friendly artifact. JSON and CSV are useful for dashboards and
 spreadsheets.
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
   format: html
   output: maintainer-radar.html
 ```
+{% endraw %}
 
 For HTML, JSON, and CSV reports, the action still writes a compact Markdown
 summary to the run summary by default. Disable that with:
@@ -146,6 +152,7 @@ Draft buttons for those drafts.
 Use filters when a scheduled report should answer one review-session question
 instead of listing the whole queue:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -154,10 +161,12 @@ with:
   top: "10"
   group-by: action
 ```
+{% endraw %}
 
 For a time-boxed maintainer session, add a review plan. Use Markdown when you
 want the plan in the run summary:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -166,9 +175,11 @@ with:
   review-plan-minutes: "30"
   hydrate: "true"
 ```
+{% endraw %}
 
 Use HTML when you want a browser-friendly plan artifact:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -178,28 +189,33 @@ with:
   review-plan-minutes: "30"
   hydrate: "true"
 ```
+{% endraw %}
 
 See [review-plan.md](review-plan.md) for how the estimates work.
 
 For stale follow-up sweeps:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
   stale-days: "14"
   sort: stale
 ```
+{% endraw %}
 
 ## Project Config
 
 Use the `config` input when a repository has custom size, stale, test path, doc
 path, or generated file thresholds:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
   config: .maintainer-radar.json
 ```
+{% endraw %}
 
 ## Bootstrap Command
 
@@ -227,7 +243,7 @@ It does not approve, reject, merge, label, or comment on pull requests.
 
 ## Troubleshooting
 
-- If the action cannot read pull requests, confirm `GH_TOKEN: ${{ github.token }}`
+- If the action cannot read pull requests, confirm {% raw %}`GH_TOKEN: ${{ github.token }}`{% endraw %}
   is present on the action step.
 - If the report is shallow, keep `hydrate: "true"` so the action can inspect PR
   bodies, files, reviews, and richer signals.

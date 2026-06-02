@@ -47,11 +47,13 @@ maintainer-radar from-json queue.json --config strict-config.json
 For scheduled GitHub Action reports, pass the same file path with the `config`
 input:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
   config: .maintainer-radar.json
 ```
+{% endraw %}
 
 Or generate that workflow locally:
 

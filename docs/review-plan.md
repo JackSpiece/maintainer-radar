@@ -76,6 +76,7 @@ maintainer-radar init-action \
 
 Or configure the reusable Action directly:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -84,11 +85,13 @@ with:
   review-plan-minutes: "30"
   hydrate: "true"
 ```
+{% endraw %}
 
 Use Markdown output when you want the plan in the Actions run summary. Use HTML
 output when you want a downloadable browser-friendly plan artifact. Use JSON
 output when a later workflow or dashboard should consume the plan:
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -98,7 +101,9 @@ with:
   review-plan-minutes: "30"
   hydrate: "true"
 ```
+{% endraw %}
 
+{% raw %}
 ```yaml
 with:
   repository: ${{ github.repository }}
@@ -108,6 +113,7 @@ with:
   review-plan-minutes: "30"
   hydrate: "true"
 ```
+{% endraw %}
 
 When the reusable Action runs with `review-plan-minutes`, it also exposes
 structured plan outputs for later workflow steps:
@@ -120,9 +126,11 @@ structured plan outputs for later workflow steps:
 
 For example:
 
+{% raw %}
 ```yaml
 - run: echo "${{ steps.radar.outputs.planned-prs }} PRs fit this review block"
 ```
+{% endraw %}
 
 ## Why This Is Different
 

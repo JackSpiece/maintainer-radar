@@ -15,6 +15,7 @@ maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
 
 This writes a workflow that uses the reusable action:
 
+{% raw %}
 ```yaml
 - uses: actions/setup-python@v6
   with:
@@ -27,6 +28,7 @@ This writes a workflow that uses the reusable action:
     repository: ${{ github.repository }}
     format: markdown
 ```
+{% endraw %}
 
 For an HTML artifact:
 
@@ -87,6 +89,7 @@ Copy-paste examples are available in:
 
 ## Scheduled Queue Report
 
+{% raw %}
 ```yaml
 name: Maintainer Radar
 
@@ -123,11 +126,13 @@ jobs:
           name: maintainer-radar
           path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 ## Focused Review-Ready Report
 
 For a smaller scheduled report that only shows PRs ready for maintainer review:
 
+{% raw %}
 ```yaml
 - name: Build review-ready report
   id: radar
@@ -149,12 +154,14 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
     name: review-ready
     path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 ## Time-Boxed Review Plan
 
 For a scheduled report that tells maintainers what fits in the next review
 session, use Markdown when you want the plan in the run summary:
 
+{% raw %}
 ```yaml
 - name: Build 30 minute review plan
   id: radar
@@ -173,9 +180,11 @@ session, use Markdown when you want the plan in the run summary:
     name: review-plan
     path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 Use HTML when you want a browser-friendly plan artifact:
 
+{% raw %}
 ```yaml
 - name: Build HTML review plan
   id: radar
@@ -194,9 +203,11 @@ Use HTML when you want a browser-friendly plan artifact:
     name: review-plan-html
     path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 Use JSON when a dashboard or later workflow step should consume the plan:
 
+{% raw %}
 ```yaml
 - name: Build JSON review plan
   id: radar
@@ -215,11 +226,13 @@ Use JSON when a dashboard or later workflow step should consume the plan:
     name: review-plan-json
     path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 ## HTML Artifact
 
 For a static browser-friendly report:
 
+{% raw %}
 ```yaml
 - name: Build HTML report
   id: radar
@@ -238,17 +251,20 @@ For a static browser-friendly report:
     name: maintainer-radar-html
     path: ${{ steps.radar.outputs.report-path }}
 ```
+{% endraw %}
 
 ## Summary-Only Report
 
 For a compact status artifact:
 
+{% raw %}
 ```yaml
 - name: Build PR summary
   env:
     GH_TOKEN: ${{ github.token }}
   run: maintainer-radar repo ${{ github.repository }} --limit 100 --summary-only > maintainer-radar-summary.md
 ```
+{% endraw %}
 
 ## Notes
 
