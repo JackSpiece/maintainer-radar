@@ -12,6 +12,8 @@ Example scan: <https://jackspiece.github.io/maintainer-radar/?repo=python/cpytho
 
 Browser preview details: [docs/browser-preview.md](docs/browser-preview.md)
 
+Adoption guide: [docs/adoption.md](docs/adoption.md)
+
 GitHub Action usage: [docs/github-action.md](docs/github-action.md)
 
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)

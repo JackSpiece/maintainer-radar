@@ -15,6 +15,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Try a public repo", html)
         self.assertIn("maintainer-radar init-action", html)
         self.assertIn("GitHub Action", html)
+        self.assertIn('href="adoption.html"', html)
         self.assertIn('href="github-action.html"', html)
         self.assertIn("run summary", html)
         self.assertIn("Next step", html)
@@ -32,6 +33,17 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn('property="og:image"', html)
         self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
+
+    def test_adoption_guide_has_copy_paste_workflows(self) -> None:
+        docs = (ROOT / "docs" / "adoption.md").read_text(encoding="utf-8")
+
+        self.assertIn("Adoption Guide", docs)
+        self.assertIn("Daily Queue Brief", docs)
+        self.assertIn("Review-Ready Queue", docs)
+        self.assertIn("Stale Follow-Up Queue", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.11", docs)
+        self.assertIn("group-by: action", docs)
+        self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_social_preview_png_has_expected_dimensions(self) -> None:
         data = (ROOT / "docs" / "assets" / "social-preview.png").read_bytes()
