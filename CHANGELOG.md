@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.22
+
+- Added structured review-plan outputs to the reusable GitHub Action:
+  `planned-prs`, `planned-minutes`, `remaining-minutes`, `deferred-prs`, and
+  `watch-only-prs`.
+- Added a reusable review-plan summary helper for plan output metrics.
+
 ## 0.16.21
 
 - Updated browser Copy Workflow to generate a scheduled review-plan workflow

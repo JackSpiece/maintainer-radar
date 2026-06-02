@@ -60,3 +60,6 @@ jobs:
           test -n "${{ steps.radar.outputs.total }}"
           test -n "${{ steps.radar.outputs.average-score }}"
           test -n "${{ steps.radar.outputs.summary-json }}"
+          test -n "${{ steps.radar.outputs.plan-budget-minutes }}"
+          test -n "${{ steps.radar.outputs.planned-prs }}"
+          test -n "${{ steps.radar.outputs.planned-minutes }}"

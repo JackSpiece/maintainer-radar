@@ -15,6 +15,7 @@ from maintainer_radar.render import (
     render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
+    summarize_review_plan,
     summarize_report,
 )
 
@@ -198,6 +199,45 @@ class RenderTests(unittest.TestCase):
     def test_review_plan_rejects_non_positive_budget(self) -> None:
         with self.assertRaises(ValueError):
             build_review_plan([], 0)
+
+    def test_review_plan_summary_returns_structured_counts(self) -> None:
+        summary = summarize_review_plan(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready",
+                    "action": "review now",
+                    "reviewability": 90,
+                    "changed_files": 2,
+                    "additions": 40,
+                    "deletions": 10,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Fix CI",
+                    "action": "ask for CI fix",
+                    "reviewability": 20,
+                    "flags": ["CI failing"],
+                },
+                {
+                    "number": 3,
+                    "title": "Wait",
+                    "action": "wait for CI",
+                    "reviewability": 65,
+                    "flags": ["CI pending"],
+                },
+            ],
+            15,
+        )
+
+        self.assertEqual(summary["plan_budget_minutes"], 15)
+        self.assertEqual(summary["planned_prs"], 1)
+        self.assertEqual(summary["planned_minutes"], 12)
+        self.assertEqual(summary["remaining_minutes"], 3)
+        self.assertEqual(summary["deferred_prs"], 1)
+        self.assertEqual(summary["watch_only_prs"], 1)
 
     def test_summary_only_output_has_no_table(self) -> None:
         output = render_summary_markdown(

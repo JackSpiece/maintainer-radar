@@ -494,6 +494,19 @@ def build_review_plan(analyses: list[dict[str, Any]], budget_minutes: int) -> di
     }
 
 
+def summarize_review_plan(analyses: list[dict[str, Any]], budget_minutes: int) -> dict[str, int]:
+    plan = build_review_plan(analyses, budget_minutes)
+    return {
+        "plan_budget_minutes": plan["budget_minutes"],
+        "planned_prs": len(plan["planned"]),
+        "planned_minutes": plan["planned_minutes"],
+        "remaining_minutes": plan["remaining_minutes"],
+        "over_budget_minutes": plan["over_budget_minutes"],
+        "deferred_prs": len(plan["deferred"]),
+        "watch_only_prs": len(plan["waiting"]),
+    }
+
+
 def _plan_reason(item: dict[str, Any]) -> str:
     flags = [str(value) for value in item.get("flags") or [] if value]
     signals = [str(value) for value in item.get("signals") or [] if value]

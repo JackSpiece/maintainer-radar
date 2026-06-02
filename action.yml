@@ -112,6 +112,24 @@ outputs:
   average-score:
     description: Average reviewability score for the report.
     value: ${{ steps.build.outputs.average-score }}
+  plan-budget-minutes:
+    description: Review-plan budget in minutes when review-plan-minutes is set.
+    value: ${{ steps.build.outputs.plan-budget-minutes }}
+  planned-prs:
+    description: Number of pull requests included in the review plan.
+    value: ${{ steps.build.outputs.planned-prs }}
+  planned-minutes:
+    description: Estimated active maintainer minutes in the review plan.
+    value: ${{ steps.build.outputs.planned-minutes }}
+  remaining-minutes:
+    description: Unused minutes left in the review-plan budget.
+    value: ${{ steps.build.outputs.remaining-minutes }}
+  deferred-prs:
+    description: Number of pull requests deferred by the review-plan budget.
+    value: ${{ steps.build.outputs.deferred-prs }}
+  watch-only-prs:
+    description: Number of wait-for-CI or wait-for-author pull requests in the review plan.
+    value: ${{ steps.build.outputs.watch-only-prs }}
 
 runs:
   using: composite
@@ -275,6 +293,66 @@ runs:
         for output_name, summary_key in outputs.items():
             print(f"{output_name}={int(summary.get(summary_key) or 0)}")
         PY
+
+        if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
+          plan_command=(
+            maintainer-radar repo "$repository"
+            --limit "$INPUT_LIMIT"
+            --sort "$INPUT_SORT"
+            --format json
+          )
+          if [ "$INPUT_HYDRATE" = "true" ]; then
+            plan_command+=(--hydrate)
+          fi
+          if [ -n "$INPUT_TOP" ]; then
+            plan_command+=(--top "$INPUT_TOP")
+          fi
+          if [ -n "$INPUT_CONFIG" ]; then
+            plan_command+=(--config "$INPUT_CONFIG")
+          fi
+          if [ -n "$INPUT_LABEL" ]; then
+            plan_command+=(--label "$INPUT_LABEL")
+          fi
+          if [ -n "$INPUT_AUTHOR" ]; then
+            plan_command+=(--author "$INPUT_AUTHOR")
+          fi
+          if [ -n "$INPUT_STALE_DAYS" ]; then
+            plan_command+=(--stale-days "$INPUT_STALE_DAYS")
+          fi
+          if [ -n "$INPUT_UPDATED_SINCE" ]; then
+            plan_command+=(--updated-since "$INPUT_UPDATED_SINCE")
+          fi
+          if [ -n "$INPUT_ACTION" ]; then
+            plan_command+=(--action "$INPUT_ACTION")
+          fi
+          if [ -n "$INPUT_MIN_SCORE" ]; then
+            plan_command+=(--min-score "$INPUT_MIN_SCORE")
+          fi
+          if [ -n "$INPUT_MAX_RISK" ]; then
+            plan_command+=(--max-risk "$INPUT_MAX_RISK")
+          fi
+
+          plan_json="$("${plan_command[@]}")"
+          PLAN_JSON="$plan_json" PLAN_BUDGET="$INPUT_REVIEW_PLAN_MINUTES" python - <<'PY' >> "$GITHUB_OUTPUT"
+        import json
+        import os
+
+        from maintainer_radar.render import summarize_review_plan
+
+        analyses = json.loads(os.environ["PLAN_JSON"])
+        summary = summarize_review_plan(analyses, int(os.environ["PLAN_BUDGET"]))
+        outputs = {
+            "plan-budget-minutes": "plan_budget_minutes",
+            "planned-prs": "planned_prs",
+            "planned-minutes": "planned_minutes",
+            "remaining-minutes": "remaining_minutes",
+            "deferred-prs": "deferred_prs",
+            "watch-only-prs": "watch_only_prs",
+        }
+        for output_name, summary_key in outputs.items():
+            print(f"{output_name}={int(summary.get(summary_key) or 0)}")
+        PY
+        fi
 
         if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ]; then
           SUMMARY_JSON="$summary_json" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"

@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.21
+        uses: JackSpiece/maintainer-radar@v0.16.22
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -83,6 +83,12 @@ jobs:
 | `large-or-triage` | Number of pull requests that are too large or need triage. |
 | `stale` | Number of pull requests quiet for 7 or more days. |
 | `average-score` | Average reviewability score for the report. |
+| `plan-budget-minutes` | Review-plan budget in minutes when `review-plan-minutes` is set. |
+| `planned-prs` | Number of pull requests included in the review plan. |
+| `planned-minutes` | Estimated active maintainer minutes in the review plan. |
+| `remaining-minutes` | Unused minutes left in the review-plan budget. |
+| `deferred-prs` | Number of pull requests deferred by the review-plan budget. |
+| `watch-only-prs` | Number of wait-for-CI or wait-for-author pull requests in the review plan. |
 
 Use summary outputs in later workflow steps:
 
@@ -92,6 +98,10 @@ Use summary outputs in later workflow steps:
 
 For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
 that already have maintainer feedback or blocking labels.
+
+For review-plan workflows, use `planned-prs`, `planned-minutes`,
+`remaining-minutes`, `deferred-prs`, and `watch-only-prs` in later notification
+or dashboard steps without parsing the Markdown artifact.
 
 ## Report Formats
 

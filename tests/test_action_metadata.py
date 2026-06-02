@@ -28,9 +28,13 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("summary-json:", action)
         self.assertIn("maintainer-blocked:", action)
         self.assertIn("average-score:", action)
+        self.assertIn("planned-prs:", action)
+        self.assertIn("planned-minutes:", action)
+        self.assertIn("watch-only-prs:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
         self.assertIn("value: ${{ steps.build.outputs.maintainer-blocked }}", action)
         self.assertIn("value: ${{ steps.build.outputs.average-score }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.planned-prs }}", action)
 
     def test_action_installs_local_package_and_uses_read_only_cli(self) -> None:
         action = (ROOT / "action.yml").read_text(encoding="utf-8")
@@ -51,6 +55,8 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('summary-json<<MAINTAINER_RADAR_SUMMARY', action)
         self.assertIn('"average-score": "average_score"', action)
         self.assertIn('"maintainer-blocked": "maintainer_blocked"', action)
+        self.assertIn('"planned-minutes": "planned_minutes"', action)
+        self.assertIn("summarize_review_plan", action)
         self.assertIn("Maintainer blocked:", action)
         self.assertIn('--summary-only', action)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', action)
@@ -93,6 +99,12 @@ class ActionMetadataTests(unittest.TestCase):
             "summary-json",
             "maintainer-blocked",
             "average-score",
+            "plan-budget-minutes",
+            "planned-prs",
+            "planned-minutes",
+            "remaining-minutes",
+            "deferred-prs",
+            "watch-only-prs",
         ]:
             with self.subTest(name=name):
                 self.assertIn(f"`{name}`", docs)

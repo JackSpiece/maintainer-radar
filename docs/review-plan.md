@@ -67,6 +67,21 @@ with:
 Review plans require Markdown output because they are designed for human
 handoffs and Actions run summaries.
 
+When the reusable Action runs with `review-plan-minutes`, it also exposes
+structured plan outputs for later workflow steps:
+
+- `planned-prs`
+- `planned-minutes`
+- `remaining-minutes`
+- `deferred-prs`
+- `watch-only-prs`
+
+For example:
+
+```yaml
+- run: echo "${{ steps.radar.outputs.planned-prs }} PRs fit this review block"
+```
+
 ## Why This Is Different
 
 AI reviewers inspect code after someone chooses a PR. Maintainer Radar helps
