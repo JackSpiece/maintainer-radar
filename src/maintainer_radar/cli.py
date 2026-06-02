@@ -18,6 +18,7 @@ from .render import (
     render_detail,
     render_html,
     render_markdown,
+    render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
     summarize_report,
@@ -237,7 +238,17 @@ def _emit(
     detail: bool = False,
     summary_only: bool = False,
     group_by: str | None = None,
+    review_plan_minutes: int | None = None,
 ) -> None:
+    if review_plan_minutes is not None:
+        if summary_only:
+            raise ValueError("--review-plan-minutes cannot be combined with --summary-only")
+        if detail:
+            raise ValueError("--review-plan-minutes is only available for queue reports")
+        if fmt != "markdown":
+            raise ValueError("--review-plan-minutes currently supports --format markdown")
+        print(render_review_plan_markdown(analyses, review_plan_minutes), end="")
+        return
     if fmt == "json":
         if summary_only:
             print(json.dumps(summarize_report(analyses), indent=2))
@@ -317,6 +328,13 @@ def build_parser() -> argparse.ArgumentParser:
             help="Group Markdown and HTML queue reports by a field.",
         )
 
+    def add_review_plan_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--review-plan-minutes",
+            type=int,
+            help="Render a Markdown review-session plan for this many maintainer minutes.",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -343,6 +361,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_hydrate_argument(repo)
     add_top_argument(repo)
     add_group_by_argument(repo)
+    add_review_plan_argument(repo)
 
     pr = sub.add_parser("pr", help="Analyze one pull request.")
     add_format_argument(pr, default=argparse.SUPPRESS)
@@ -375,6 +394,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_hydrate_argument(author)
     add_top_argument(author)
     add_group_by_argument(author)
+    add_review_plan_argument(author)
 
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
@@ -399,6 +419,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_sort_argument(from_json)
     add_top_argument(from_json)
     add_group_by_argument(from_json)
+    add_review_plan_argument(from_json)
 
     init_action = sub.add_parser(
         "init-action",
@@ -422,6 +443,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--group-by",
         choices=["action"],
         help="Group Markdown and HTML queue reports by a field in the workflow.",
+    )
+    init_action.add_argument(
+        "--review-plan-minutes",
+        type=int,
+        help="Render a Markdown review-session plan in the generated workflow.",
     )
     init_action.add_argument("--label", help="Only include PRs with this label in the workflow.")
     init_action.add_argument("--author", help="Only include PRs by this author in the workflow.")
@@ -490,6 +516,7 @@ def main(argv: list[str] | None = None) -> int:
                 hydrate=not args.no_hydrate,
                 top=args.top,
                 group_by=args.group_by,
+                review_plan_minutes=args.review_plan_minutes,
                 label=args.label,
                 author=args.author,
                 stale_days=args.stale_days,
@@ -538,6 +565,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.format,
                 summary_only=args.summary_only,
                 group_by=args.group_by,
+                review_plan_minutes=args.review_plan_minutes,
             )
         elif args.command == "pr":
             pr = view_pr(args.repository, args.number)
@@ -571,6 +599,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.format,
                 summary_only=args.summary_only,
                 group_by=args.group_by,
+                review_plan_minutes=args.review_plan_minutes,
             )
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path), source=args.source)
@@ -590,6 +619,7 @@ def main(argv: list[str] | None = None) -> int:
                 detail=detail,
                 summary_only=args.summary_only,
                 group_by=args.group_by,
+                review_plan_minutes=args.review_plan_minutes,
             )
         else:
             parser.error("unknown command")

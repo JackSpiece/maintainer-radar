@@ -120,6 +120,21 @@ class CliTests(unittest.TestCase):
         self.assertEqual(author_args.group_by, "action")
         self.assertEqual(json_args.group_by, "action")
 
+    def test_review_plan_minutes_flag_is_available_for_queue_commands(self) -> None:
+        repo_args = build_parser().parse_args(
+            ["repo", "owner/repo", "--review-plan-minutes", "30"]
+        )
+        author_args = build_parser().parse_args(
+            ["author", "alice", "--review-plan-minutes", "20"]
+        )
+        json_args = build_parser().parse_args(
+            ["from-json", "examples/sample-prs.json", "--review-plan-minutes", "45"]
+        )
+
+        self.assertEqual(repo_args.review_plan_minutes, 30)
+        self.assertEqual(author_args.review_plan_minutes, 20)
+        self.assertEqual(json_args.review_plan_minutes, 45)
+
     def test_comment_template_flag_is_available_for_pr_command(self) -> None:
         args = build_parser().parse_args(["pr", "owner/repo", "123", "--comment-template"])
 
@@ -141,6 +156,8 @@ class CliTests(unittest.TestCase):
                 "10",
                 "--group-by",
                 "action",
+                "--review-plan-minutes",
+                "30",
                 "--label",
                 "bug",
                 "--author",
@@ -172,6 +189,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.sort, "risk")
         self.assertEqual(args.top, 10)
         self.assertEqual(args.group_by, "action")
+        self.assertEqual(args.review_plan_minutes, 30)
         self.assertEqual(args.label, "bug")
         self.assertEqual(args.author, "alice")
         self.assertEqual(args.stale_days, 14)
@@ -458,6 +476,55 @@ class CliTests(unittest.TestCase):
             [item["number"] for item in sort_analyses(analyses, "number")],
             [1, 2, 3],
         )
+
+    def test_from_json_review_plan_outputs_markdown_plan(self) -> None:
+        with patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(
+                [
+                    "from-json",
+                    "examples/sample-prs.json",
+                    "--sort",
+                    "action",
+                    "--review-plan-minutes",
+                    "30",
+                    "--now",
+                    "2026-06-01",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        output = stdout.getvalue()
+        self.assertIn("Maintainer Radar Review Plan", output)
+        self.assertIn("Time budget: 30 minutes", output)
+        self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
+
+    def test_review_plan_rejects_summary_only_and_non_markdown_format(self) -> None:
+        with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as stderr:
+            summary_result = main(
+                [
+                    "from-json",
+                    "examples/sample-prs.json",
+                    "--summary-only",
+                    "--review-plan-minutes",
+                    "30",
+                ]
+            )
+        with patch("sys.stdout", new=StringIO()), patch("sys.stderr", new=StringIO()) as json_stderr:
+            json_result = main(
+                [
+                    "from-json",
+                    "examples/sample-prs.json",
+                    "--format",
+                    "json",
+                    "--review-plan-minutes",
+                    "30",
+                ]
+            )
+
+        self.assertEqual(summary_result, 2)
+        self.assertIn("cannot be combined", stderr.getvalue())
+        self.assertEqual(json_result, 2)
+        self.assertIn("supports --format markdown", json_stderr.getvalue())
 
 
 if __name__ == "__main__":

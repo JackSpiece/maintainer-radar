@@ -19,7 +19,7 @@ This writes a workflow that uses the reusable action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.17
+- uses: JackSpiece/maintainer-radar@v0.16.18
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -47,6 +47,15 @@ maintainer-radar init-action \
   --path .github/workflows/review-ready.yml
 ```
 
+For a daily time-boxed review plan:
+
+```bash
+maintainer-radar init-action \
+  --review-plan-minutes 30 \
+  --group-by action \
+  --path .github/workflows/review-plan.yml
+```
+
 The command prints YAML to stdout when `--path` is omitted. When `--path` is
 provided, it creates parent directories and refuses to overwrite an existing
 workflow unless `--force` is passed.
@@ -66,6 +75,7 @@ Copy-paste examples are available in:
 - [examples/github-actions/daily-markdown-report.yml](../examples/github-actions/daily-markdown-report.yml)
 - [examples/github-actions/daily-html-report.yml](../examples/github-actions/daily-html-report.yml)
 - [examples/github-actions/review-ready-report.yml](../examples/github-actions/review-ready-report.yml)
+- [examples/github-actions/review-plan-report.yml](../examples/github-actions/review-plan-report.yml)
 
 ## Scheduled Queue Report
 
@@ -90,7 +100,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.17
+        uses: JackSpiece/maintainer-radar@v0.16.18
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -113,7 +123,7 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.17
+  uses: JackSpiece/maintainer-radar@v0.16.18
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -132,6 +142,30 @@ For a smaller scheduled report that only shows PRs ready for maintainer review:
     path: ${{ steps.radar.outputs.report-path }}
 ```
 
+## Time-Boxed Review Plan
+
+For a scheduled report that tells maintainers what fits in the next review
+session:
+
+```yaml
+- name: Build 30 minute review plan
+  id: radar
+  uses: JackSpiece/maintainer-radar@v0.16.18
+  env:
+    GH_TOKEN: ${{ github.token }}
+  with:
+    repository: ${{ github.repository }}
+    format: markdown
+    output: review-plan.md
+    review-plan-minutes: "30"
+    sort: action
+    hydrate: "true"
+- uses: actions/upload-artifact@v4
+  with:
+    name: review-plan
+    path: ${{ steps.radar.outputs.report-path }}
+```
+
 ## HTML Artifact
 
 For a static browser-friendly report:
@@ -139,7 +173,7 @@ For a static browser-friendly report:
 ```yaml
 - name: Build HTML report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.16.17
+  uses: JackSpiece/maintainer-radar@v0.16.18
   env:
     GH_TOKEN: ${{ github.token }}
   with:

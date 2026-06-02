@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 
 from maintainer_radar.render import (
+    build_review_plan,
+    estimate_review_minutes,
     render_comment_csv,
     render_comment_html,
     render_csv,
@@ -10,6 +12,7 @@ from maintainer_radar.render import (
     render_detail,
     render_html,
     render_markdown,
+    render_review_plan_markdown,
     render_summary_csv,
     render_summary_markdown,
     summarize_report,
@@ -113,6 +116,88 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertEqual(summary["ci_blocked"], 1)
+
+    def test_review_plan_builds_budgeted_maintainer_session(self) -> None:
+        analyses = [
+            {
+                "number": 1,
+                "title": "Ready",
+                "url": "https://example.test/pull/1",
+                "action": "review now",
+                "next_step": "Review now while the PR appears small, active, and low risk.",
+                "reviewability": 90,
+                "changed_files": 2,
+                "additions": 40,
+                "deletions": 10,
+                "signals": ["CI passed"],
+                "flags": [],
+            },
+            {
+                "number": 2,
+                "title": "Fix CI",
+                "action": "ask for CI fix",
+                "next_step": "Ask the author to get failing checks green before deeper review.",
+                "reviewability": 20,
+                "flags": ["CI failing"],
+            },
+            {
+                "number": 3,
+                "title": "Wait",
+                "action": "wait for CI",
+                "next_step": "Wait for checks to finish before spending review time.",
+                "reviewability": 65,
+                "flags": ["CI pending"],
+            },
+        ]
+
+        plan = build_review_plan(analyses, 15)
+
+        self.assertEqual(plan["planned_minutes"], 12)
+        self.assertEqual([entry["item"]["number"] for entry in plan["planned"]], [1])
+        self.assertEqual([entry["item"]["number"] for entry in plan["deferred"]], [2])
+        self.assertEqual([entry["item"]["number"] for entry in plan["waiting"]], [3])
+        self.assertEqual(estimate_review_minutes(analyses[2]), 0)
+
+    def test_review_plan_markdown_contains_budget_estimates_and_waiting_items(self) -> None:
+        output = render_review_plan_markdown(
+            [
+                {
+                    "number": 1,
+                    "title": "Ready",
+                    "url": "https://example.test/pull/1",
+                    "action": "review now",
+                    "next_step": "Review now while the PR appears small, active, and low risk.",
+                    "reviewability": 90,
+                    "changed_files": 2,
+                    "additions": 40,
+                    "deletions": 10,
+                    "signals": ["CI passed"],
+                    "flags": [],
+                },
+                {
+                    "number": 2,
+                    "title": "Wait",
+                    "action": "wait for CI",
+                    "next_step": "Wait for checks to finish before spending review time.",
+                    "reviewability": 65,
+                    "flags": ["CI pending"],
+                },
+            ],
+            30,
+        )
+
+        self.assertIn("Maintainer Radar Review Plan", output)
+        self.assertIn("Time budget: 30 minutes", output)
+        self.assertIn("Estimated active time: 12 minutes", output)
+        self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
+        self.assertIn("[#1 Ready](https://example.test/pull/1)", output)
+        self.assertIn("12m", output)
+        self.assertIn("### Watch Only", output)
+        self.assertIn("#2 Wait", output)
+
+    def test_review_plan_rejects_non_positive_budget(self) -> None:
+        with self.assertRaises(ValueError):
+            build_review_plan([], 0)
 
     def test_summary_only_output_has_no_table(self) -> None:
         output = render_summary_markdown(

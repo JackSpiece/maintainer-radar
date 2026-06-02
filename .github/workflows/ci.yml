@@ -50,11 +50,13 @@ jobs:
           action: review-now
           min-score: "80"
           group-by: action
+          review-plan-minutes: "30"
           hydrate: "false"
       - name: Check action output
         run: |
           test -s "${{ steps.radar.outputs.report-path }}"
           grep -q "Maintainer Radar" "${{ steps.radar.outputs.report-path }}"
+          grep -q "Review Plan" "${{ steps.radar.outputs.report-path }}"
           test -n "${{ steps.radar.outputs.total }}"
           test -n "${{ steps.radar.outputs.average-score }}"
           test -n "${{ steps.radar.outputs.summary-json }}"

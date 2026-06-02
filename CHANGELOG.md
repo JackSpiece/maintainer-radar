@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.18
+
+- Added `--review-plan-minutes` for Markdown review-session plans that turn a
+  PR queue into a time-boxed maintainer plan.
+- Added `review-plan-minutes` support to generated workflows and the reusable
+  GitHub Action.
+- Added review plan docs and a copy-paste review-plan workflow example.
+
 ## 0.16.17
 
 - Added a Maintainer blocked metric to the public browser preview and copied

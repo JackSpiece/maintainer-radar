@@ -16,12 +16,15 @@ Adoption guide: [docs/adoption.md](docs/adoption.md)
 
 GitHub Action usage: [docs/github-action.md](docs/github-action.md)
 
+Review plan guide: [docs/review-plan.md](docs/review-plan.md)
+
 ![Maintainer Radar terminal preview](docs/assets/terminal-preview.svg)
 
 Maintainer Radar turns GitHub pull request metadata into a short, deterministic
 review brief: which PRs are ready to review, which ones need author follow-up,
 which ones are blocked by CI, and which ones are too risky to merge without more
-evidence.
+evidence. It can also turn the queue into a time-boxed review plan for the next
+maintainer session.
 
 Use AI reviewers to inspect code. Use Maintainer Radar before that to decide
 which pull requests deserve maintainer attention first.
@@ -70,7 +73,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.16.17
+- uses: JackSpiece/maintainer-radar@v0.16.18
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -180,6 +183,12 @@ Sort a queue for the review session:
 ```bash
 maintainer-radar repo owner/repo --sort action
 maintainer-radar from-json queue.json --sort risk
+```
+
+Turn the queue into a time-boxed maintainer session:
+
+```bash
+maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
 ```
 
 Group Markdown or HTML reports by action:

@@ -35,6 +35,7 @@ def render_github_action_workflow(
     hydrate: bool = True,
     top: int | None = None,
     group_by: str | None = None,
+    review_plan_minutes: int | None = None,
     label: str | None = None,
     author: str | None = None,
     stale_days: int | None = None,
@@ -56,6 +57,10 @@ def render_github_action_workflow(
         raise ValueError("--limit must be 1 or greater")
     if top is not None and top < 1:
         raise ValueError("--top must be 1 or greater")
+    if review_plan_minutes is not None and review_plan_minutes < 1:
+        raise ValueError("--review-plan-minutes must be 1 or greater")
+    if review_plan_minutes is not None and report_format != "markdown":
+        raise ValueError("--review-plan-minutes requires --report-format markdown")
     if stale_days is not None and stale_days < 1:
         raise ValueError("--stale-days must be 1 or greater")
     if min_score is not None and min_score < 0:
@@ -92,6 +97,7 @@ def render_github_action_workflow(
             _yaml_input("max-risk", max_risk),
             _yaml_input("top", top),
             _yaml_input("group-by", clean_group_by),
+            _yaml_input("review-plan-minutes", review_plan_minutes),
             _yaml_input("config", clean_config),
         ]
     )

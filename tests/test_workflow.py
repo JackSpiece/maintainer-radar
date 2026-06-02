@@ -65,6 +65,12 @@ class WorkflowTests(unittest.TestCase):
 
         self.assertIn('step-summary: "false"', output)
 
+    def test_render_github_action_workflow_supports_review_plan_minutes(self) -> None:
+        output = render_github_action_workflow(review_plan_minutes=30)
+
+        self.assertIn('review-plan-minutes: "30"', output)
+        self.assertIn("format: markdown", output)
+
     def test_render_github_action_workflow_rejects_invalid_values(self) -> None:
         with self.assertRaises(ValueError):
             render_github_action_workflow(report_format="xml")
@@ -72,6 +78,10 @@ class WorkflowTests(unittest.TestCase):
             render_github_action_workflow(limit=0)
         with self.assertRaises(ValueError):
             render_github_action_workflow(top=0)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(review_plan_minutes=0)
+        with self.assertRaises(ValueError):
+            render_github_action_workflow(report_format="html", review_plan_minutes=30)
         with self.assertRaises(ValueError):
             render_github_action_workflow(stale_days=0)
         with self.assertRaises(ValueError):

@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.17
+        uses: JackSpiece/maintainer-radar@v0.16.18
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -63,6 +63,7 @@ jobs:
 | `sort` | `action` | Sort order: `input`, `action`, `score`, `risk`, `stale`, or `number`. |
 | `top` | empty | Keep only the first N pull requests after sorting. |
 | `group-by` | empty | Group Markdown and HTML queue reports. Supported value: `action`. |
+| `review-plan-minutes` | empty | Render a Markdown review-session plan for this many maintainer minutes. |
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |
@@ -127,6 +128,19 @@ with:
   group-by: action
 ```
 
+For a time-boxed maintainer session, keep Markdown output and add a review plan:
+
+```yaml
+with:
+  repository: ${{ github.repository }}
+  format: markdown
+  sort: action
+  review-plan-minutes: "30"
+  hydrate: "true"
+```
+
+See [review-plan.md](review-plan.md) for how the estimates work.
+
 For stale follow-up sweeps:
 
 ```yaml
@@ -156,6 +170,7 @@ by hand:
 maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
 maintainer-radar init-action --config .maintainer-radar.json --path .github/workflows/maintainer-radar.yml
 maintainer-radar init-action --action review-now --min-score 80 --top 10 --path .github/workflows/review-ready.yml
+maintainer-radar init-action --review-plan-minutes 30 --path .github/workflows/review-plan.yml
 ```
 
 ## Permissions

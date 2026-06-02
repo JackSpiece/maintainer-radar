@@ -1,4 +1,4 @@
-name: Maintainer Radar HTML Report
+name: Maintainer Radar Review Plan
 
 on:
   workflow_dispatch:
@@ -10,26 +10,25 @@ permissions:
   pull-requests: read
 
 jobs:
-  report:
+  review-plan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Build HTML report
+      - name: Build 30 minute review plan
         id: radar
         uses: JackSpiece/maintainer-radar@v0.16.18
         env:
           GH_TOKEN: ${{ github.token }}
         with:
           repository: ${{ github.repository }}
-          format: html
-          output: maintainer-radar.html
-          limit: "50"
+          format: markdown
+          output: review-plan.md
+          review-plan-minutes: "30"
           sort: action
           hydrate: "true"
-          step-summary: "true"
       - uses: actions/upload-artifact@v4
         with:
-          name: maintainer-radar-html
+          name: review-plan
           path: ${{ steps.radar.outputs.report-path }}
