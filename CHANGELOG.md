@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.16
+
+- Added `maintainer_blocked` to summary output and `maintainer-blocked` to the
+  reusable GitHub Action outputs.
+- Added Maintainer blocked to Markdown, HTML, JSON, CSV, and compact Action run
+  summaries.
+
 ## 0.16.15
 
 - Expanded label-aware blocker scoring for dependency and upstream blocked PR

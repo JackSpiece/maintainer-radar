@@ -25,8 +25,10 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn("step-summary:", action)
         self.assertIn("report-path:", action)
         self.assertIn("summary-json:", action)
+        self.assertIn("maintainer-blocked:", action)
         self.assertIn("average-score:", action)
         self.assertIn("value: ${{ steps.build.outputs.report-path }}", action)
+        self.assertIn("value: ${{ steps.build.outputs.maintainer-blocked }}", action)
         self.assertIn("value: ${{ steps.build.outputs.average-score }}", action)
 
     def test_action_installs_local_package_and_uses_read_only_cli(self) -> None:
@@ -46,6 +48,8 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('summary_json="$("${summary_command[@]}" --format json)"', action)
         self.assertIn('summary-json<<MAINTAINER_RADAR_SUMMARY', action)
         self.assertIn('"average-score": "average_score"', action)
+        self.assertIn('"maintainer-blocked": "maintainer_blocked"', action)
+        self.assertIn("Maintainer blocked:", action)
         self.assertIn('--summary-only', action)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', action)
         self.assertNotIn("gh pr comment", action)
@@ -84,6 +88,7 @@ class ActionMetadataTests(unittest.TestCase):
             "step-summary",
             "report-path",
             "summary-json",
+            "maintainer-blocked",
             "average-score",
         ]:
             with self.subTest(name=name):

@@ -96,6 +96,9 @@ outputs:
   ci-pending:
     description: Number of pull requests waiting for CI.
     value: ${{ steps.build.outputs.ci-pending }}
+  maintainer-blocked:
+    description: Number of pull requests blocked by maintainer feedback or labels.
+    value: ${{ steps.build.outputs.maintainer-blocked }}
   large-or-triage:
     description: Number of pull requests that are too large or need triage.
     value: ${{ steps.build.outputs.large-or-triage }}
@@ -256,6 +259,7 @@ runs:
             "author-follow-up": "author_follow_up",
             "ci-blocked": "ci_blocked",
             "ci-pending": "ci_pending",
+            "maintainer-blocked": "maintainer_blocked",
             "large-or-triage": "large_or_triage",
             "stale": "stale",
             "average-score": "average_score",
@@ -278,6 +282,7 @@ runs:
             f"- Review now: {int(summary.get('review_now') or 0)}",
             f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",
             f"- CI blocked or pending: {ci_total}",
+            f"- Maintainer blocked: {int(summary.get('maintainer_blocked') or 0)}",
             f"- Large or needs triage: {int(summary.get('large_or_triage') or 0)}",
             f"- Stale 7+ days: {int(summary.get('stale') or 0)}",
             f"- Average reviewability: {int(summary.get('average_score') or 0)}/100",

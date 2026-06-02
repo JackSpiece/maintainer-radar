@@ -53,6 +53,7 @@ Example:
   "author_follow_up": 6,
   "ci_blocked": 2,
   "ci_pending": 3,
+  "maintainer_blocked": 5,
   "large_or_triage": 4,
   "stale": 9,
   "average_score": 72
@@ -68,6 +69,7 @@ Summary fields:
 | `author_follow_up` | integer | PRs needing author response |
 | `ci_blocked` | integer | PRs with failing CI |
 | `ci_pending` | integer | PRs waiting for CI |
+| `maintainer_blocked` | integer | PRs blocked by maintainer feedback or labels |
 | `large_or_triage` | integer | PRs that are too large or need triage |
 | `stale` | integer | PRs quiet for 7+ days |
 | `average_score` | integer | Average reviewability score |

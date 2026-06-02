@@ -1,6 +1,6 @@
 (() => {
   const MAX_PULLS = 5;
-  const ACTION_VERSION = "v0.16.15";
+  const ACTION_VERSION = "v0.16.16";
   const CODE_EXTENSIONS = [
     ".c",
     ".cc",

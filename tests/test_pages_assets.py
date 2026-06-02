@@ -43,7 +43,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("Daily Queue Brief", docs)
         self.assertIn("Review-Ready Queue", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.15", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.16", docs)
         self.assertIn("group-by: action", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
@@ -94,12 +94,21 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.16.15", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.16.16", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
+        self.assertIn("maintainer-blocked", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
+
+    def test_summary_output_docs_include_maintainer_blocked(self) -> None:
+        json_docs = (ROOT / "docs" / "json-output.md").read_text(encoding="utf-8")
+        csv_docs = (ROOT / "docs" / "csv-output.md").read_text(encoding="utf-8")
+
+        self.assertIn("maintainer_blocked", json_docs)
+        self.assertIn("PRs blocked by maintainer feedback or labels", json_docs)
+        self.assertIn("maintainer_blocked", csv_docs)
 
     def test_heuristics_docs_explain_label_blockers(self) -> None:
         docs = (ROOT / "docs" / "heuristics.md").read_text(encoding="utf-8")

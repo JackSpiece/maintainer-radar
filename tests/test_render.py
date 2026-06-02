@@ -82,15 +82,21 @@ class RenderTests(unittest.TestCase):
                     "action": "ask for CI fix",
                     "reviewability": 30,
                     "stale_days": 8,
-                    "flags": ["CI failing"],
+                    "flags": ["CI failing", "maintainer blocker language"],
                 },
-                {"action": "needs triage", "reviewability": 20, "stale_days": 1},
+                {
+                    "action": "needs triage",
+                    "reviewability": 20,
+                    "stale_days": 1,
+                    "flags": ["maintainer blocking label"],
+                },
             ]
         )
 
         self.assertEqual(summary["total"], 3)
         self.assertEqual(summary["review_now"], 1)
         self.assertEqual(summary["ci_blocked"], 1)
+        self.assertEqual(summary["maintainer_blocked"], 2)
         self.assertEqual(summary["large_or_triage"], 1)
         self.assertEqual(summary["stale"], 1)
 
@@ -117,6 +123,7 @@ class RenderTests(unittest.TestCase):
 
         self.assertIn("Maintainer Radar Summary", output)
         self.assertIn("Review now: 1", output)
+        self.assertIn("Maintainer blocked: 0", output)
         self.assertNotIn("| PR |", output)
 
     def test_csv_output_contains_stable_columns(self) -> None:
@@ -167,7 +174,7 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertIn("total,review_now,author_follow_up", output)
-        self.assertIn("2,1,0,1,0,0,1,60", output)
+        self.assertIn("2,1,0,1,0,0,0,1,60", output)
 
     def test_comment_csv_output_quotes_multiline_comment(self) -> None:
         output = render_comment_csv("Thanks.\nPlease add tests.")

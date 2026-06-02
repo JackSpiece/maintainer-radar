@@ -208,12 +208,19 @@ def summarize_report(analyses: list[dict[str, Any]]) -> dict[str, int]:
     stale_count = sum(1 for item in analyses if (item.get("stale_days") or 0) >= 7)
     ci_blocked = sum(1 for item in analyses if "CI failing" in (item.get("flags") or []))
     ci_pending = sum(1 for item in analyses if "CI pending" in (item.get("flags") or []))
+    maintainer_blocked = sum(
+        1
+        for item in analyses
+        if "maintainer blocker language" in (item.get("flags") or [])
+        or "maintainer blocking label" in (item.get("flags") or [])
+    )
     return {
         "total": len(analyses),
         "review_now": actions.count("review now"),
         "author_follow_up": actions.count("needs author follow-up"),
         "ci_blocked": ci_blocked,
         "ci_pending": ci_pending,
+        "maintainer_blocked": maintainer_blocked,
         "large_or_triage": actions.count("request smaller PR") + actions.count("needs triage"),
         "stale": stale_count,
         "average_score": round(sum(scores) / len(scores)) if scores else 0,
@@ -232,6 +239,7 @@ def render_summary_markdown(
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",
         f"- CI blocked or pending: {summary['ci_blocked'] + summary['ci_pending']}",
+        f"- Maintainer blocked: {summary['maintainer_blocked']}",
         f"- Large or needs triage: {summary['large_or_triage']}",
         f"- Stale 7+ days: {summary['stale']}",
         f"- Average reviewability: {summary['average_score']}/100",
@@ -350,6 +358,7 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
         ("Review now", summary["review_now"]),
         ("Author follow-up", summary["author_follow_up"]),
         ("CI blocked", summary["ci_blocked"] + summary["ci_pending"]),
+        ("Maintainer blocked", summary["maintainer_blocked"]),
         ("Large or triage", summary["large_or_triage"]),
         ("Stale 7+ days", summary["stale"]),
         ("Average score", f"{summary['average_score']}/100"),

@@ -4,6 +4,7 @@
 - Review now: 1
 - Needs author follow-up: 0
 - CI blocked or pending: 1
+- Maintainer blocked: 1
 - Large or needs triage: 0
 - Stale 7+ days: 1
 - Average reviewability: 50/100

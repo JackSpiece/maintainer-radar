@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.16.15
+        uses: JackSpiece/maintainer-radar@v0.16.16
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -78,6 +78,7 @@ jobs:
 | `author-follow-up` | Number of pull requests needing author follow-up. |
 | `ci-blocked` | Number of pull requests with failing CI. |
 | `ci-pending` | Number of pull requests waiting for CI. |
+| `maintainer-blocked` | Number of pull requests blocked by maintainer feedback or labels. |
 | `large-or-triage` | Number of pull requests that are too large or need triage. |
 | `stale` | Number of pull requests quiet for 7 or more days. |
 | `average-score` | Average reviewability score for the report. |
@@ -87,6 +88,9 @@ Use summary outputs in later workflow steps:
 ```yaml
 - run: echo "${{ steps.radar.outputs.review-now }} PRs are ready for review"
 ```
+
+For handoff or escalation workflows, use `maintainer-blocked` to detect PRs
+that already have maintainer feedback or blocking labels.
 
 ## Report Formats
 
