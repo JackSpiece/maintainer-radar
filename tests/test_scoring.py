@@ -320,6 +320,101 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertIn("tests changed", result["signals"])
         self.assertIn("generated or lockfile changes", result["flags"])
 
+    def test_author_own_comment_does_not_trigger_blocker(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 52,
+                "title": "Fix retry logic",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 40,
+                "deletions": 10,
+                "changedFiles": 2,
+                "author": {"login": "contributor-a"},
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "comments": [
+                    {
+                        "author": {"login": "contributor-a"},
+                        "body": "This is not working yet on my machine, still debugging.",
+                    }
+                ],
+                "files": [
+                    {"path": "src/retry.py"},
+                    {"path": "tests/test_retry.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertNotIn("maintainer blocker language", result["flags"])
+
+    def test_review_state_alone_is_not_blocker_language(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 53,
+                "title": "Refactor scheduler",
+                "body": "Test plan: unit tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 40,
+                "deletions": 10,
+                "changedFiles": 2,
+                "reviewDecision": "CHANGES_REQUESTED",
+                "latestReviews": [{"state": "CHANGES_REQUESTED", "body": ""}],
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/scheduler.py"},
+                    {"path": "tests/test_scheduler.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertIn("changes requested", result["flags"])
+        self.assertNotIn("maintainer blocker language", result["flags"])
+
+    def test_casual_test_mention_is_not_a_test_plan(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 54,
+                "title": "Speed up pipeline",
+                "body": "This should make the ci faster and the tests happier.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 30,
+                "deletions": 5,
+                "changedFiles": 2,
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [
+                    {"path": "src/pipeline.py"},
+                    {"path": "tests/test_pipeline.py"},
+                ],
+            },
+            now=NOW,
+        )
+
+        self.assertIn("no test plan found", result["flags"])
+        self.assertNotIn("test plan present", result["signals"])
+
+    def test_test_only_pr_is_not_penalized_for_missing_tests(self) -> None:
+        result = analyze_pr(
+            {
+                "number": 55,
+                "title": "Add regression tests",
+                "body": "Test plan: new regression tests.",
+                "updatedAt": "2026-06-01T00:00:00Z",
+                "additions": 50,
+                "deletions": 0,
+                "changedFiles": 1,
+                "reviewDecision": "REVIEW_REQUIRED",
+                "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+                "files": [{"path": "tests/test_regression.py"}],
+            },
+            now=NOW,
+        )
+
+        self.assertNotIn("code changed without tests", result["flags"])
+        self.assertIn("tests changed", result["signals"])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from io import StringIO
 import json
 from pathlib import Path
@@ -407,6 +408,15 @@ class CliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         load_config.assert_not_called()
 
+    def test_init_action_supports_pinned_action_ref(self) -> None:
+        pinned = "JackSpiece/maintainer-radar@0123456789abcdef0123456789abcdef01234567"
+
+        with patch("sys.stdout", new=StringIO()) as stdout:
+            result = main(["init-action", "--action-ref", pinned])
+
+        self.assertEqual(result, 0)
+        self.assertIn(f"uses: {pinned}", stdout.getvalue())
+
     def test_init_config_command_accepts_profile(self) -> None:
         args = build_parser().parse_args(
             [
@@ -655,6 +665,18 @@ class CliTests(unittest.TestCase):
             [1],
         )
 
+    def test_filter_prs_stale_days_respects_now_override(self) -> None:
+        prs = [
+            {"number": 1, "updatedAt": "2026-05-20T00:00:00Z"},
+            {"number": 2, "updatedAt": "2026-05-31T00:00:00Z"},
+        ]
+        now = datetime(2026, 6, 1, tzinfo=timezone.utc)
+
+        self.assertEqual(
+            [pr["number"] for pr in filter_prs(prs, stale_days=5, now=now)],
+            [1],
+        )
+
     def test_filter_analyses_supports_action_score_and_risk(self) -> None:
         analyses = [
             {"number": 1, "action": "review now", "reviewability": 90, "risk": 10},
@@ -734,9 +756,10 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(limit_analyses(analyses), analyses)
         self.assertEqual(limit_analyses(analyses, 2), [{"number": 1}, {"number": 2}])
-        self.assertEqual(limit_analyses(analyses, 0), [])
 
-    def test_limit_analyses_rejects_negative_top_n(self) -> None:
+    def test_limit_analyses_rejects_non_positive_top_n(self) -> None:
+        with self.assertRaises(ValueError):
+            limit_analyses([{"number": 1}], 0)
         with self.assertRaises(ValueError):
             limit_analyses([{"number": 1}], -1)
 
