@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -54,6 +55,8 @@ ACTION_PRIORITY = {
 }
 
 SORT_CHOICES = ["input", "action", "score", "risk", "stale", "number"]
+
+HYDRATE_MAX_WORKERS = 8
 
 GITHUB_REPO_URL_RE = re.compile(
     r"^(?:https?://)?github\.com/(?P<owner>[^/\s?#]+)/(?P<repo>[^/\s?#]+)(?:[/?#].*)?$",
@@ -150,6 +153,7 @@ def filter_prs(
     author: str | None = None,
     stale_days: int | None = None,
     updated_since: str | None = None,
+    now: datetime | None = None,
 ) -> list[dict[str, Any]]:
     result = prs
     if label:
@@ -161,7 +165,7 @@ def filter_prs(
     if stale_days is not None:
         stale_result: list[dict[str, Any]] = []
         for pr in result:
-            quiet_days = days_since(pr.get("updatedAt"))
+            quiet_days = days_since(pr.get("updatedAt"), now)
             if quiet_days is not None and quiet_days >= stale_days:
                 stale_result.append(pr)
         result = stale_result
@@ -189,17 +193,20 @@ def hydrate_prs(
     *,
     repository: str | None = None,
     viewer: Callable[[str, str | int], dict[str, Any]] = view_pr,
+    max_workers: int = HYDRATE_MAX_WORKERS,
 ) -> list[dict[str, Any]]:
-    hydrated: list[dict[str, Any]] = []
-    for pr in prs:
+    def hydrate_one(pr: dict[str, Any]) -> dict[str, Any]:
         repo_name = repository or _repository_name(pr.get("repository"))
         number = pr.get("number")
         if not repo_name or number is None:
-            hydrated.append(pr)
-            continue
+            return pr
         detail = viewer(repo_name, number)
-        hydrated.append({**pr, **detail})
-    return hydrated
+        return {**pr, **detail}
+
+    if max_workers <= 1 or len(prs) <= 1:
+        return [hydrate_one(pr) for pr in prs]
+    with ThreadPoolExecutor(max_workers=min(max_workers, len(prs))) as pool:
+        return list(pool.map(hydrate_one, prs))
 
 
 def _repository_name(value: Any) -> str | None:
@@ -271,8 +278,8 @@ def sort_analyses(analyses: list[dict[str, Any]], sort_by: str = "input") -> lis
 def limit_analyses(analyses: list[dict[str, Any]], top: int | None = None) -> list[dict[str, Any]]:
     if top is None:
         return analyses
-    if top < 0:
-        raise ValueError("--top must be 0 or greater")
+    if top < 1:
+        raise ValueError("--top must be 1 or greater")
     return analyses[:top]
 
 
@@ -600,6 +607,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Add a config JSON path to the generated workflow.",
     )
     init_action.add_argument(
+        "--action-ref",
+        help=(
+            "Action reference to pin in the generated workflow, for example "
+            "JackSpiece/maintainer-radar@<commit-sha>. Defaults to the released tag."
+        ),
+    )
+    init_action.add_argument(
         "--no-hydrate",
         action="store_true",
         help="Skip full PR hydration for a faster but shallower workflow.",
@@ -679,6 +693,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Group Markdown and HTML reports by a field. Default: action.",
     )
     init_repo.add_argument(
+        "--action-ref",
+        help=(
+            "Action reference to pin in the generated workflow, for example "
+            "JackSpiece/maintainer-radar@<commit-sha>. Defaults to the released tag."
+        ),
+    )
+    init_repo.add_argument(
         "--no-hydrate",
         action="store_true",
         help="Skip full PR hydration for a faster but shallower workflow.",
@@ -721,6 +742,7 @@ def main(argv: list[str] | None = None) -> int:
                 max_risk=args.max_risk,
                 config=args.config,
                 step_summary=not args.no_step_summary,
+                action_ref=args.action_ref,
             )
             if args.path:
                 output_path = Path(args.path)
@@ -756,6 +778,7 @@ def main(argv: list[str] | None = None) -> int:
                 group_by=args.group_by,
                 config=args.config_path,
                 step_summary=not args.no_step_summary,
+                action_ref=args.action_ref,
             )
             _write_output_file(config_path, rendered_config)
             _write_output_file(workflow_path, workflow)
@@ -774,6 +797,7 @@ def main(argv: list[str] | None = None) -> int:
                 author=args.author,
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
+                now=now,
             )
             if args.hydrate:
                 prs = hydrate_prs(prs, repository=repository, viewer=view_pr)
@@ -802,6 +826,7 @@ def main(argv: list[str] | None = None) -> int:
                 author=args.author,
                 stale_days=args.stale_days,
                 updated_since=args.updated_since,
+                now=now,
             )
             if not args.no_hydrate:
                 prs = hydrate_prs(prs, repository=repository, viewer=view_pr)
