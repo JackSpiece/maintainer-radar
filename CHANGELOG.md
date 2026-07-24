@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.21.0
+
+- Fixed `--stale-days` filtering to honor `--now`, so reproducible runs filter
+  and score with the same clock.
+- Tightened test-plan detection: evidence must be an explicit section, label,
+  or testing statement. Casual mentions of "tests" or "ci" no longer count.
+- Blocker detection now ignores the PR author's own comments and reviews, and
+  no longer scans review states as text, which double-counted
+  `CHANGES_REQUESTED` on top of the review-decision penalty.
+- File categories are now mutually exclusive, so test-only PRs are no longer
+  flagged as "code changed without tests".
+- GitLab and Forgejo normalizers only emit a `body` key when the export
+  actually carried one, matching shallow GitHub scan scoring.
+- `--top` now consistently requires 1 or greater in the CLI, matching
+  generated workflow validation.
+- The composite GitHub Action now scans the queue exactly once and renders the
+  report, summary outputs, review-plan outputs, and step summary locally from
+  that JSON, instead of scanning up to three times.
+- Hydrated scans fetch PR details concurrently, and `gh` subprocess calls time
+  out after 120 seconds instead of hanging forever.
+- Author scans pass through `commentsCount` instead of fabricating placeholder
+  comment objects.
+- Added `--action-ref` to `init-action` and `init-repo` for SHA-pinned
+  workflows, and generated YAML now escapes backslashes in quoted values.
+- CI now runs `ruff` (enforced) and `mypy` (advisory), and the action smoke
+  test writes `summary-json` through an environment variable instead of
+  expanding an expression inside a heredoc.
+- Single-sourced the package version from `maintainer_radar.__version__`,
+  moved to `setuptools>=77` for the SPDX license string, and shipped a
+  `py.typed` marker.
+- Added a PyPI release workflow (trusted publishing), Dependabot updates for
+  Actions and pip, `CODEOWNERS`, a full Contributor Covenant 2.1 code of
+  conduct, and an expanded contributing guide.
+- Renamed the config integer validator to `_non_negative_int` to match its
+  actual behavior.
+
 ## 0.20.0
 
 - Added `maintainer-radar init-repo`, a one-command setup path that writes both

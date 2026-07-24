@@ -96,7 +96,7 @@ For most maintainers, the fastest path is the reusable GitHub Action:
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.20.0
+- uses: JackSpiece/maintainer-radar@v0.21.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -104,6 +104,10 @@ For most maintainers, the fastest path is the reusable GitHub Action:
     repository: ${{ github.repository }}
     format: markdown
 ```
+
+For stricter supply-chain pinning, reference a full commit SHA instead of the
+tag, or generate a pinned workflow with
+`maintainer-radar init-action --action-ref JackSpiece/maintainer-radar@<commit-sha>`.
 
 Or write both the config and scheduled workflow in one step:
 
@@ -122,8 +126,7 @@ queue. The Action also exposes summary outputs such as `review-now`,
 `ci-blocked`, `merge-conflicts`, `branch-behind`, `maintainer-blocked`, and
 `attention-level`, plus `workflow-mode` and `workflow-recommendation` for later
 handoff or notification steps. The `next-session-brief` output gives a concise
-60-minute maintainer digest for notifications or dashboards. It refuses to
-overwrite an existing file unless you pass `--force`.
+60-minute maintainer digest for notifications or dashboards.
 
 If your project uses custom thresholds, include them in the generated workflow:
 
