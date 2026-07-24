@@ -227,111 +227,110 @@ runs:
             markdown) default_output="review-plan.md" ;;
             html) default_output="review-plan.html" ;;
             json) default_output="review-plan.json" ;;
+            csv)
+              echo "review-plan-minutes requires format markdown, html, or json" >&2
+              exit 2
+              ;;
           esac
         fi
         output="${INPUT_OUTPUT:-$default_output}"
         mkdir -p "$(dirname "$output")"
         echo "report-path=$output" >> "$GITHUB_OUTPUT"
 
-        command=(
-          maintainer-radar repo "$repository"
+        radar_args=(
           --limit "$INPUT_LIMIT"
           --sort "$INPUT_SORT"
-          --format "$INPUT_FORMAT"
         )
         if [ "$INPUT_HYDRATE" = "true" ]; then
-          command+=(--hydrate)
+          radar_args+=(--hydrate)
         fi
         if [ -n "$INPUT_TOP" ]; then
-          command+=(--top "$INPUT_TOP")
-        fi
-        if [ -n "$INPUT_GROUP_BY" ]; then
-          command+=(--group-by "$INPUT_GROUP_BY")
-        fi
-        if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
-          command+=(--review-plan-minutes "$INPUT_REVIEW_PLAN_MINUTES")
+          radar_args+=(--top "$INPUT_TOP")
         fi
         if [ -n "$INPUT_CONFIG" ]; then
-          command+=(--config "$INPUT_CONFIG")
+          radar_args+=(--config "$INPUT_CONFIG")
         fi
         if [ -n "$INPUT_LABEL" ]; then
-          command+=(--label "$INPUT_LABEL")
+          radar_args+=(--label "$INPUT_LABEL")
         fi
         if [ -n "$INPUT_AUTHOR" ]; then
-          command+=(--author "$INPUT_AUTHOR")
+          radar_args+=(--author "$INPUT_AUTHOR")
         fi
         if [ -n "$INPUT_STALE_DAYS" ]; then
-          command+=(--stale-days "$INPUT_STALE_DAYS")
+          radar_args+=(--stale-days "$INPUT_STALE_DAYS")
         fi
         if [ -n "$INPUT_UPDATED_SINCE" ]; then
-          command+=(--updated-since "$INPUT_UPDATED_SINCE")
+          radar_args+=(--updated-since "$INPUT_UPDATED_SINCE")
         fi
         if [ -n "$INPUT_ACTION" ]; then
-          command+=(--action "$INPUT_ACTION")
+          radar_args+=(--action "$INPUT_ACTION")
         fi
         if [ -n "$INPUT_MIN_SCORE" ]; then
-          command+=(--min-score "$INPUT_MIN_SCORE")
+          radar_args+=(--min-score "$INPUT_MIN_SCORE")
         fi
         if [ -n "$INPUT_MAX_RISK" ]; then
-          command+=(--max-risk "$INPUT_MAX_RISK")
+          radar_args+=(--max-risk "$INPUT_MAX_RISK")
         fi
 
-        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" = "markdown" ]; then
-          "${command[@]}" | tee "$output" >> "$GITHUB_STEP_SUMMARY"
-        else
-          "${command[@]}" > "$output"
-        fi
+        # Scan the queue exactly once. Every report shape, summary output,
+        # review-plan metric, and step summary below renders locally from
+        # this analyses JSON without additional GitHub API calls.
+        export ANALYSES_PATH="${RUNNER_TEMP:-/tmp}/maintainer-radar-analyses.json"
+        maintainer-radar repo "$repository" "${radar_args[@]}" --format json > "$ANALYSES_PATH"
 
-        summary_command=(
-          maintainer-radar repo "$repository"
-          --limit "$INPUT_LIMIT"
-          --sort "$INPUT_SORT"
-          --summary-only
-        )
-        if [ "$INPUT_HYDRATE" = "true" ]; then
-          summary_command+=(--hydrate)
-        fi
-        if [ -n "$INPUT_TOP" ]; then
-          summary_command+=(--top "$INPUT_TOP")
-        fi
-        if [ -n "$INPUT_CONFIG" ]; then
-          summary_command+=(--config "$INPUT_CONFIG")
-        fi
-        if [ -n "$INPUT_LABEL" ]; then
-          summary_command+=(--label "$INPUT_LABEL")
-        fi
-        if [ -n "$INPUT_AUTHOR" ]; then
-          summary_command+=(--author "$INPUT_AUTHOR")
-        fi
-        if [ -n "$INPUT_STALE_DAYS" ]; then
-          summary_command+=(--stale-days "$INPUT_STALE_DAYS")
-        fi
-        if [ -n "$INPUT_UPDATED_SINCE" ]; then
-          summary_command+=(--updated-since "$INPUT_UPDATED_SINCE")
-        fi
-        if [ -n "$INPUT_ACTION" ]; then
-          summary_command+=(--action "$INPUT_ACTION")
-        fi
-        if [ -n "$INPUT_MIN_SCORE" ]; then
-          summary_command+=(--min-score "$INPUT_MIN_SCORE")
-        fi
-        if [ -n "$INPUT_MAX_RISK" ]; then
-          summary_command+=(--max-risk "$INPUT_MAX_RISK")
-        fi
-
-        summary_json="$("${summary_command[@]}" --format json)"
-        {
-          echo "summary-json<<MAINTAINER_RADAR_SUMMARY"
-          printf '%s\n' "$summary_json"
-          echo "MAINTAINER_RADAR_SUMMARY"
-        } >> "$GITHUB_OUTPUT"
-
-        SUMMARY_JSON="$summary_json" python - <<'PY' >> "$GITHUB_OUTPUT"
+        export REPORT_FORMAT="$INPUT_FORMAT"
+        export REPORT_OUTPUT_PATH="$output"
+        export REPORT_GROUP_BY="$INPUT_GROUP_BY"
+        export REVIEW_PLAN_MINUTES="$INPUT_REVIEW_PLAN_MINUTES"
+        export STEP_SUMMARY_ENABLED="$INPUT_STEP_SUMMARY"
+        python - <<'PY'
         import json
         import os
+        from pathlib import Path
 
-        summary = json.loads(os.environ["SUMMARY_JSON"])
-        outputs = {
+        from maintainer_radar.render import (
+            render_csv,
+            render_html,
+            render_markdown,
+            render_review_plan_html,
+            render_review_plan_json,
+            render_review_plan_markdown,
+            summarize_report,
+            summarize_review_plan,
+        )
+
+        analyses = json.loads(Path(os.environ["ANALYSES_PATH"]).read_text(encoding="utf-8"))
+        report_format = os.environ["REPORT_FORMAT"]
+        group_by = os.environ.get("REPORT_GROUP_BY") or None
+        plan_raw = os.environ.get("REVIEW_PLAN_MINUTES") or ""
+        plan_minutes = int(plan_raw) if plan_raw else None
+        report_path = Path(os.environ["REPORT_OUTPUT_PATH"])
+        step_summary_enabled = os.environ.get("STEP_SUMMARY_ENABLED") == "true"
+
+        if plan_minutes is not None:
+            if report_format == "json":
+                report = render_review_plan_json(analyses, plan_minutes)
+            elif report_format == "html":
+                report = render_review_plan_html(analyses, plan_minutes)
+            else:
+                report = render_review_plan_markdown(analyses, plan_minutes)
+        elif report_format == "json":
+            report = json.dumps(analyses, indent=2) + "\n"
+        elif report_format == "csv":
+            report = render_csv(analyses)
+        elif report_format == "html":
+            report = render_html(analyses, summary_only=False, group_by=group_by)
+        else:
+            report = render_markdown(analyses, group_by=group_by)
+        report_path.write_text(report, encoding="utf-8")
+
+        summary = summarize_report(analyses)
+        output_lines = [
+            "summary-json<<MAINTAINER_RADAR_SUMMARY",
+            json.dumps(summary, indent=2),
+            "MAINTAINER_RADAR_SUMMARY",
+        ]
+        numeric_outputs = {
             "total": "total",
             "review-now": "review_now",
             "author-follow-up": "author_follow_up",
@@ -351,8 +350,8 @@ runs:
             "next-session-deferred": "next_session_deferred",
             "average-score": "average_score",
         }
-        for output_name, summary_key in outputs.items():
-            print(f"{output_name}={int(summary.get(summary_key) or 0)}")
+        for output_name, summary_key in numeric_outputs.items():
+            output_lines.append(f"{output_name}={int(summary.get(summary_key) or 0)}")
         text_outputs = {
             "queue-headline": "queue_headline",
             "attention-level": "attention_level",
@@ -363,125 +362,70 @@ runs:
         }
         for output_name, summary_key in text_outputs.items():
             value = str(summary.get(summary_key) or "").replace("\n", " ")
-            print(f"{output_name}={value}")
+            output_lines.append(f"{output_name}={value}")
+
+        plan_summary = None
+        if plan_minutes is not None:
+            plan_summary = summarize_review_plan(analyses, plan_minutes)
+            plan_outputs = {
+                "plan-budget-minutes": "plan_budget_minutes",
+                "planned-prs": "planned_prs",
+                "planned-minutes": "planned_minutes",
+                "remaining-minutes": "remaining_minutes",
+                "deferred-prs": "deferred_prs",
+                "watch-only-prs": "watch_only_prs",
+            }
+            for output_name, summary_key in plan_outputs.items():
+                output_lines.append(f"{output_name}={int(plan_summary.get(summary_key) or 0)}")
+
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+            fh.write("\n".join(output_lines) + "\n")
+
+        if step_summary_enabled:
+            if report_format == "markdown":
+                step_summary = report
+            else:
+                ci_total = int(summary.get("ci_blocked") or 0) + int(summary.get("ci_pending") or 0)
+                lines = [
+                    "## Maintainer Radar Summary",
+                    "",
+                    str(summary.get("queue_headline") or ""),
+                    "",
+                    f"- Attention level: {summary.get('attention_level') or 'quiet'}",
+                    f"- Attention reason: {summary.get('attention_reason') or ''}",
+                    f"- Workflow mode: {summary.get('workflow_mode') or 'quiet'}",
+                    f"- Workflow recommendation: {summary.get('workflow_recommendation') or ''}",
+                    f"- Next session: {summary.get('next_session_brief') or ''}",
+                    f"- PRs scanned: {int(summary.get('total') or 0)}",
+                    f"- Review now: {int(summary.get('review_now') or 0)}",
+                    f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",
+                    f"- CI blocked or pending: {ci_total}",
+                    f"- Maintainer blocked: {int(summary.get('maintainer_blocked') or 0)}",
+                    f"- Large or needs triage: {int(summary.get('large_or_triage') or 0)}",
+                    f"- Stale 7+ days: {int(summary.get('stale') or 0)}",
+                    f"- Quick unblocks: {int(summary.get('quick_unblocks') or 0)}",
+                    f"- Watch only: {int(summary.get('watch_only') or 0)}",
+                    f"- Next-session PRs: {int(summary.get('next_session_prs') or 0)}",
+                    f"- Next-session active time: {int(summary.get('next_session_minutes') or 0)} minutes",
+                    f"- Next-session deferred: {int(summary.get('next_session_deferred') or 0)}",
+                    f"- Average reviewability: {int(summary.get('average_score') or 0)}/100",
+                    "",
+                ]
+                if plan_summary is not None:
+                    lines.extend(
+                        [
+                            "## Maintainer Radar Review Plan",
+                            "",
+                            f"- Time budget: {int(plan_summary.get('plan_budget_minutes') or 0)} minutes",
+                            f"- Planned PRs: {int(plan_summary.get('planned_prs') or 0)}",
+                            f"- Estimated active time: {int(plan_summary.get('planned_minutes') or 0)} minutes",
+                            f"- Left for interrupts: {int(plan_summary.get('remaining_minutes') or 0)} minutes",
+                            f"- Deferred by budget: {int(plan_summary.get('deferred_prs') or 0)}",
+                            f"- Watch only: {int(plan_summary.get('watch_only_prs') or 0)}",
+                            "",
+                        ]
+                    )
+                step_summary = "\n".join(lines)
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as fh:
+                fh.write(step_summary if step_summary.endswith("\n") else step_summary + "\n")
         PY
-
-        if [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
-          plan_command=(
-            maintainer-radar repo "$repository"
-            --limit "$INPUT_LIMIT"
-            --sort "$INPUT_SORT"
-            --format json
-          )
-          if [ "$INPUT_HYDRATE" = "true" ]; then
-            plan_command+=(--hydrate)
-          fi
-          if [ -n "$INPUT_TOP" ]; then
-            plan_command+=(--top "$INPUT_TOP")
-          fi
-          if [ -n "$INPUT_CONFIG" ]; then
-            plan_command+=(--config "$INPUT_CONFIG")
-          fi
-          if [ -n "$INPUT_LABEL" ]; then
-            plan_command+=(--label "$INPUT_LABEL")
-          fi
-          if [ -n "$INPUT_AUTHOR" ]; then
-            plan_command+=(--author "$INPUT_AUTHOR")
-          fi
-          if [ -n "$INPUT_STALE_DAYS" ]; then
-            plan_command+=(--stale-days "$INPUT_STALE_DAYS")
-          fi
-          if [ -n "$INPUT_UPDATED_SINCE" ]; then
-            plan_command+=(--updated-since "$INPUT_UPDATED_SINCE")
-          fi
-          if [ -n "$INPUT_ACTION" ]; then
-            plan_command+=(--action "$INPUT_ACTION")
-          fi
-          if [ -n "$INPUT_MIN_SCORE" ]; then
-            plan_command+=(--min-score "$INPUT_MIN_SCORE")
-          fi
-          if [ -n "$INPUT_MAX_RISK" ]; then
-            plan_command+=(--max-risk "$INPUT_MAX_RISK")
-          fi
-
-          plan_json="$("${plan_command[@]}")"
-          PLAN_JSON="$plan_json" PLAN_BUDGET="$INPUT_REVIEW_PLAN_MINUTES" python - <<'PY' >> "$GITHUB_OUTPUT"
-        import json
-        import os
-
-        from maintainer_radar.render import summarize_review_plan
-
-        analyses = json.loads(os.environ["PLAN_JSON"])
-        summary = summarize_review_plan(analyses, int(os.environ["PLAN_BUDGET"]))
-        outputs = {
-            "plan-budget-minutes": "plan_budget_minutes",
-            "planned-prs": "planned_prs",
-            "planned-minutes": "planned_minutes",
-            "remaining-minutes": "remaining_minutes",
-            "deferred-prs": "deferred_prs",
-            "watch-only-prs": "watch_only_prs",
-        }
-        for output_name, summary_key in outputs.items():
-            print(f"{output_name}={int(summary.get(summary_key) or 0)}")
-        PY
-        fi
-
-        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ]; then
-          SUMMARY_JSON="$summary_json" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-        import json
-        import os
-
-        summary = json.loads(os.environ["SUMMARY_JSON"])
-        ci_total = int(summary.get("ci_blocked") or 0) + int(summary.get("ci_pending") or 0)
-        lines = [
-            "## Maintainer Radar Summary",
-            "",
-            str(summary.get("queue_headline") or ""),
-            "",
-            f"- Attention level: {summary.get('attention_level') or 'quiet'}",
-            f"- Attention reason: {summary.get('attention_reason') or ''}",
-            f"- Workflow mode: {summary.get('workflow_mode') or 'quiet'}",
-            f"- Workflow recommendation: {summary.get('workflow_recommendation') or ''}",
-            f"- Next session: {summary.get('next_session_brief') or ''}",
-            f"- PRs scanned: {int(summary.get('total') or 0)}",
-            f"- Review now: {int(summary.get('review_now') or 0)}",
-            f"- Needs author follow-up: {int(summary.get('author_follow_up') or 0)}",
-            f"- CI blocked or pending: {ci_total}",
-            f"- Maintainer blocked: {int(summary.get('maintainer_blocked') or 0)}",
-            f"- Large or needs triage: {int(summary.get('large_or_triage') or 0)}",
-            f"- Stale 7+ days: {int(summary.get('stale') or 0)}",
-            f"- Quick unblocks: {int(summary.get('quick_unblocks') or 0)}",
-            f"- Watch only: {int(summary.get('watch_only') or 0)}",
-            f"- Next-session PRs: {int(summary.get('next_session_prs') or 0)}",
-            f"- Next-session active time: {int(summary.get('next_session_minutes') or 0)} minutes",
-            f"- Next-session deferred: {int(summary.get('next_session_deferred') or 0)}",
-            f"- Average reviewability: {int(summary.get('average_score') or 0)}/100",
-            "",
-        ]
-        print("\n".join(lines))
-        PY
-        fi
-
-        if [ "$INPUT_STEP_SUMMARY" = "true" ] && [ "$INPUT_FORMAT" != "markdown" ] && [ -n "$INPUT_REVIEW_PLAN_MINUTES" ]; then
-          PLAN_JSON="$plan_json" PLAN_BUDGET="$INPUT_REVIEW_PLAN_MINUTES" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-        import json
-        import os
-
-        from maintainer_radar.render import summarize_review_plan
-
-        analyses = json.loads(os.environ["PLAN_JSON"])
-        summary = summarize_review_plan(analyses, int(os.environ["PLAN_BUDGET"]))
-        lines = [
-            "## Maintainer Radar Review Plan",
-            "",
-            f"- Time budget: {int(summary.get('plan_budget_minutes') or 0)} minutes",
-            f"- Planned PRs: {int(summary.get('planned_prs') or 0)}",
-            f"- Estimated active time: {int(summary.get('planned_minutes') or 0)} minutes",
-            f"- Left for interrupts: {int(summary.get('remaining_minutes') or 0)} minutes",
-            f"- Deferred by budget: {int(summary.get('deferred_prs') or 0)}",
-            f"- Watch only: {int(summary.get('watch_only_prs') or 0)}",
-            "",
-        ]
-        print("\n".join(lines))
-        PY
-        fi

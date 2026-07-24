@@ -81,14 +81,13 @@ def normalize_gitlab_mr(mr: dict[str, Any]) -> dict[str, Any]:
     comments = _comments(mr)
     pipeline = mr.get("head_pipeline") or mr.get("pipeline") or {}
 
-    return {
+    normalized: dict[str, Any] = {
         "number": mr.get("iid") or mr.get("number") or mr.get("id"),
         "title": mr.get("title"),
         "url": mr.get("web_url") or mr.get("url"),
         "author": {
             "login": author.get("username") or author.get("name") or mr.get("author_username")
         },
-        "body": mr.get("description") or mr.get("body") or "",
         "updatedAt": mr.get("updated_at") or mr.get("updatedAt"),
         "createdAt": mr.get("created_at") or mr.get("createdAt"),
         "isDraft": bool(mr.get("draft") or mr.get("work_in_progress") or _title_is_draft(mr)),
@@ -105,6 +104,12 @@ def normalize_gitlab_mr(mr: dict[str, Any]) -> dict[str, Any]:
         "deletions": deletions,
         "changedFiles": _changed_files(mr, changes),
     }
+    # Only expose a body when the export actually carried one, so shallow
+    # GitLab exports score like shallow GitHub scans instead of being
+    # penalized for a missing test plan.
+    if "description" in mr or "body" in mr:
+        normalized["body"] = mr.get("description") or mr.get("body") or ""
+    return normalized
 
 
 def normalize_forgejo_pr(pr: dict[str, Any]) -> dict[str, Any]:
@@ -113,12 +118,11 @@ def normalize_forgejo_pr(pr: dict[str, Any]) -> dict[str, Any]:
     additions, deletions = _forgejo_diff_stats(pr, files)
     reviews = _forgejo_reviews(pr)
 
-    return {
+    normalized: dict[str, Any] = {
         "number": pr.get("number") or pr.get("id") or pr.get("index"),
         "title": pr.get("title"),
         "url": pr.get("html_url") or pr.get("url"),
         "author": {"login": _forgejo_author_login(user)},
-        "body": pr.get("body") or "",
         "updatedAt": pr.get("updated_at") or pr.get("updatedAt"),
         "createdAt": pr.get("created_at") or pr.get("createdAt"),
         "isDraft": bool(pr.get("draft") or _title_is_draft(pr)),
@@ -135,6 +139,11 @@ def normalize_forgejo_pr(pr: dict[str, Any]) -> dict[str, Any]:
         "deletions": deletions,
         "changedFiles": _forgejo_changed_files(pr, files),
     }
+    # Match the GitHub shallow-scan shape: only include a body key when the
+    # export included one.
+    if "body" in pr:
+        normalized["body"] = pr.get("body") or ""
+    return normalized
 
 
 def _title_is_draft(mr: dict[str, Any]) -> bool:

@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Maintainer Radar</title>
-  <meta name="description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
+  <meta name="description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
   <meta property="og:title" content="Maintainer Radar">
-  <meta property="og:description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
+  <meta property="og:description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jackspiece.github.io/maintainer-radar/">
   <meta property="og:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
@@ -14,7 +14,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Maintainer Radar">
-  <meta name="twitter:description" content="Read-only PR triage reports that recommend the next maintainer session, with a no-install public repo preview.">
+  <meta name="twitter:description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
   <meta name="twitter:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
   <style>
     :root {
@@ -614,32 +614,30 @@
   <main class="wrap">
     <section class="intro" aria-labelledby="title">
       <div>
-        <h1 id="title">Local PR triage for maintainers</h1>
+        <h1 id="title">Know which PRs deserve your time.</h1>
         <p class="lede">
-          Maintainer Radar turns pull request metadata into a deterministic queue brief:
-          what is ready for review, what is blocked by CI, and why each score changed.
-          One command can recommend the next maintainer workflow, create a read-only
-          GitHub Action report, or build a time-boxed review plan that appears in the
-          run summary, with no hosted service or model token.
+          Maintainer Radar scores your pull request queue and tells you what to
+          review now, what needs author follow-up, and what’s blocked — before
+          you open a single diff. No app. No tokens. No noise.
         </p>
-        <pre class="command">maintainer-radar recommend https://github.com/owner/repo/pulls
-maintainer-radar init-repo --profile balanced</pre>
+        <pre class="command">pip install maintainer-radar
+maintainer-radar recommend https://github.com/owner/repo/pulls</pre>
         <div class="notes" aria-label="Project traits">
           <div class="note">
-            <strong>Local-first</strong>
-            <span>No GitHub App, webhook, hosted database, or model key required.</span>
+            <strong>No setup</strong>
+            <span>Works with the GitHub CLI you already have. No app, webhook, or API key.</span>
           </div>
           <div class="note">
-            <strong>Low-permission</strong>
-            <span>Reports use read-only contents and pull request access.</span>
+            <strong>Read-only</strong>
+            <span>Never posts, comments, or writes anything to your repo.</span>
           </div>
           <div class="note">
-            <strong>Explainable</strong>
-            <span>Every risk score includes the exact heuristic impact.</span>
+            <strong>Transparent scores</strong>
+            <span>Every risk adjustment is shown. Nothing is hidden behind a model.</span>
           </div>
           <div class="note">
-            <strong>Maintainer-shaped</strong>
-            <span>Output is built for review queues, handoffs, and CI artifacts.</span>
+            <strong>Session-aware</strong>
+            <span>Builds a time-boxed review plan so you know what fits in the next hour.</span>
           </div>
         </div>
       </div>
@@ -647,10 +645,10 @@ maintainer-radar init-repo --profile balanced</pre>
       <section class="report" aria-label="Maintainer Radar browser preview">
         <div class="report-head">
           <div>
-            <h2>Try a public repo</h2>
-            <span>Browser preview. The CLI gives deeper hydrated scans.</span>
+            <h2>Try it on any public repo</h2>
+            <span>No install needed. Paste an owner/repo and scan.</span>
           </div>
-          <a href="https://github.com/JackSpiece/maintainer-radar/blob/main/examples/output/sample-report.md">View Markdown</a>
+          <a href="https://github.com/JackSpiece/maintainer-radar/blob/main/examples/output/sample-report.md">View sample</a>
         </div>
         <form class="scan-form" id="repo-form">
           <label for="repo-input">Repository</label>
@@ -675,7 +673,7 @@ maintainer-radar init-repo --profile balanced</pre>
           </label>
         </form>
         <div class="status" id="demo-status" aria-live="polite">
-          Sample output is shown below until you scan a public repository.
+          Sample output below. Scan a real repo to see live results.
         </div>
         <section class="attention-card" id="attention-card" data-level="blocked" aria-label="Queue attention">
           <span class="attention-label" id="attention-level">blocked</span>
@@ -771,11 +769,11 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
     </section>
 
     <section class="asset" aria-labelledby="terminal-title">
-      <h2 id="terminal-title">The CLI stays boring on purpose</h2>
+      <h2 id="terminal-title">Simple by design</h2>
       <p>
-        It reads GitHub data through <code>gh</code> or offline JSON, then emits
-        Markdown, JSON, CSV, or standalone HTML. The scoring is transparent
-        enough to inspect and small enough to adjust for a repository's workflow.
+        Reads GitHub data through <code>gh</code> or offline JSON. Outputs
+        Markdown, JSON, CSV, or standalone HTML. Every score is a number you
+        can read, verify, and tune for your project.
       </p>
       <img src="assets/terminal-preview.svg" alt="Terminal preview of Maintainer Radar output">
     </section>

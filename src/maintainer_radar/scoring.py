@@ -89,9 +89,21 @@ LABEL_BLOCKER_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Test-plan evidence must appear as an explicit section, label, or testing
+# statement at the start of a line. Bare mentions of words like "test" or
+# "ci" inside prose no longer count, so PR bodies cannot game the signal
+# with sentences like "this should make the ci faster".
 TEST_PLAN_RE = re.compile(
-    r"\b(test plan|tests?|validation|verified|repro|manual test|ci)\b",
-    re.IGNORECASE,
+    r"^\s{0,3}(?:#{1,6}\s*|[-*]\s+|>\s*)?(?:\*\*|__)?\s*(?:"
+    r"(?:test plan|testing (?:done|notes|steps|strategy)|"
+    r"tests? (?:added|updated|written|performed|run)|"
+    r"how (?:i|we|this was) tested|manual test(?:ing)?|"
+    r"validation(?: steps)?|verification(?: steps)?|"
+    r"repro(?:duction)?(?: steps)?)"
+    r"\s*(?:\*\*|__)?\s*(?:[:\-\u2013]|\.\s*$|$)"
+    r"|(?:tested|verified)\s+(?:locally|manually|end[- ]to[- ]end|with|via|using|by|on|in)\b"
+    r")",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 
@@ -170,13 +182,16 @@ def summarize_files(
         path = str(file_info.get("path") or file_info.get("filename") or "").lower()
         if not path:
             continue
-        if any(hint in path for hint in test_hints):
-            test_files += 1
-        if any(path.endswith(hint) or hint in path for hint in doc_hints):
-            doc_files += 1
+        # Categories are mutually exclusive so one file can never count as
+        # both a test file and a code file (e.g. tests/test_parser.py).
+        # Priority: generated, then test, then doc, then code.
         if any(hint in path for hint in generated_hints):
             generated_files += 1
-        if any(path.endswith(ext) for ext in CODE_EXTENSIONS):
+        elif any(hint in path for hint in test_hints):
+            test_files += 1
+        elif any(path.endswith(hint) or hint in path for hint in doc_hints):
+            doc_files += 1
+        elif any(path.endswith(ext) for ext in CODE_EXTENSIONS):
             code_files += 1
     return FileSummary(
         code_files=code_files,
@@ -191,15 +206,35 @@ def _body(pr: dict[str, Any]) -> str:
     return str(pr.get("body") or "")
 
 
+def _actor_login(value: Any) -> str:
+    if isinstance(value, dict):
+        return str(value.get("login") or value.get("username") or "").lower()
+    return str(value or "").lower()
+
+
 def _comments_and_reviews(pr: dict[str, Any]) -> list[str]:
+    """Comment and review bodies, excluding the PR author's own text.
+
+    Review states are intentionally not scanned as text: a CHANGES_REQUESTED
+    state is already scored through reviewDecision, and matching the state
+    string here would double-count the same condition.
+    """
+    pr_author = _actor_login(pr.get("author"))
     text: list[str] = []
     for comment in pr.get("comments") or []:
+        if not isinstance(comment, dict):
+            continue
+        commenter = _actor_login(comment.get("author") or comment.get("user"))
+        if pr_author and commenter and commenter == pr_author:
+            continue
         text.append(str(comment.get("body") or ""))
     for review in pr.get("latestReviews") or pr.get("reviews") or []:
+        if not isinstance(review, dict):
+            continue
+        reviewer = _actor_login(review.get("author") or review.get("user"))
+        if pr_author and reviewer and reviewer == pr_author:
+            continue
         text.append(str(review.get("body") or ""))
-        state = str(review.get("state") or "")
-        if state:
-            text.append(state.replace("_", " "))
     return text
 
 

@@ -6,6 +6,9 @@ import subprocess
 from typing import Any
 
 
+GH_TIMEOUT_SECONDS = 120
+
+
 class GitHubCliError(RuntimeError):
     pass
 
@@ -17,13 +20,19 @@ def _require_gh() -> None:
 
 def gh_json(args: list[str]) -> Any:
     _require_gh()
-    proc = subprocess.run(
-        ["gh", *args],
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    try:
+        proc = subprocess.run(
+            ["gh", *args],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=GH_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise GitHubCliError(
+            f"gh command timed out after {GH_TIMEOUT_SECONDS} seconds"
+        ) from exc
     if proc.returncode != 0:
         raise GitHubCliError(proc.stderr.strip() or "gh command failed")
     try:
@@ -115,7 +124,9 @@ def search_author_prs(author: str, *, state: str = "open", limit: int = 50) -> l
         normalized.append(
             {
                 "author": item.get("author"),
-                "comments": [{}] * int(item.get("commentsCount") or 0),
+                # Pass the raw count through instead of fabricating empty
+                # comment objects; scoring only reads comment bodies.
+                "commentsCount": int(item.get("commentsCount") or 0),
                 "createdAt": item.get("createdAt"),
                 "isDraft": item.get("isDraft"),
                 "labels": item.get("labels"),

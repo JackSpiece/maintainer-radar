@@ -61,7 +61,7 @@ def load_config(path: str | None = None) -> dict[str, Any]:
         if key.endswith("_hints"):
             config[key] = _string_list(value, key)
         else:
-            config[key] = _positive_int(value, key)
+            config[key] = _non_negative_int(value, key)
     return config
 
 
@@ -82,7 +82,7 @@ def _copy_config(config: dict[str, Any]) -> dict[str, Any]:
     return copied
 
 
-def _positive_int(value: Any, key: str) -> int:
+def _non_negative_int(value: Any, key: str) -> int:
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:

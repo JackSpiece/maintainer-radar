@@ -12,12 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class MetadataTests(unittest.TestCase):
-    def test_package_version_matches_project_version(self) -> None:
+    def test_package_version_is_single_sourced_from_the_package(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        match = re.search(r'^version = "([^"]+)"$', pyproject, re.MULTILINE)
 
-        self.assertIsNotNone(match)
-        self.assertEqual(__version__, match.group(1))
+        self.assertIsNone(re.search(r'^version = "', pyproject, re.MULTILINE))
+        self.assertIn('dynamic = ["version"]', pyproject)
+        self.assertIn('version = { attr = "maintainer_radar.__version__" }', pyproject)
+        self.assertRegex(__version__, r"^\d+\.\d+\.\d+$")
 
     def test_readme_quick_start_leads_with_github_action(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
