@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maintainer Radar</title>
-  <meta name="description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
+  <title>Maintainer Radar — Know which PRs deserve your time</title>
+  <meta name="description" content="Maintainer Radar scores your PR queue and tells you what to review, what to skip, and what needs author follow-up. Read-only, no tokens, no app.">
   <meta property="og:title" content="Maintainer Radar">
-  <meta property="og:description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
+  <meta property="og:description" content="Know which pull requests deserve your time. Scores, review plans, and draft follow-ups — read-only, no tokens, no app.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jackspiece.github.io/maintainer-radar/">
   <meta property="og:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
@@ -14,703 +14,1011 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Maintainer Radar">
-  <meta name="twitter:description" content="Know which pull requests deserve your time. Read-only PR triage with scores, review plans, and zero setup friction.">
+  <meta name="twitter:description" content="Know which pull requests deserve your time. Scores, review plans, and draft follow-ups — read-only, no tokens, no app.">
   <meta name="twitter:image" content="https://jackspiece.github.io/maintainer-radar/assets/social-preview.png">
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f7f8fb;
-      --text: #172033;
-      --muted: #5d6678;
-      --line: #d8dee9;
+      --bg: #f8fafc;
       --panel: #ffffff;
-      --green: #047857;
-      --blue: #1d4ed8;
-      --amber: #b45309;
-      --red: #b91c1c;
-      --violet: #6d28d9;
+      --hero-bg: #060d1a;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --blue: #2563eb;
+      --blue-light: #3b82f6;
+      --green: #059669;
+      --red: #dc2626;
+      --amber: #d97706;
+      --violet: #7c3aed;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      margin: 0;
+      font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
     }
 
-    a {
-      color: var(--blue);
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── NAV ─────────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(6,13,26,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      gap: 20px;
+    }
+    .nav-brand {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .nav-links a {
+      color: #64748b;
+      font-size: 13px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover {
+      color: #e2e8f0;
+      background: rgba(255,255,255,0.07);
       text-decoration: none;
     }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .wrap {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-    }
-
-    header {
-      border-bottom: 1px solid var(--line);
-      background: var(--panel);
-    }
-
-    nav {
+    .nav-links .nav-gh {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 58px;
+      gap: 5px;
     }
-
-    .brand {
-      font-weight: 750;
-      color: var(--text);
-    }
-
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      font-size: 14px;
-    }
-
-    main {
-      padding: 34px 0 48px;
-    }
-
-    .intro {
-      display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
-      gap: 26px;
-      align-items: start;
-      margin-bottom: 34px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 42px;
-      line-height: 1.05;
-      letter-spacing: 0;
-    }
-
-    .lede {
-      margin: 0 0 20px;
-      max-width: 680px;
-      color: var(--muted);
-      font-size: 17px;
-    }
-
-    .command {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #101827;
-      color: #f8fafc;
-      padding: 14px;
-      overflow-x: auto;
-      font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      white-space: pre;
-    }
-
-    .scan-form {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: #fbfcfe;
-    }
-
-    .scan-form > label:not(.toggle-row):not(.plan-control) {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-    }
-
-    .scan-form input {
-      min-width: 0;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 11px;
-      color: var(--text);
-      font: inherit;
-    }
-
-    .plan-control {
-      align-items: center;
-      display: flex;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .plan-control input {
-      width: 76px;
-      padding: 8px 9px;
-    }
-
-    .scan-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .toggle-row {
-      align-items: center;
-      display: flex;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .toggle-row input {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--blue);
-    }
-
-    .scan-form button {
-      border: 1px solid #1d4ed8;
-      border-radius: 8px;
+    .nav-pill {
       background: var(--blue);
-      color: #ffffff;
-      cursor: pointer;
-      font: inherit;
+      color: #fff !important;
+      font-weight: 600;
+      padding: 6px 14px !important;
+    }
+    .nav-pill:hover { background: #1d4ed8 !important; }
+
+    /* ─── HERO ────────────────────────────────────────── */
+    .hero {
+      background: var(--hero-bg);
+      background-image:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(37,99,235,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(124,58,237,0.08) 0%, transparent 60%);
+      padding: 104px 24px 88px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: #93c5fd;
+      font-size: 11px;
       font-weight: 700;
-      padding: 10px 13px;
-      white-space: nowrap;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 32px;
+    }
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 6px #3b82f6;
+    }
+    .hero h1 {
+      font-size: clamp(38px, 6.5vw, 68px);
+      font-weight: 800;
+      color: #f1f5f9;
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      max-width: 800px;
+      margin: 0 auto 22px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(130deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: #94a3b8;
+      max-width: 480px;
+      margin: 0 auto 44px;
+      line-height: 1.65;
+    }
+    .hero-commands {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      max-width: 540px;
+      margin: 0 auto 36px;
+      text-align: left;
+      font: 13px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      position: relative;
+    }
+    .hero-commands::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 14px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(124,58,237,0.2), transparent 60%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .cmd-comment { color: #334155; }
+    .cmd-prompt  { color: #334155; user-select: none; }
+    .cmd-bin     { color: #93c5fd; }
+    .cmd-sub     { color: #c4b5fd; }
+    .cmd-arg     { color: #6ee7b7; }
+    .hero-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #475569;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .hero-arrow:hover { color: #94a3b8; }
+    .hero-arrow svg { animation: bob 2s ease-in-out infinite; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(5px); }
     }
 
-    .scan-form button.secondary {
-      border-color: var(--line);
-      background: var(--panel);
+    /* ─── DEMO SECTION ────────────────────────────────── */
+    .demo-section {
+      background: #f1f5f9;
+      padding: 80px 24px 88px;
+    }
+    .section-head {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+    .section-head h2 {
+      font-size: 26px;
+      font-weight: 700;
       color: var(--text);
+      letter-spacing: -0.025em;
+      margin-bottom: 8px;
     }
+    .section-head p { color: var(--muted); font-size: 14px; }
 
-    .scan-form button:disabled {
-      cursor: wait;
-      opacity: 0.7;
-    }
-
-    .status {
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      padding: 9px 16px;
-    }
-
-    .notes {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .note {
-      border: 1px solid var(--line);
-      border-radius: 8px;
+    /* ─── DEMO CARD ───────────────────────────────────── */
+    .demo-card {
+      max-width: 1100px;
+      margin: 0 auto;
       background: var(--panel);
-      padding: 12px;
-    }
-
-    .note strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 14px;
-    }
-
-    .note span {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .report {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
+      border: 1px solid #dde3ed;
+      border-radius: 18px;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.06),
+        0 8px 24px rgba(0,0,0,0.07),
+        0 32px 64px rgba(0,0,0,0.07);
       overflow: hidden;
     }
 
-    .report-head {
+    /* Mac chrome */
+    .card-chrome {
+      background: #1e293b;
+      padding: 12px 16px;
       display: flex;
-      justify-content: space-between;
-      gap: 14px;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .chrome-dots { display: flex; gap: 6px; }
+    .chrome-dots span {
+      width: 12px; height: 12px; border-radius: 50%;
+      display: block;
+    }
+    .chrome-dots span:nth-child(1) { background: #ef4444; }
+    .chrome-dots span:nth-child(2) { background: #f59e0b; }
+    .chrome-dots span:nth-child(3) { background: #22c55e; }
+    .chrome-title {
+      flex: 1;
+      text-align: center;
+      font: 12px/1 ui-monospace, monospace;
+      color: #475569;
+    }
+
+    /* ─── SCAN FORM ───────────────────────────────────── */
+    .scan-form {
+      padding: 20px 24px 16px;
       border-bottom: 1px solid var(--line);
-      padding: 14px 16px;
-      background: #eef2f7;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-
-    .report-head h2 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.25;
+    .scan-form > label:not(.opt-label) {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
     }
-
-    .report-head span {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .metrics {
+    .scan-main {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
-      gap: 1px;
-      background: var(--line);
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
     }
-
-    .metric {
-      background: var(--panel);
-      padding: 13px;
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
     }
-
-    .metric strong {
-      display: block;
-      font-size: 22px;
-      line-height: 1;
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      color: #94a3b8;
+      pointer-events: none;
+      display: flex;
     }
-
-    .metric span {
-      color: var(--muted);
+    .scan-form input[name="repository"] {
+      width: 100%;
+      border: 1.5px solid #dde3ed;
+      border-radius: 10px;
+      padding: 11px 12px 11px 40px;
+      font: 14px/1 inherit;
+      color: var(--text);
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .scan-form input[name="repository"]::placeholder { color: #94a3b8; }
+    .scan-form input[name="repository"]:focus {
+      border-color: var(--blue-light);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.14);
+      background: #fff;
+    }
+    .btn-scan {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font: 14px/1 inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 1px 3px rgba(37,99,235,0.4), 0 4px 12px rgba(37,99,235,0.25);
+    }
+    .btn-scan:hover {
+      background: #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.5), 0 8px 20px rgba(37,99,235,0.3);
+    }
+    .btn-scan:active { transform: scale(0.98); }
+    .btn-scan:disabled { cursor: wait; opacity: 0.55; box-shadow: none; }
+    .scan-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .scan-copies {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .btn-copy {
+      border: 1px solid #dde3ed;
+      border-radius: 7px;
+      background: #f8fafc;
+      color: #64748b;
+      cursor: pointer;
+      font: 12px/1 inherit;
+      font-weight: 600;
+      padding: 6px 10px;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .btn-copy:hover {
+      background: #fff;
+      border-color: #c4cdd9;
+      color: var(--text);
+    }
+    .btn-copy:disabled { opacity: 0.38; cursor: not-allowed; }
+    .scan-opts {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .opt-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #64748b;
       font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .opt-label input[type="number"] {
+      width: 62px;
+      border: 1px solid #dde3ed;
+      border-radius: 7px;
+      padding: 5px 8px;
+      font: 12px/1 inherit;
+      color: var(--text);
+      background: #f8fafc;
+      outline: none;
+    }
+    .opt-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--blue);
+      cursor: pointer;
     }
 
-    .attention-card {
+    /* ─── STATUS ──────────────────────────────────────── */
+    .demo-status {
+      padding: 8px 24px;
+      background: #f8fafc;
       border-bottom: 1px solid var(--line);
-      padding: 13px 16px;
-      background: #fbfcfe;
-    }
-
-    .attention-card[data-level="blocked"] {
-      border-left: 4px solid var(--red);
-    }
-
-    .attention-card[data-level="follow-up"],
-    .attention-card[data-level="triage"] {
-      border-left: 4px solid var(--amber);
-    }
-
-    .attention-card[data-level="review"] {
-      border-left: 4px solid var(--green);
-    }
-
-    .attention-card[data-level="quiet"] {
-      border-left: 4px solid var(--blue);
-    }
-
-    .attention-label {
-      color: var(--muted);
-      display: block;
+      color: #64748b;
       font-size: 12px;
-      font-weight: 750;
-      margin-bottom: 4px;
-      text-transform: uppercase;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
     }
 
+    /* ─── ATTENTION CARD ──────────────────────────────── */
+    .attention-card {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      border-left: 4px solid #e2e8f0;
+      background: #fafbfc;
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .attention-card[data-level="blocked"]  { border-left-color: var(--red);    background: #fff5f5; }
+    .attention-card[data-level="follow-up"]{ border-left-color: var(--amber);   background: #fffcf0; }
+    .attention-card[data-level="triage"]   { border-left-color: var(--amber);   background: #fffcf0; }
+    .attention-card[data-level="review"]   { border-left-color: var(--green);   background: #f0fdf8; }
+    .attention-card[data-level="quiet"]    { border-left-color: var(--blue-light); background: #f0f8ff; }
+    .attention-label {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    .attention-card[data-level="blocked"]  .attention-label { color: var(--red); }
+    .attention-card[data-level="follow-up"] .attention-label,
+    .attention-card[data-level="triage"]   .attention-label { color: var(--amber); }
+    .attention-card[data-level="review"]   .attention-label { color: var(--green); }
+    .attention-card[data-level="quiet"]    .attention-label { color: var(--blue-light); }
     .attention-card strong {
       display: block;
-      line-height: 1.35;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 4px;
     }
-
     .attention-card p {
-      color: var(--muted);
       font-size: 13px;
-      margin: 4px 0 0;
+      color: #64748b;
+      margin: 2px 0;
+      line-height: 1.5;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .wf-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
     }
+    .wf-row .attention-label { margin-bottom: 0; }
 
-    th,
-    td {
-      border-top: 1px solid var(--line);
-      padding: 11px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      color: #2f3a4c;
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-
-    .score {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-
-    .pill {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 2px 8px;
-      white-space: nowrap;
-      font-size: 13px;
-    }
-
-    .review {
-      background: #d1fae5;
-      color: var(--green);
-    }
-
-    .ci {
-      background: #fee2e2;
-      color: var(--red);
-    }
-
-    .caution {
-      background: #fef3c7;
-      color: var(--amber);
-    }
-
-    .impact {
-      color: var(--violet);
-      font-size: 14px;
-    }
-
-    .signals {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .plan-preview {
-      border-top: 1px solid var(--line);
+    /* ─── METRICS ─────────────────────────────────────── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       border-bottom: 1px solid var(--line);
-      background: #fbfcfe;
-      padding: 13px 16px;
+    }
+    .metric {
+      padding: 18px 12px;
+      text-align: center;
+      border-right: 1px solid var(--line);
+      transition: background 0.15s;
+    }
+    .metric:last-child { border-right: none; }
+    .metric:hover { background: #fafbfc; }
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .metric span {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .plan-head {
+    /* ─── PLAN + DRAFTS ───────────────────────────────── */
+    .plan-drafts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .plan-panel {
+      padding: 20px 24px;
+    }
+    .plan-panel + .plan-panel {
+      border-left: 1px solid var(--line);
+    }
+    .panel-head {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 9px;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .panel-head h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .panel-head span {
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
     }
 
-    .plan-head h3 {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.3;
-    }
-
-    .plan-head span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .plan-list {
-      display: grid;
-      gap: 6px;
-    }
-
+    /* plan rows */
+    .plan-list { display: grid; gap: 6px; }
     .plan-row {
       display: grid;
-      grid-template-columns: 32px minmax(0, 1fr) auto;
+      grid-template-columns: 26px 1fr auto;
       gap: 10px;
       align-items: center;
-      color: var(--text);
       font-size: 13px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #eef1f6;
+      transition: background 0.12s;
     }
-
+    .plan-row:hover { background: #f1f5f9; }
+    .plan-row > :first-child {
+      width: 22px;
+      height: 22px;
+      background: var(--hero-bg);
+      color: #94a3b8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
     .plan-row strong {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-weight: 500;
+      color: var(--text);
+      font-size: 13px;
     }
-
-    .plan-row span {
-      color: var(--muted);
+    .plan-row > :last-child {
+      color: #94a3b8;
       white-space: nowrap;
+      font-size: 11px;
     }
 
-    .draft-preview {
-      border-bottom: 1px solid var(--line);
-      background: var(--panel);
-      padding: 13px 16px;
-    }
-
-    .draft-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 9px;
-    }
-
-    .draft-head h3 {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.3;
-    }
-
-    .draft-head span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .draft-list {
-      display: grid;
-      gap: 8px;
-    }
-
+    /* draft items */
+    .draft-list { display: grid; gap: 8px; }
     .draft-item {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fbfcfe;
-      padding: 10px;
+      background: #f8fafc;
+      overflow: hidden;
     }
-
     .draft-title {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-bottom: 1px solid var(--line);
+      gap: 8px;
     }
-
     .draft-title strong {
-      min-width: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      flex: 1;
     }
-
     .draft-title button {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      color: var(--text);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--blue);
       cursor: pointer;
-      font: inherit;
-      font-size: 13px;
+      font: 11px/1 inherit;
       font-weight: 700;
-      padding: 6px 9px;
+      padding: 5px 9px;
       white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.12s;
     }
-
-    .draft-title button:hover {
-      background: #eef2f7;
-    }
-
-    .draft-preview pre {
+    .draft-title button:hover { background: #eff6ff; }
+    .draft-item pre {
       margin: 0;
-      max-height: 168px;
+      max-height: 120px;
       overflow: auto;
       white-space: pre-wrap;
-      color: #243041;
-      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      padding: 10px 12px;
+      font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #475569;
     }
-
     .draft-empty {
-      color: var(--muted);
+      color: #94a3b8;
       font-size: 13px;
+      padding: 8px 0;
+      text-align: center;
     }
 
+    /* ─── TABLE ───────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      background: #f8fafc;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      font-size: 13px;
+      color: var(--text);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #f8fafc; }
+    .score {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+    .impact { color: var(--violet); font-size: 12px; }
+    .signals { color: #64748b; font-size: 12px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+    .review  { background: #dcfce7; color: #15803d; }
+    .ci      { background: #fee2e2; color: #b91c1c; }
+    .caution { background: #fef9c3; color: #a16207; }
     .group-row td {
       background: #f8fafc;
-      color: #2f3a4c;
-      font-size: 13px;
+      color: #475569;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 7px 16px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .asset {
-      margin-top: 34px;
-      border-top: 1px solid var(--line);
-      padding-top: 26px;
-    }
-
-    .asset img {
-      display: block;
-      width: min(760px, 100%);
-      height: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+    /* ─── FEATURES ────────────────────────────────────── */
+    .features-section {
       background: var(--panel);
+      padding: 80px 24px;
+      border-top: 1px solid var(--line);
+    }
+    .features-grid {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .feature-card {
+      padding: 24px 22px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fafbfc;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .feature-card:hover {
+      border-color: #c4cdd9;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--hero-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    .feature-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 7px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.65;
     }
 
-    .asset p {
-      max-width: 760px;
-      color: var(--muted);
+    /* ─── CLI SECTION ─────────────────────────────────── */
+    .cli-section {
+      background: #060d1a;
+      background-image: radial-gradient(ellipse 70% 50% at 20% 50%, rgba(37,99,235,0.1) 0%, transparent 65%);
+      padding: 80px 24px;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
+    .cli-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .cli-copy h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .cli-copy p {
+      color: #94a3b8;
+      font-size: 15px;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+    .cli-copy .btn-gh {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 9px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .cli-copy .btn-gh:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      text-decoration: none;
+    }
+    .cli-terminal {
+      background: #020812;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+    }
+    .term-header {
+      background: #0d1a2f;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .term-dots { display: flex; gap: 6px; }
+    .term-dots span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+    .term-dots span:nth-child(1) { background: #ef4444; }
+    .term-dots span:nth-child(2) { background: #f59e0b; }
+    .term-dots span:nth-child(3) { background: #22c55e; }
+    .term-bar {
+      flex: 1;
+      text-align: center;
+      font: 11px/1 ui-monospace, monospace;
+      color: #334155;
+    }
+    .term-body {
+      padding: 20px 22px;
+      font: 13px/1.85 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .t-comment { color: #1e3a5f; display: block; }
+    .t-prompt  { color: #1e3a5f; }
+    .t-cmd     { color: #93c5fd; }
+    .t-flag    { color: #c4b5fd; }
+    .t-val     { color: #6ee7b7; }
+    .t-line    { display: block; color: #334155; }
+    .t-ok      { color: #4ade80; }
+    .t-warn    { color: #fbbf24; }
+    .t-err     { color: #f87171; }
+    .t-info    { color: #7dd3fc; }
+    .t-dim     { color: #1e3a5f; }
 
+    /* ─── FOOTER ──────────────────────────────────────── */
+    footer {
+      background: #020812;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding: 28px 24px;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-brand { color: #f1f5f9; font-weight: 700; font-size: 14px; }
+    .footer-links { display: flex; gap: 4px; flex-wrap: wrap; }
+    .footer-links a {
+      color: #334155;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: #64748b; text-decoration: none; }
+    .footer-note { color: #1e3a5f; font-size: 12px; }
+
+    /* ─── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 960px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .cli-inner { grid-template-columns: 1fr; gap: 36px; }
+      .cli-copy { text-align: center; }
+    }
     @media (max-width: 860px) {
-      .intro,
-      .notes {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 34px;
-      }
-
-      .metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      table {
-        min-width: 760px;
-      }
-
-      .report {
-        overflow-x: auto;
-      }
+      .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+      .plan-drafts { grid-template-columns: 1fr; }
+      .plan-panel + .plan-panel { border-left: none; border-top: 1px solid var(--line); }
+      table { min-width: 700px; }
     }
-
-    @media (max-width: 520px) {
-      nav,
-      .report-head {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      h1 {
-        font-size: 30px;
-      }
-
-      .metrics {
-        grid-template-columns: 1fr;
-      }
-
-      .scan-form {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 600px) {
+      .hero { padding: 72px 16px 60px; }
+      .nav-links { display: none; }
+      .scan-main { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric strong { font-size: 22px; }
+      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <nav class="wrap" aria-label="Primary navigation">
-      <a class="brand" href="./">Maintainer Radar</a>
-      <div class="links">
-        <a href="https://github.com/JackSpiece/maintainer-radar">GitHub</a>
-        <a href="https://github.com/JackSpiece/maintainer-radar/releases">Releases</a>
+
+  <!-- ═══ NAV ══════════════════════════════════════════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="./">Maintainer Radar</a>
+      <div class="nav-links">
+        <a href="https://github.com/JackSpiece/maintainer-radar" class="nav-gh">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
         <a href="quickstart.html">Quickstart</a>
-        <a href="adoption.html">Adoption</a>
-        <a href="github-action.html">GitHub Action</a>
+        <a href="github-action.html">Action</a>
+        <a href="review-plan.html">Review Plans</a>
+        <a href="heuristics.html">Heuristics</a>
         <a href="attention-workflows.html">Attention</a>
         <a href="privacy-permissions.html">Privacy</a>
-        <a href="review-plan.html">Review Plan</a>
-        <a href="browser-preview.html">Browser Preview</a>
-        <a href="heuristics.html">Heuristics</a>
-        <a href="https://github.com/JackSpiece/maintainer-radar/issues/new/choose">Feedback</a>
+        <a href="https://github.com/JackSpiece/maintainer-radar/issues/new/choose" class="nav-pill">Feedback</a>
       </div>
-    </nav>
-  </header>
+    </div>
+  </nav>
 
-  <main class="wrap">
-    <section class="intro" aria-labelledby="title">
-      <div>
-        <h1 id="title">Know which PRs deserve your time.</h1>
-        <p class="lede">
-          Maintainer Radar scores your pull request queue and tells you what to
-          review now, what needs author follow-up, and what’s blocked — before
-          you open a single diff. No app. No tokens. No noise.
-        </p>
-        <pre class="command">pip install maintainer-radar
-maintainer-radar recommend https://github.com/owner/repo/pulls</pre>
-        <div class="notes" aria-label="Project traits">
-          <div class="note">
-            <strong>No setup</strong>
-            <span>Works with the GitHub CLI you already have. No app, webhook, or API key.</span>
-          </div>
-          <div class="note">
-            <strong>Read-only</strong>
-            <span>Never posts, comments, or writes anything to your repo.</span>
-          </div>
-          <div class="note">
-            <strong>Transparent scores</strong>
-            <span>Every risk adjustment is shown. Nothing is hidden behind a model.</span>
-          </div>
-          <div class="note">
-            <strong>Session-aware</strong>
-            <span>Builds a time-boxed review plan so you know what fits in the next hour.</span>
-          </div>
-        </div>
+  <!-- ═══ HERO ══════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Open source &middot; Read-only &middot; No tokens
+    </div>
+    <h1>Know which <em>pull requests</em><br>deserve your time.</h1>
+    <p class="hero-sub">
+      Scores your PR queue before you open a single diff.
+      What to review, what to skip, what needs author follow-up &mdash; in seconds.
+    </p>
+    <div class="hero-commands">
+      <span class="cmd-comment"># Install once</span><br>
+      <span class="cmd-prompt">$ </span><span class="cmd-bin">pip install</span> <span class="cmd-arg">maintainer-radar</span><br>
+      <br>
+      <span class="cmd-comment"># Run on any repo</span><br>
+      <span class="cmd-prompt">$ </span><span class="cmd-bin">maintainer-radar</span> <span class="cmd-sub">recommend</span> <span class="cmd-arg">https://github.com/owner/repo/pulls</span>
+    </div>
+    <button class="hero-arrow" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})" type="button">
+      Try the live demo &nbsp;
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 3v10M3 9l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </section>
+
+  <!-- ═══ DEMO ═══════════════════════════════════════════ -->
+  <section class="demo-section" id="demo">
+    <div class="section-head">
+      <h2>Live demo &mdash; scan any public repo</h2>
+      <p>Powered by the public GitHub API. No install, no login, no API key needed.</p>
+    </div>
+
+    <div class="demo-card">
+
+      <!-- Mac chrome -->
+      <div class="card-chrome">
+        <div class="chrome-dots"><span></span><span></span><span></span></div>
+        <span class="chrome-title">maintainer-radar &middot; browser preview</span>
       </div>
 
-      <section class="report" aria-label="Maintainer Radar browser preview">
-        <div class="report-head">
-          <div>
-            <h2>Try it on any public repo</h2>
-            <span>No install needed. Paste an owner/repo and scan.</span>
+      <!-- SCAN FORM -->
+      <form class="scan-form" id="repo-form">
+        <label for="repo-input">Repository</label>
+        <div class="scan-main">
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <input id="repo-input" name="repository" type="text"
+              placeholder="owner/repo or paste a GitHub URL"
+              value="python/cpython"
+              autocomplete="off"
+              spellcheck="false">
           </div>
-          <a href="https://github.com/JackSpiece/maintainer-radar/blob/main/examples/output/sample-report.md">View sample</a>
+          <button class="btn-scan" id="repo-submit" type="submit">
+            Scan
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M2 6.5h9M7.5 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
-        <form class="scan-form" id="repo-form">
-          <label for="repo-input">Repository</label>
-          <input id="repo-input" name="repository" placeholder="owner/repo" value="python/cpython" autocomplete="off">
-          <div class="scan-actions">
-            <button id="repo-submit" type="submit">Scan</button>
-            <button class="secondary" id="copy-link" type="button" disabled>Copy Link</button>
-            <button class="secondary" id="copy-badge" type="button" disabled>Copy Badge</button>
-            <button class="secondary" id="copy-cli" type="button" disabled>Copy CLI</button>
-            <button class="secondary" id="copy-markdown" type="button" disabled>Copy Markdown</button>
-            <button class="secondary" id="copy-plan" type="button" disabled>Copy Plan</button>
-            <button class="secondary" id="copy-plan-json" type="button" disabled>Copy JSON</button>
-            <button class="secondary" id="copy-workflow" type="button">Copy Workflow</button>
+        <div class="scan-secondary">
+          <div class="scan-copies">
+            <button class="btn-copy" id="copy-link"     type="button" disabled>Copy Link</button>
+            <button class="btn-copy" id="copy-badge"    type="button" disabled>Copy Badge</button>
+            <button class="btn-copy" id="copy-cli"      type="button" disabled>Copy CLI</button>
+            <button class="btn-copy" id="copy-markdown" type="button" disabled>Copy Markdown</button>
+            <button class="btn-copy" id="copy-plan"     type="button" disabled>Copy Plan</button>
+            <button class="btn-copy" id="copy-plan-json" type="button" disabled>Copy JSON</button>
+            <button class="btn-copy" id="copy-workflow" type="button">Copy Workflow</button>
           </div>
-          <label class="plan-control" for="plan-minutes">
-            Plan minutes
-            <input id="plan-minutes" type="number" min="1" max="240" step="5" value="30">
-          </label>
-          <label class="toggle-row" for="group-action">
-            <input id="group-action" type="checkbox">
-            Group by action
-          </label>
-        </form>
-        <div class="status" id="demo-status" aria-live="polite">
-          Sample output below. Scan a real repo to see live results.
+          <div class="scan-opts">
+            <label class="opt-label" for="plan-minutes">
+              Plan min
+              <input id="plan-minutes" type="number" min="1" max="240" step="5" value="30">
+            </label>
+            <label class="opt-label" for="group-action">
+              <input id="group-action" type="checkbox">
+              Group
+            </label>
+          </div>
         </div>
-        <section class="attention-card" id="attention-card" data-level="blocked" aria-label="Queue attention">
-          <span class="attention-label" id="attention-level">blocked</span>
-          <strong id="attention-headline">2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.</strong>
-          <p id="attention-reason">1 PR has unresolved maintainer blocker.</p>
-          <p><span class="attention-label" id="workflow-mode">Workflow: blocker-sweep</span><span id="workflow-recommendation">Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.</span></p>
-          <p id="next-session-brief">Next 60 minutes: handle 2 PRs in about 17 minutes; 1 quick unblock.</p>
-        </section>
-        <div class="metrics">
-          <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
-          <div class="metric"><strong id="metric-session">2</strong><span>Next session</span></div>
-          <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
-          <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
-          <div class="metric"><strong id="metric-quick">1</strong><span>Quick unblock</span></div>
-          <div class="metric"><strong id="metric-blocked">1</strong><span>Maintainer blocked</span></div>
-          <div class="metric"><strong id="metric-score">50</strong><span>Average score</span></div>
+      </form>
+
+      <!-- STATUS -->
+      <div class="demo-status" id="demo-status" aria-live="polite">
+        Sample data shown &mdash; paste a repo above and hit Scan to see live results.
+      </div>
+
+      <!-- ATTENTION -->
+      <div class="attention-card" id="attention-card" data-level="blocked" aria-label="Queue attention summary">
+        <span class="attention-label" id="attention-level">blocked</span>
+        <strong id="attention-headline">2 PRs scanned: 1 ready for review; 1 blocked or waiting on CI; 1 PR has unresolved maintainer blocker.</strong>
+        <p id="attention-reason">1 PR has unresolved maintainer blocker.</p>
+        <div class="wf-row">
+          <span class="attention-label" id="workflow-mode">Workflow: blocker-sweep</span>
+          <span id="workflow-recommendation" style="font-size:13px;color:#64748b;">Clear maintainer blockers, merge conflicts, failing CI, or merge gates before assigning review time.</span>
         </div>
-        <section class="plan-preview" aria-label="Review plan preview">
-          <div class="plan-head">
+        <p id="next-session-brief">Next 60 minutes: handle 2 PRs in about 17 minutes; 1 quick unblock.</p>
+      </div>
+
+      <!-- METRICS -->
+      <div class="metrics-grid" aria-label="Queue metrics">
+        <div class="metric"><strong id="metric-total">2</strong><span>PRs scanned</span></div>
+        <div class="metric"><strong id="metric-session">2</strong><span>Next session</span></div>
+        <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
+        <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
+        <div class="metric"><strong id="metric-quick">1</strong><span>Quick unblocks</span></div>
+        <div class="metric"><strong id="metric-blocked">1</strong><span>Maint. blocked</span></div>
+        <div class="metric"><strong id="metric-score">50</strong><span>Avg score</span></div>
+      </div>
+
+      <!-- PLAN + DRAFTS -->
+      <div class="plan-drafts">
+        <div class="plan-panel">
+          <div class="panel-head">
             <h3 id="plan-title">30 minute review plan</h3>
-            <span id="plan-meta">17m active - 13m open</span>
+            <span id="plan-meta">17m active &middot; 13m open</span>
           </div>
           <div class="plan-list" id="plan-body">
             <div class="plan-row">
               <span>1</span>
               <strong>#42 Fix parser cache race</strong>
-              <span>review now - 12m</span>
+              <span>review now &middot; 12m</span>
             </div>
             <div class="plan-row">
               <span>2</span>
               <strong>#43 Add universal plugin system</strong>
-              <span>ask for CI fix - 5m</span>
+              <span>ask for CI fix &middot; 5m</span>
             </div>
           </div>
-        </section>
-        <section class="draft-preview" aria-label="Draft follow-ups">
-          <div class="draft-head">
+        </div>
+
+        <div class="plan-panel">
+          <div class="panel-head">
             <h3>Draft follow-ups</h3>
             <span id="draft-meta">1 editable ask</span>
           </div>
@@ -734,14 +1042,18 @@ Before the next maintainer pass, please:
 _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
             </article>
           </div>
-        </section>
-        <table>
+        </div>
+      </div>
+
+      <!-- PR TABLE -->
+      <div class="table-wrap">
+        <table aria-label="Pull request queue">
           <thead>
             <tr>
-              <th>PR</th>
+              <th>Pull request</th>
               <th>Action</th>
               <th>Next step</th>
-              <th>Score</th>
+              <th style="text-align:right">Score</th>
               <th>Risk impact</th>
               <th>Signals</th>
             </tr>
@@ -765,19 +1077,89 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
             </tr>
           </tbody>
         </table>
-      </section>
-    </section>
+      </div>
 
-    <section class="asset" aria-labelledby="terminal-title">
-      <h2 id="terminal-title">Simple by design</h2>
-      <p>
-        Reads GitHub data through <code>gh</code> or offline JSON. Outputs
-        Markdown, JSON, CSV, or standalone HTML. Every score is a number you
-        can read, verify, and tune for your project.
-      </p>
-      <img src="assets/terminal-preview.svg" alt="Terminal preview of Maintainer Radar output">
-    </section>
-  </main>
+    </div><!-- /.demo-card -->
+  </section>
+
+  <!-- ═══ FEATURES ══════════════════════════════════════ -->
+  <section class="features-section" aria-labelledby="features-title">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">🔒</div>
+        <h3>Truly read-only</h3>
+        <p>Never posts, comments, or writes anything. No GitHub App, no OAuth scope, no stored tokens.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">⚡</div>
+        <h3>One command away</h3>
+        <p>Works through the GitHub CLI you already have. No new accounts, no dashboards to configure.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">🔍</div>
+        <h3>Transparent scoring</h3>
+        <p>Every score shows its heuristic breakdown. No hidden model &mdash; just rules you can read and tune per project.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">📅</div>
+        <h3>Session planning</h3>
+        <p>Builds a time-boxed review plan for your next session. Know what fits in 30 minutes before you open anything.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CLI SECTION ════════════════════════════════════ -->
+  <section class="cli-section">
+    <div class="cli-inner">
+      <div class="cli-copy">
+        <h2>Deeper scans from your terminal</h2>
+        <p>The CLI gives you hydrated scans, offline JSON analysis, review plans, and output in Markdown, JSON, CSV, or HTML &mdash; all without posting a single comment.</p>
+        <a href="https://github.com/JackSpiece/maintainer-radar" class="btn-gh">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          View on GitHub
+        </a>
+      </div>
+      <div class="cli-terminal">
+        <div class="term-header">
+          <div class="term-dots"><span></span><span></span><span></span></div>
+          <span class="term-bar">zsh &mdash; maintainer-radar</span>
+        </div>
+        <div class="term-body">
+          <span class="t-comment"># Build a 30-minute ranked review plan</span>
+          <span class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">maintainer-radar repo</span> <span class="t-val">owner/repo</span> <span class="t-flag">\</span></span>
+          <span class="t-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-flag">--hydrate --sort action \</span></span>
+          <span class="t-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-flag">--review-plan-minutes</span> <span class="t-val">30</span></span>
+          <span class="t-line">&nbsp;</span>
+          <span class="t-line"><span class="t-ok">✓</span> <span class="t-dim">3 ready for review</span></span>
+          <span class="t-line"><span class="t-warn">⚠</span> <span class="t-dim">2 need author follow-up</span></span>
+          <span class="t-line"><span class="t-err">✗</span> <span class="t-dim">1 CI failing</span></span>
+          <span class="t-line">&nbsp;</span>
+          <span class="t-line"><span class="t-info">→</span> <span class="t-dim">Next 30 min: 3 PRs, ~38m active, 1 quick unblock</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-brand">Maintainer Radar</span>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="https://github.com/JackSpiece/maintainer-radar">GitHub</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="github-action.html">GitHub Action</a>
+        <a href="review-plan.html">Review Plans</a>
+        <a href="heuristics.html">Heuristics</a>
+        <a href="privacy-permissions.html">Privacy</a>
+        <a href="https://github.com/JackSpiece/maintainer-radar/releases">Releases</a>
+        <a href="https://github.com/JackSpiece/maintainer-radar/issues/new/choose">Feedback</a>
+      </nav>
+      <span class="footer-note">MIT License</span>
+    </div>
+  </footer>
+
   <script src="assets/demo.js"></script>
 </body>
 </html>
