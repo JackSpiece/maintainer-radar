@@ -78,6 +78,7 @@ def render_github_action_workflow(
     clean_label = _clean_single_line(label, "--label")
     clean_author = _clean_single_line(author, "--author")
     clean_updated_since = _clean_single_line(updated_since, "--updated-since")
+    clean_action_ref = _clean_single_line(action_ref, "--action-ref")
     clean_schedule = schedule.strip()
     if not clean_schedule or "\n" in clean_schedule or "\r" in clean_schedule:
         raise ValueError("--schedule must be a single-line cron expression")
@@ -96,7 +97,7 @@ def render_github_action_workflow(
         if is_review_plan
         else f"Build {report_format} report"
     )
-    action = action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
+    action = clean_action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
     filter_inputs = "".join(
         [
             _yaml_input("label", clean_label),
@@ -113,7 +114,7 @@ def render_github_action_workflow(
         ]
     )
 
-    escaped_schedule = clean_schedule.replace('"', '\\"')
+    escaped_schedule = _escape_yaml_value(clean_schedule)
     return f"""name: {workflow_name}
 
 on:
@@ -159,8 +160,14 @@ def _clean_single_line(value: str | None, option_name: str) -> str:
     return cleaned
 
 
+def _escape_yaml_value(value: str) -> str:
+    # Escape backslashes before quotes so a value like foo\" cannot break
+    # out of the double-quoted YAML scalar.
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def _yaml_input(name: str, value: str | int | None) -> str:
     if value is None or value == "":
         return ""
-    escaped = str(value).replace('"', '\\"')
+    escaped = _escape_yaml_value(str(value))
     return f'          {name}: "{escaped}"\n'
