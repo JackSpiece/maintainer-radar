@@ -417,5 +417,302 @@ class AnalyzePrTests(unittest.TestCase):
         self.assertIn("tests changed", result["signals"])
 
 
+class CheckRollupTests(unittest.TestCase):
+    """Regression cover for how check results are bucketed."""
+
+    def _pr(self, rollup: list[dict[str, object]]) -> dict[str, object]:
+        return {
+            "number": 200,
+            "title": "Fix worker retries",
+            "body": "Test plan: unit tests.",
+            "updatedAt": "2026-06-01T00:00:00Z",
+            "additions": 20,
+            "deletions": 4,
+            "changedFiles": 2,
+            "statusCheckRollup": rollup,
+            "files": [
+                {"path": "src/worker.py"},
+                {"path": "tests/test_worker.py"},
+            ],
+        }
+
+    def test_legacy_commit_status_failure_is_detected(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {"__typename": "StatusContext", "context": "ci/circleci", "state": "FAILURE"},
+                    {"__typename": "StatusContext", "context": "ci/lint", "state": "SUCCESS"},
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["failed"], 1)
+        self.assertEqual(result["checks"]["passed"], 1)
+        self.assertIn("CI failing", result["flags"])
+        self.assertNotIn("no visible checks", result["flags"])
+        self.assertEqual(result["action"], "ask for CI fix")
+
+    def test_legacy_commit_status_error_is_a_failure(self) -> None:
+        result = analyze_pr(
+            self._pr([{"context": "ci/deploy", "state": "ERROR"}]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["failed"], 1)
+        self.assertIn("CI failing", result["flags"])
+
+    def test_cancelled_checks_are_not_reported_as_failures(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {"status": "COMPLETED", "conclusion": "CANCELLED"},
+                    {"status": "COMPLETED", "conclusion": "CANCELLED"},
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["failed"], 0)
+        self.assertEqual(result["checks"]["skipped"], 2)
+        self.assertNotIn("CI failing", result["flags"])
+        self.assertNotIn("CI passed", result["signals"])
+        self.assertIn("no visible checks", result["flags"])
+
+    def test_skipped_only_checks_do_not_read_as_passing(self) -> None:
+        result = analyze_pr(
+            self._pr([{"status": "COMPLETED", "conclusion": "SKIPPED"}]),
+            now=NOW,
+        )
+
+        self.assertNotIn("CI passed", result["signals"])
+        self.assertIn("no visible checks", result["flags"])
+
+    def test_action_required_check_is_pending_not_failed(self) -> None:
+        result = analyze_pr(
+            self._pr([{"status": "COMPLETED", "conclusion": "ACTION_REQUIRED"}]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["failed"], 0)
+        self.assertEqual(result["checks"]["pending"], 1)
+        self.assertIn("CI pending", result["flags"])
+        self.assertEqual(result["action"], "wait for CI")
+
+    def test_startup_failure_conclusion_is_a_failure(self) -> None:
+        result = analyze_pr(
+            self._pr([{"status": "COMPLETED", "conclusion": "STARTUP_FAILURE"}]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["failed"], 1)
+        self.assertIn("CI failing", result["flags"])
+        self.assertEqual(result["action"], "ask for CI fix")
+
+    def test_unknown_conclusion_does_not_stall_on_wait_for_ci(self) -> None:
+        result = analyze_pr(
+            self._pr([{"status": "COMPLETED", "conclusion": "STALE"}]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["checks"]["pending"], 0)
+        self.assertNotEqual(result["action"], "wait for CI")
+
+
+class FileClassificationTests(unittest.TestCase):
+    """Regression cover for path bucketing false positives."""
+
+    def _pr(self, paths: list[str]) -> dict[str, object]:
+        return {
+            "number": 300,
+            "title": "Change some files",
+            "body": "Test plan: unit tests.",
+            "updatedAt": "2026-06-01T00:00:00Z",
+            "additions": 30,
+            "deletions": 6,
+            "changedFiles": len(paths),
+            "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+            "files": [{"path": path} for path in paths],
+        }
+
+    def test_source_file_named_like_a_test_is_not_a_test_file(self) -> None:
+        result = analyze_pr(
+            self._pr(["src/latest_release.py", "src/contest_manager.py"]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["files"]["code_files"], 2)
+        self.assertEqual(result["files"]["test_files"], 0)
+        self.assertIn("code changed without tests", result["flags"])
+        self.assertNotIn("tests changed", result["signals"])
+
+    def test_real_test_paths_are_still_detected(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    "src/queue.py",
+                    "tests/test_queue.py",
+                    "src/ui/widget.test.tsx",
+                    "packages/core/__tests__/parser.js",
+                    "api/spec/router_spec.rb",
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertEqual(result["files"]["test_files"], 4)
+        self.assertEqual(result["files"]["code_files"], 1)
+        self.assertNotIn("code changed without tests", result["flags"])
+
+    def test_license_and_readme_source_files_are_not_documentation(self) -> None:
+        result = analyze_pr(
+            self._pr(["src/license_checker.py", "src/readme_generator.py"]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["files"]["doc_files"], 0)
+        self.assertEqual(result["files"]["code_files"], 2)
+        self.assertNotIn("docs-only shape", result["signals"])
+
+    def test_real_project_documents_are_still_documentation(self) -> None:
+        result = analyze_pr(self._pr(["LICENSE", "README.md", "docs/guide.rst"]), now=NOW)
+
+        self.assertEqual(result["files"]["doc_files"], 3)
+        self.assertEqual(result["files"]["code_files"], 0)
+        self.assertIn("docs-only shape", result["signals"])
+
+    def test_infrastructure_and_config_files_count_as_code(self) -> None:
+        result = analyze_pr(
+            self._pr(["deploy/main.tf", "Dockerfile", ".github/workflows/release.yml"]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["files"]["code_files"], 3)
+        self.assertIn("code changed without tests", result["flags"])
+
+    def test_root_build_output_is_generated_but_nested_build_source_is_code(self) -> None:
+        result = analyze_pr(
+            self._pr(["build/bundle.js", "src/build/compiler.py"]),
+            now=NOW,
+        )
+
+        self.assertEqual(result["files"]["generated_files"], 1)
+        self.assertEqual(result["files"]["code_files"], 1)
+        self.assertIn("generated or lockfile changes", result["flags"])
+
+    def test_generated_substring_does_not_capture_ordinary_source(self) -> None:
+        result = analyze_pr(self._pr(["src/generated_ids.py"]), now=NOW)
+
+        self.assertEqual(result["files"]["generated_files"], 0)
+        self.assertEqual(result["files"]["code_files"], 1)
+
+
+class BlockerLanguageTests(unittest.TestCase):
+    """Regression cover for what counts as maintainer blocker language."""
+
+    def _pr(self, comments: list[dict[str, object]]) -> dict[str, object]:
+        return {
+            "number": 400,
+            "title": "Fix retry logic",
+            "body": "Test plan: unit tests.",
+            "updatedAt": "2026-06-01T00:00:00Z",
+            "additions": 40,
+            "deletions": 10,
+            "changedFiles": 2,
+            "author": {"login": "contributor-b"},
+            "reviewDecision": "REVIEW_REQUIRED",
+            "statusCheckRollup": [{"status": "COMPLETED", "conclusion": "SUCCESS"}],
+            "comments": comments,
+            "files": [
+                {"path": "src/retry.py"},
+                {"path": "tests/test_retry.py"},
+            ],
+        }
+
+    def test_bot_comments_do_not_trigger_blocker_language(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {
+                        "author": {"login": "codecov[bot]"},
+                        "body": "Coverage decreased. 3 checks failed.",
+                    },
+                    {
+                        "author": {"login": "github-actions[bot]"},
+                        "body": "This PR is blocked until the regression is fixed.",
+                    },
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertNotIn("maintainer blocker language", result["flags"])
+        self.assertEqual(result["action"], "review now")
+
+    def test_bot_flagged_by_type_is_ignored(self) -> None:
+        result = analyze_pr(
+            self._pr([{"author": {"login": "ci-reporter", "type": "Bot"}, "body": "Build broken."}]),
+            now=NOW,
+        )
+
+        self.assertNotIn("maintainer blocker language", result["flags"])
+
+    def test_quoted_ci_log_does_not_trigger_blocker_language(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {
+                        "author": {"login": "maintainer-a"},
+                        "body": (
+                            "> FAILED tests/test_queue.py::test_drain\n"
+                            "> AssertionError: queue is broken\n"
+                            "\n"
+                            "Looks unrelated to this change."
+                        ),
+                    }
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertNotIn("maintainer blocker language", result["flags"])
+
+    def test_fenced_ci_log_does_not_trigger_blocker_language(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {
+                        "author": {"login": "maintainer-a"},
+                        "body": (
+                            "Full log:\n\n```\n"
+                            "FAILED tests/test_queue.py\n"
+                            "build broken\n"
+                            "```\n\nRerunning."
+                        ),
+                    }
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertNotIn("maintainer blocker language", result["flags"])
+
+    def test_genuine_maintainer_comment_still_triggers_blocker_language(self) -> None:
+        result = analyze_pr(
+            self._pr(
+                [
+                    {
+                        "author": {"login": "maintainer-a"},
+                        "body": "Please fix the regression before another review.",
+                    }
+                ]
+            ),
+            now=NOW,
+        )
+
+        self.assertIn("maintainer blocker language", result["flags"])
+        self.assertEqual(result["action"], "needs author follow-up")
+
+
 if __name__ == "__main__":
     unittest.main()
