@@ -12,12 +12,15 @@ GITLAB_PIPELINE_CONCLUSIONS = {
 }
 
 GITLAB_PENDING_STATUSES = {
+    "blocked",
+    "canceling",
     "created",
     "manual",
     "pending",
     "preparing",
     "running",
     "scheduled",
+    "waiting_for_callback",
     "waiting_for_resource",
 }
 
@@ -227,11 +230,12 @@ def _review_decision(mr: dict[str, Any]) -> str:
         return "CHANGES_REQUESTED"
     if mr.get("approved") or mr.get("approved_by"):
         return "APPROVED"
-    if str(mr.get("detailed_merge_status") or "").lower() in {
-        "discussions_not_resolved",
-        "ci_must_pass",
-        "not_approved",
-    }:
+    # Only unresolved discussions represent a human asking for changes.
+    # "ci_must_pass" is a pipeline gate and "not_approved" simply means the
+    # review has not happened yet; scoring either as CHANGES_REQUESTED added
+    # 25 risk and told maintainers to chase an author who owed them nothing.
+    # Both are still surfaced through mergeStateStatus and the pipeline check.
+    if str(mr.get("detailed_merge_status") or "").lower() == "discussions_not_resolved":
         return "CHANGES_REQUESTED"
     return "REVIEW_REQUIRED"
 

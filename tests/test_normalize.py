@@ -147,5 +147,73 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(len(normalized["reviewRequests"]), 1)
 
 
+class GitlabMergeStatusTests(unittest.TestCase):
+    """Regression cover for GitLab merge-status to review-decision mapping."""
+
+    def test_ci_must_pass_is_not_changes_requested(self) -> None:
+        normalized = normalize_gitlab_mr(
+            {"iid": 20, "title": "Add cache layer", "detailed_merge_status": "ci_must_pass"}
+        )
+
+        self.assertEqual(normalized["reviewDecision"], "REVIEW_REQUIRED")
+        self.assertEqual(normalized["mergeStateStatus"], "BLOCKED")
+
+    def test_not_approved_is_not_changes_requested(self) -> None:
+        normalized = normalize_gitlab_mr(
+            {"iid": 21, "title": "Add cache layer", "detailed_merge_status": "not_approved"}
+        )
+
+        self.assertEqual(normalized["reviewDecision"], "REVIEW_REQUIRED")
+        self.assertEqual(normalized["mergeStateStatus"], "BLOCKED")
+
+    def test_unresolved_discussions_still_request_changes(self) -> None:
+        normalized = normalize_gitlab_mr(
+            {
+                "iid": 22,
+                "title": "Add cache layer",
+                "detailed_merge_status": "discussions_not_resolved",
+            }
+        )
+
+        self.assertEqual(normalized["reviewDecision"], "CHANGES_REQUESTED")
+
+    def test_ci_gate_does_not_push_merge_request_to_author_follow_up(self) -> None:
+        analysis = analyze_pr(
+            normalize_gitlab_mr(
+                {
+                    "iid": 23,
+                    "title": "Add cache layer",
+                    "description": "Test plan: unit tests.",
+                    "updated_at": "2026-06-01T00:00:00Z",
+                    "detailed_merge_status": "ci_must_pass",
+                    "head_pipeline": {"status": "success", "ref": "cache"},
+                    "changes_count": "2",
+                    "stats": {"additions": 30, "deletions": 4},
+                    "changes": [
+                        {"new_path": "src/cache.py"},
+                        {"new_path": "tests/test_cache.py"},
+                    ],
+                }
+            )
+        )
+
+        self.assertNotIn("changes requested", analysis["flags"])
+        self.assertIn("merge blocked by repo rules", analysis["flags"])
+        self.assertEqual(analysis["action"], "review now")
+
+    def test_blocked_pipeline_is_reported_as_pending(self) -> None:
+        normalized = normalize_gitlab_mr(
+            {"iid": 24, "title": "Manual gate", "pipeline": {"status": "blocked", "ref": "main"}}
+        )
+        check = normalized["statusCheckRollup"][0]
+
+        self.assertEqual(check["status"], "BLOCKED")
+        self.assertIsNone(check["conclusion"])
+
+        analysis = analyze_pr(normalized)
+        self.assertIn("CI pending", analysis["flags"])
+        self.assertEqual(analysis["action"], "wait for CI")
+
+
 if __name__ == "__main__":
     unittest.main()
