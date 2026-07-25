@@ -8,33 +8,138 @@ from typing import Any
 from .config import DEFAULT_CONFIG
 
 CODE_EXTENSIONS = {
+    ".astro",
+    ".bash",
     ".c",
     ".cc",
+    ".cjs",
+    ".clj",
     ".cpp",
     ".cs",
     ".css",
+    ".cts",
+    ".dart",
+    ".erl",
+    ".ex",
+    ".exs",
     ".go",
+    ".gradle",
+    ".groovy",
     ".h",
+    ".hcl",
     ".hpp",
     ".html",
     ".java",
     ".js",
     ".jsx",
     ".kt",
+    ".lua",
     ".mjs",
+    ".mts",
     ".php",
+    ".pl",
+    ".proto",
+    ".ps1",
     ".py",
+    ".pyi",
     ".rb",
     ".rs",
+    ".scala",
     ".scss",
     ".sh",
     ".sql",
+    ".svelte",
     ".swift",
+    ".tf",
+    ".tfvars",
+    ".toml",
     ".ts",
     ".tsx",
     ".vue",
+    ".yaml",
+    ".yml",
+    ".zsh",
 }
 
+# Build and infrastructure entry points that carry no file extension.
+CODE_BASENAMES = {
+    "cmakelists.txt",
+    "containerfile",
+    "dockerfile",
+    "gemfile",
+    "justfile",
+    "makefile",
+    "procfile",
+    "rakefile",
+    "vagrantfile",
+}
+
+# Path segments are matched exactly, never as substrings, so that source files
+# such as "src/latest_release.py" or "src/contest_manager.py" are no longer
+# counted as tests just because they happen to contain the letters "test".
+TEST_DIR_SEGMENTS = {
+    "__tests__",
+    "e2e",
+    "spec",
+    "specs",
+    "test",
+    "testing",
+    "tests",
+}
+
+TEST_BASENAME_PREFIXES = ("test_", "test-")
+
+TEST_STEM_SUFFIXES = ("_test", "-test", ".test", "_spec", "-spec", ".spec")
+
+DOC_EXTENSIONS = {".adoc", ".md", ".mdx", ".rst"}
+
+DOC_DIR_SEGMENTS = {"doc", "docs", "documentation"}
+
+# Whole-stem matches only. Substring matching used to score
+# "src/license_checker.py" and "src/readme_generator.py" as documentation.
+DOC_STEMS = {
+    "authors",
+    "changelog",
+    "code_of_conduct",
+    "contributing",
+    "licence",
+    "license",
+    "notice",
+    "readme",
+}
+
+DOC_STEM_EXTENSIONS = {"", ".adoc", ".md", ".mdx", ".rst", ".txt"}
+
+GENERATED_DIR_SEGMENTS = {
+    "__generated__",
+    "__pycache__",
+    "dist",
+    "generated",
+    "node_modules",
+    "vendor",
+}
+
+# Only treated as build output at the root of the repository, so a genuine
+# source package such as "src/build/compiler.py" is still scored as code.
+GENERATED_ROOT_SEGMENTS = {".next", "build", "coverage", "out", "target"}
+
+GENERATED_BASENAMES = {
+    "cargo.lock",
+    "composer.lock",
+    "gemfile.lock",
+    "go.sum",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "poetry.lock",
+    "uv.lock",
+    "yarn.lock",
+}
+
+GENERATED_STEMS = {"generated"}
+
+# Retained for backwards compatibility with callers and user-supplied hint
+# lists. The built-in classifier no longer matches on these bare substrings;
+# hints supplied through configuration are still matched as substrings.
 TEST_HINTS = (
     "/test/",
     "/tests/",
@@ -42,17 +147,12 @@ TEST_HINTS = (
     ".spec.",
     ".test.",
     "_test.",
-    "test_",
 )
 
 DOC_HINTS = (
     ".md",
     ".mdx",
     "/docs/",
-    "docs/",
-    "readme",
-    "changelog",
-    "license",
 )
 
 GENERATED_HINTS = (
@@ -63,10 +163,52 @@ GENERATED_HINTS = (
     "cargo.lock",
     "go.sum",
     "dist/",
-    "build/",
     "vendor/",
-    "generated",
 )
+
+CHECK_SUCCESS_CONCLUSIONS = {"SUCCESS", "NEUTRAL"}
+
+# CANCELLED and STALE are deliberately absent: a cancelled run produced no
+# verdict, and reporting it as a failure told maintainers to chase authors
+# over runs that were superseded or manually stopped.
+CHECK_FAILURE_CONCLUSIONS = {"FAILURE", "STARTUP_FAILURE", "TIMED_OUT"}
+
+# ACTION_REQUIRED means a human still has to approve or resume the run.
+CHECK_PENDING_CONCLUSIONS = {"ACTION_REQUIRED", "PENDING", "WAITING"}
+
+# Legacy commit statuses (GitHub StatusContext) report `state` only.
+STATUS_STATE_BUCKETS = {
+    "ERROR": "failed",
+    "EXPECTED": "pending",
+    "FAILURE": "failed",
+    "PENDING": "pending",
+    "SUCCESS": "passed",
+}
+
+BOT_LOGIN_SUFFIXES = ("[bot]", "-bot", "_bot")
+
+KNOWN_BOT_LOGINS = {
+    "codecov",
+    "coveralls",
+    "dependabot",
+    "dependabot-preview",
+    "github-actions",
+    "mergify",
+    "netlify",
+    "pre-commit-ci",
+    "renovate",
+    "semantic-release-bot",
+    "snyk-bot",
+    "sonarcloud",
+    "sonarqubecloud",
+    "stale",
+    "vercel",
+}
+
+_CODE_FENCE_RE = re.compile(r"```.*?```|~~~.*?~~~", re.DOTALL)
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_QUOTED_LINE_RE = re.compile(r"^[ \t]{0,3}>.*$", re.MULTILINE)
+_INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 
 BLOCKER_RE = re.compile(
     r"\b("
@@ -148,18 +290,41 @@ def days_since(value: str | None, now: datetime | None = None) -> int | None:
 def summarize_checks(items: list[dict[str, Any]] | None) -> CheckSummary:
     passed = failed = pending = skipped = 0
     for item in items or []:
+        if not isinstance(item, dict):
+            continue
         status = str(item.get("status") or "").upper()
         conclusion = str(item.get("conclusion") or "").upper()
+
+        if not status and not conclusion:
+            # Legacy commit statuses expose `state` instead of
+            # `status`/`conclusion`. They used to fall through every branch,
+            # so a repository whose CI reports through commit statuses was
+            # scored as having no visible checks even while it was red.
+            state = str(item.get("state") or "").upper()
+            bucket = STATUS_STATE_BUCKETS.get(state)
+            if bucket == "passed":
+                passed += 1
+            elif bucket == "failed":
+                failed += 1
+            elif bucket == "pending":
+                pending += 1
+            elif state:
+                skipped += 1
+            continue
+
         if status and status != "COMPLETED":
             pending += 1
-        elif conclusion in {"SUCCESS", "NEUTRAL"}:
+        elif conclusion in CHECK_SUCCESS_CONCLUSIONS:
             passed += 1
-        elif conclusion == "SKIPPED":
-            skipped += 1
-        elif conclusion in {"FAILURE", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED"}:
+        elif conclusion in CHECK_FAILURE_CONCLUSIONS:
             failed += 1
-        elif conclusion:
+        elif conclusion in CHECK_PENDING_CONCLUSIONS:
             pending += 1
+        elif conclusion:
+            # Completed with no usable verdict (SKIPPED, CANCELLED, STALE).
+            # Bucketing these as pending made the tool advise "wait for CI"
+            # for runs that will never report again.
+            skipped += 1
     return CheckSummary(
         passed=passed,
         failed=failed,
@@ -169,35 +334,92 @@ def summarize_checks(items: list[dict[str, Any]] | None) -> CheckSummary:
     )
 
 
+def _hint_tuple(config: dict[str, Any], key: str) -> tuple[str, ...]:
+    return tuple(str(hint).lower() for hint in (config.get(key) or ()) if hint)
+
+
+def _classify_path(
+    path: str,
+    *,
+    test_hints: tuple[str, ...],
+    doc_hints: tuple[str, ...],
+    generated_hints: tuple[str, ...],
+) -> str | None:
+    """Bucket one lowercase path into generated / test / doc / code.
+
+    Categories are mutually exclusive and evaluated in that order, so one file
+    can never count as both a test file and a code file. Built-in rules match
+    whole path segments, basenames, stems, and extensions. Hints supplied
+    through configuration keep their historical substring behaviour.
+    """
+    segments = [segment for segment in path.split("/") if segment]
+    if not segments:
+        return None
+    basename = segments[-1]
+    directories = set(segments[:-1])
+    stem, dot, suffix = basename.rpartition(".")
+    extension = f".{suffix}" if dot else ""
+    if not dot:
+        stem = basename
+
+    if any(hint in path for hint in generated_hints):
+        return "generated"
+    if basename in GENERATED_BASENAMES or stem in GENERATED_STEMS:
+        return "generated"
+    if directories & GENERATED_DIR_SEGMENTS:
+        return "generated"
+    if len(segments) > 1 and segments[0] in GENERATED_ROOT_SEGMENTS:
+        return "generated"
+
+    if any(hint in path for hint in test_hints):
+        return "test"
+    if directories & TEST_DIR_SEGMENTS:
+        return "test"
+    if basename.startswith(TEST_BASENAME_PREFIXES) or stem.endswith(TEST_STEM_SUFFIXES):
+        return "test"
+
+    if any(hint in path for hint in doc_hints):
+        return "doc"
+    if extension in DOC_EXTENSIONS:
+        return "doc"
+    if directories & DOC_DIR_SEGMENTS:
+        return "doc"
+    if stem in DOC_STEMS and extension in DOC_STEM_EXTENSIONS:
+        return "doc"
+
+    if extension in CODE_EXTENSIONS or basename in CODE_BASENAMES:
+        return "code"
+    return None
+
+
 def summarize_files(
     files: list[dict[str, Any]] | None,
     config: dict[str, Any] | None = None,
 ) -> FileSummary:
     config = config or DEFAULT_CONFIG
-    test_hints = (*TEST_HINTS, *config.get("test_hints", []))
-    doc_hints = (*DOC_HINTS, *config.get("doc_hints", []))
-    generated_hints = (*GENERATED_HINTS, *config.get("generated_hints", []))
-    code_files = doc_files = test_files = generated_files = 0
+    test_hints = _hint_tuple(config, "test_hints")
+    doc_hints = _hint_tuple(config, "doc_hints")
+    generated_hints = _hint_tuple(config, "generated_hints")
+    counts = {"code": 0, "doc": 0, "test": 0, "generated": 0}
     for file_info in files or []:
+        if not isinstance(file_info, dict):
+            continue
         path = str(file_info.get("path") or file_info.get("filename") or "").lower()
         if not path:
             continue
-        # Categories are mutually exclusive so one file can never count as
-        # both a test file and a code file (e.g. tests/test_parser.py).
-        # Priority: generated, then test, then doc, then code.
-        if any(hint in path for hint in generated_hints):
-            generated_files += 1
-        elif any(hint in path for hint in test_hints):
-            test_files += 1
-        elif any(path.endswith(hint) or hint in path for hint in doc_hints):
-            doc_files += 1
-        elif any(path.endswith(ext) for ext in CODE_EXTENSIONS):
-            code_files += 1
+        category = _classify_path(
+            path,
+            test_hints=test_hints,
+            doc_hints=doc_hints,
+            generated_hints=generated_hints,
+        )
+        if category is not None:
+            counts[category] += 1
     return FileSummary(
-        code_files=code_files,
-        doc_files=doc_files,
-        test_files=test_files,
-        generated_files=generated_files,
+        code_files=counts["code"],
+        doc_files=counts["doc"],
+        test_files=counts["test"],
+        generated_files=counts["generated"],
         total_files=len(files or []),
     )
 
@@ -212,6 +434,26 @@ def _actor_login(value: Any) -> str:
     return str(value or "").lower()
 
 
+def _is_bot_actor(value: Any) -> bool:
+    """Whether a comment or review came from an automation account.
+
+    Coverage, dependency, and CI bots post text such as "3 checks failed" or
+    "this PR is blocked", which used to be scored as maintainer blocker
+    language and pushed the PR to "needs author follow-up".
+    """
+    if isinstance(value, dict):
+        for key in ("is_bot", "isBot"):
+            if value.get(key) is True:
+                return True
+        for key in ("type", "__typename"):
+            if str(value.get(key) or "").lower() == "bot":
+                return True
+    login = _actor_login(value)
+    if not login:
+        return False
+    return login.endswith(BOT_LOGIN_SUFFIXES) or login in KNOWN_BOT_LOGINS
+
+
 def _comments_and_reviews(pr: dict[str, Any]) -> list[str]:
     """Comment and review bodies, excluding the PR author's own text.
 
@@ -224,22 +466,42 @@ def _comments_and_reviews(pr: dict[str, Any]) -> list[str]:
     for comment in pr.get("comments") or []:
         if not isinstance(comment, dict):
             continue
-        commenter = _actor_login(comment.get("author") or comment.get("user"))
+        actor = comment.get("author") or comment.get("user")
+        commenter = _actor_login(actor)
         if pr_author and commenter and commenter == pr_author:
+            continue
+        if _is_bot_actor(actor):
             continue
         text.append(str(comment.get("body") or ""))
     for review in pr.get("latestReviews") or pr.get("reviews") or []:
         if not isinstance(review, dict):
             continue
-        reviewer = _actor_login(review.get("author") or review.get("user"))
+        actor = review.get("author") or review.get("user")
+        reviewer = _actor_login(actor)
         if pr_author and reviewer and reviewer == pr_author:
+            continue
+        if _is_bot_actor(actor):
             continue
         text.append(str(review.get("body") or ""))
     return text
 
 
+def _visible_comment_text(body: str) -> str:
+    """Strip quoted text, fenced blocks, and inline code before matching.
+
+    Maintainers routinely paste failing CI output into a quote or a code
+    fence. Scanning that pasted log flagged the PR for words the maintainer
+    never actually wrote.
+    """
+    text = _CODE_FENCE_RE.sub(" ", body)
+    text = _HTML_COMMENT_RE.sub(" ", text)
+    text = _QUOTED_LINE_RE.sub(" ", text)
+    return _INLINE_CODE_RE.sub(" ", text)
+
+
 def _has_blocker(pr: dict[str, Any]) -> bool:
-    return any(BLOCKER_RE.search(text) for text in _comments_and_reviews(pr))
+    texts = _comments_and_reviews(pr)
+    return any(BLOCKER_RE.search(_visible_comment_text(text)) for text in texts)
 
 
 def _has_test_plan(pr: dict[str, Any]) -> bool:
@@ -356,7 +618,10 @@ def analyze_pr(
         flags.append("large diff")
         _record_score(score_breakdown, "large diff", 15, kind="flag")
 
-    if checks.total == 0:
+    # Skipped and cancelled runs carry no verdict, so a PR whose entire check
+    # set was cancelled must not read as either "CI passed" or "CI failing".
+    conclusive_checks = checks.passed + checks.failed + checks.pending
+    if conclusive_checks == 0:
         risk += 8
         flags.append("no visible checks")
         _record_score(score_breakdown, "no visible checks", 8, kind="flag")
@@ -480,11 +745,14 @@ def analyze_pr(
         signals=signals,
     )
 
+    author_value = pr.get("author")
+    author_login = author_value.get("login") if isinstance(author_value, dict) else author_value
+
     return {
         "number": pr.get("number"),
         "title": pr.get("title"),
         "url": pr.get("url"),
-        "author": (pr.get("author") or {}).get("login") if isinstance(pr.get("author"), dict) else pr.get("author"),
+        "author": author_login,
         "labels": _label_names(pr),
         "risk": risk,
         "reviewability": reviewability,
