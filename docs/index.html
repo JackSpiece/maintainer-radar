@@ -891,12 +891,15 @@
       Scores your PR queue before you open a single diff.
       What to review, what to skip, what needs author follow-up &mdash; in seconds.
     </p>
-    <div class="hero-commands">
+    <div class="hero-commands" aria-label="maintainer-radar recommend https://github.com/owner/repo/pulls">
       <span class="cmd-comment"># Install once</span><br>
-      <span class="cmd-prompt">$ </span><span class="cmd-bin">pip install</span> <span class="cmd-arg">maintainer-radar</span><br>
+      <span class="cmd-prompt">$ </span><span class="cmd-bin">pip install</span> <span class="cmd-arg">git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0</span><br>
       <br>
       <span class="cmd-comment"># Run on any repo</span><br>
-      <span class="cmd-prompt">$ </span><span class="cmd-bin">maintainer-radar</span> <span class="cmd-sub">recommend</span> <span class="cmd-arg">https://github.com/owner/repo/pulls</span>
+      <span class="cmd-prompt">$ </span><span class="cmd-bin">maintainer-radar</span> <span class="cmd-sub">recommend</span> <span class="cmd-arg">https://github.com/owner/repo/pulls</span><br>
+      <br>
+      <span class="cmd-comment"># Or scaffold a scheduled report</span><br>
+      <code>maintainer-radar init-repo --profile balanced</code>
     </div>
     <button class="hero-arrow" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})" type="button">
       Try the live demo &nbsp;
@@ -909,7 +912,7 @@
   <!-- ═══ DEMO ═══════════════════════════════════════════ -->
   <section class="demo-section" id="demo">
     <div class="section-head">
-      <h2>Live demo &mdash; scan any public repo</h2>
+      <h2>Try a public repo</h2>
       <p>Powered by the public GitHub API. No install, no login, no API key needed.</p>
     </div>
 
@@ -962,7 +965,7 @@
             </label>
             <label class="opt-label" for="group-action">
               <input id="group-action" type="checkbox">
-              Group
+              Group by action
             </label>
           </div>
         </div>
@@ -992,7 +995,7 @@
         <div class="metric"><strong id="metric-review">1</strong><span>Review now</span></div>
         <div class="metric"><strong id="metric-followup">1</strong><span>Follow-up</span></div>
         <div class="metric"><strong id="metric-quick">1</strong><span>Quick unblocks</span></div>
-        <div class="metric"><strong id="metric-blocked">1</strong><span>Maint. blocked</span></div>
+        <div class="metric"><strong id="metric-blocked">1</strong><span>Maintainer blocked</span></div>
         <div class="metric"><strong id="metric-score">50</strong><span>Avg score</span></div>
       </div>
 
@@ -1088,7 +1091,7 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
       <div class="feature-card">
         <div class="feature-icon" aria-hidden="true">🔒</div>
         <h3>Truly read-only</h3>
-        <p>Never posts, comments, or writes anything. No GitHub App, no OAuth scope, no stored tokens.</p>
+        <p>Never posts, comments, or writes anything. There is no hosted service or model token.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" aria-hidden="true">⚡</div>
@@ -1103,7 +1106,7 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
       <div class="feature-card">
         <div class="feature-icon" aria-hidden="true">📅</div>
         <h3>Session planning</h3>
-        <p>Builds a time-boxed review plan for your next session. Know what fits in 30 minutes before you open anything.</p>
+        <p>Builds a time-boxed review plan to recommend the next maintainer session. Know what fits before opening anything.</p>
       </div>
     </div>
   </section>
@@ -1149,6 +1152,8 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="https://github.com/JackSpiece/maintainer-radar">GitHub</a>
         <a href="quickstart.html">Quickstart</a>
+        <a href="adoption.html">Adoption</a>
+        <a href="browser-preview.html">Browser Preview</a>
         <a href="github-action.html">GitHub Action</a>
         <a href="review-plan.html">Review Plans</a>
         <a href="heuristics.html">Heuristics</a>
@@ -1156,7 +1161,7 @@ _Generated as a draft with Maintainer Radar. Please edit before posting._</pre>
         <a href="https://github.com/JackSpiece/maintainer-radar/releases">Releases</a>
         <a href="https://github.com/JackSpiece/maintainer-radar/issues/new/choose">Feedback</a>
       </nav>
-      <span class="footer-note">MIT License</span>
+      <span class="footer-note">Read-only reports appear in the Actions run summary. MIT License.</span>
     </div>
   </footer>
 

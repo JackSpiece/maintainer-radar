@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.21.0
+## Unreleased (0.21.0)
 
 - Fixed `--stale-days` filtering to honor `--now`, so reproducible runs filter
   and score with the same clock.

@@ -90,7 +90,7 @@ config.
 Install from GitHub if you want to test locally:
 
 ```bash
-python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"
 ```
 
 Then paste a repository URL:
