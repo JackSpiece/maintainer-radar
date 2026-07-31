@@ -26,8 +26,8 @@ a PR:
 
 ```bash
 make test
-make lint       # requires: python -m pip install ruff
-make typecheck  # requires: python -m pip install mypy
+make lint       # requires: python -m pip install "ruff==0.16.0"
+make typecheck  # requires: python -m pip install "mypy==2.3.0"
 ```
 
 ## Good Contributions

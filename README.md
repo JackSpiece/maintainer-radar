@@ -2,23 +2,21 @@
 
 [![CI](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/JackSpiece/maintainer-radar/actions/workflows/ci.yml)
 
-Know which pull requests deserve your time before you open a single diff.
+GitHub Action and local CLI for read-only pull request triage reports.
 
-Maintainer Radar scans your PR queue and produces a short, honest brief: what to review now, what needs author follow-up, and what's blocked — with a score breakdown that shows exactly why. No GitHub App. No hosted service. No AI tokens.
+Maintainer Radar scans a pull request queue and produces a short brief: what is ready to review, what needs author follow-up, what is blocked, and what fits into the next review session. Every score includes a visible breakdown. It does not post, label, approve, reject, or merge anything.
 
-**[Try the browser demo →](https://jackspiece.github.io/maintainer-radar/)**
+[Try the browser demo](https://jackspiece.github.io/maintainer-radar/)
 
----
+## Quick Start
 
-## Quick start
-
-The fastest path is the GitHub Action. Add it to any workflow:
+The fastest path is the GitHub Action. The latest published release is `v0.20.0`:
 
 ```yaml
 - uses: actions/setup-python@v6
   with:
     python-version: "3.12"
-- uses: JackSpiece/maintainer-radar@v0.21.0
+- uses: JackSpiece/maintainer-radar@v0.20.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}
@@ -27,125 +25,94 @@ The fastest path is the GitHub Action. Add it to any workflow:
     format: markdown
 ```
 
-Or scaffold a full scheduled workflow in one command:
+For a local run, install the published source tag from GitHub:
+
+```bash
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"
+maintainer-radar recommend https://github.com/owner/repo/pulls
+```
+
+Requires the [GitHub CLI](https://cli.github.com/) for authenticated live scans. Run `gh auth login` once.
+
+To scaffold a config and scheduled workflow:
 
 ```bash
 maintainer-radar init-repo --profile balanced
 ```
 
-Or just run it from your terminal right now:
+For stricter queue thresholds:
 
 ```bash
-pip install maintainer-radar
-maintainer-radar recommend https://github.com/owner/repo/pulls
+maintainer-radar init-config --profile strict --path .maintainer-radar.json
 ```
 
----
+## What It Does
 
-## What it does
+It reads pull request metadata through the GitHub CLI, the GitHub Action token, or offline JSON, then reports:
 
-It reads your PR queue through the GitHub CLI (or offline JSON) and tells you:
+- PRs that appear ready for review
+- CI failures, merge conflicts, and author follow-up
+- unresolved maintainer feedback
+- transparent reviewability and risk signals
+- a time-boxed review plan for the next session
+- editable draft follow-ups that a maintainer can review before posting
 
-- Which PRs are ready to review
-- Which need CI fixes or author follow-up before you touch them
-- Which have unresolved maintainer feedback
-- Roughly how long each one will take
-- What fits in your next session, as a time-boxed plan
+Reports are available as Markdown, JSON, CSV, and standalone HTML.
 
-Every score has a visible breakdown. Nothing is a black box.
+## Before-review workflow
 
----
+Use AI reviewers to inspect code. Use Maintainer Radar before that to decide which pull requests deserve maintainer attention now.
 
-## Why
-
-When there are 30+ open PRs — half of them AI-generated — and you have 45 minutes, you need something that already sorted the queue. Maintainer Radar does that. It runs read-only, requires no extra permissions, and never posts anything.
-
----
-
-## Install
+The `recommend` command turns a queue scan into one decision: the current attention level, a suggested workflow, the reason, a next-session brief, and the next command to run. This is a before-review workflow, not an automated reviewer.
 
 ```bash
-pip install maintainer-radar
+maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
 ```
 
-Requires the [GitHub CLI](https://cli.github.com/) for live scans. Run `gh auth login` once.
-
-For SHA-pinned installs:
+## Common Commands
 
 ```bash
-maintainer-radar init-action --action-ref JackSpiece/maintainer-radar@<commit-sha>
-```
-
----
-
-## Common commands
-
-```bash
-# Queue brief for a repo
+# Queue brief for a repository
 maintainer-radar repo owner/repo
 
-# Deeper scan with full PR detail
+# Deeper scan with pull request details
 maintainer-radar repo owner/repo --hydrate --sort action
 
-# 30-minute review plan
-maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
-
-# Single PR breakdown
+# Single pull request breakdown
 maintainer-radar pr owner/repo 123
 
-# Just the workflow recommendation
-maintainer-radar recommend owner/repo
-
-# Offline from a JSON export
+# Offline analysis
 maintainer-radar from-json queue.json
 
-# Filter to the most reviewable PRs
+# Short review-ready list
 maintainer-radar repo owner/repo --action review-now --min-score 80 --top 10
 ```
 
-Full reference: `maintainer-radar --help`
+Run `maintainer-radar --help` for the complete reference.
 
----
+## GitHub Action Outputs
 
-## GitHub Action outputs
+The action exposes outputs for notifications, dashboards, and handoffs, including:
 
-The action exposes these as step outputs for notifications, dashboards, or follow-up steps:
+`review-now`, `ci-blocked`, `merge-conflicts`, `branch-behind`, `maintainer-blocked`, `attention-level`, `workflow-mode`, `workflow-recommendation`, and `next-session-brief`.
 
-`review-now` · `ci-blocked` · `merge-conflicts` · `branch-behind` · `maintainer-blocked` · `attention-level` · `workflow-mode` · `workflow-recommendation` · `next-session-brief`
+See [GitHub Action usage](docs/github-action.md) and [attention workflows](docs/attention-workflows.md).
 
-See [docs/github-action.md](docs/github-action.md) for the full reference.
+## Documentation
 
----
-
-## Example output
-
-```
-| PR | Action | Score | Signals |
-|---|---|---|---|
-| #42 Fix parser cache race | review now | 100 | CI passed, test plan present, tests changed |
-| #43 Add universal plugin system | ask for CI fix | 0 | very large diff, CI failing, no test plan |
-```
-
-Review plans, JSON, CSV, and standalone HTML are also available.
-
----
-
-## Docs
-
-- [Quickstart](docs/quickstart.md)
+- [Two minute quickstart](docs/quickstart.md)
+- [Adoption guide](docs/adoption.md)
 - [GitHub Action](docs/github-action.md)
 - [Review plans](docs/review-plan.md)
-- [Attention workflows](docs/attention-workflows.md)
 - [Scoring heuristics](docs/heuristics.md)
 - [Configuration](docs/configuration.md)
-- [Privacy & permissions](docs/privacy-permissions.md)
-- [GitLab / Forgejo / Gitea](docs/forgejo-gitea-json.md)
-
----
+- [Privacy and permissions](docs/privacy-permissions.md)
+- [Project positioning](docs/positioning.md)
+- [GitLab, Forgejo, and Gitea JSON](docs/forgejo-gitea-json.md)
 
 ## Contributing
 
-Issues and PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues and focused pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

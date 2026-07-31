@@ -118,7 +118,7 @@ unauthenticated API requests, and some check-run data may be unavailable.
 For deeper scans, use the CLI:
 
 ```bash
-python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git"
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"
 maintainer-radar repo owner/repo --hydrate --sort action --review-plan-minutes 30
 ```
 
